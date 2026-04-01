@@ -24,27 +24,24 @@ public final class App extends Application {
     private static final String WINDOW_TITLE = "MiMiComparator";
     private static final String FXML_FILE_NAME = "/org/senatov/MiMiComparator.fxml";
 
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
     public void start(Stage stage) throws Exception {
         Parent root = loadRootView();
         Scene scene = new Scene(root, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-
         stage.setTitle(WINDOW_TITLE);
         stage.setScene(scene);
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     private Parent loadRootView() throws IOException {
         FXMLLoader loader = new FXMLLoader(App.class.getResource(FXML_FILE_NAME));
-
         if (loader.getLocation() == null) {
             throw new IOException("FXML resource not found: " + FXML_FILE_NAME);
         }
-
         return loader.load();
     }
 }
