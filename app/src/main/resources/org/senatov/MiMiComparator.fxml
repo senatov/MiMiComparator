@@ -44,7 +44,7 @@
             </MenuBar>
 
             <!-- toolbar -->
-            <ToolBar>
+            <ToolBar fx:id="mainToolBar">
                 <Button text="📂 Left"   onAction="#onOpenLeft"/>
                 <Button text="Right 📂"  onAction="#onOpenRight"/>
                 <Separator orientation="VERTICAL"/>
@@ -66,7 +66,7 @@
         <HBox VBox.vgrow="ALWAYS">
 
             <!-- ── LEFT panel ── -->
-            <VBox HBox.hgrow="ALWAYS" spacing="2">
+            <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS" spacing="2">
                 <padding><Insets top="4" right="2" bottom="4" left="4"/></padding>
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Left:" style="-fx-font-weight:bold;"/>
@@ -124,7 +124,7 @@
             </VBox>
 
             <!-- ── RIGHT panel ── -->
-            <VBox HBox.hgrow="ALWAYS" spacing="2">
+            <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS" spacing="2">
                 <padding><Insets top="4" right="4" bottom="4" left="2"/></padding>
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Right:" style="-fx-font-weight:bold;"/>
