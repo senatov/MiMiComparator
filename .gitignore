@@ -1,263 +1,30 @@
-# Created by https://www.toptal.com/developers/gitignore/api/maven,eclipse,windows,intellij+all
-# Edit at https://www.toptal.com/developers/gitignore?templates=maven,eclipse,windows,intellij+all
+# MiMiComparator .gitignore
 
-### Eclipse ###
+# Gradle
+.gradle/
+build/
+app/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Eclipse
 .metadata
-bin/
-tmp/
+.classpath
+.project
+.settings/
+
+# misc
+*.log
 *.tmp
 *.bak
 *.swp
-*~.nib
-local.properties
-.settings/
-.loadpath
-.recommenders
-
-# External tool builders
-.externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
-*.launch
-
-# PyDev specific (Python IDE for Eclipse)
-*.pydevproject
-
-# CDT-specific (C/C++ Development Tooling)
-.cproject
-
-# CDT- autotools
-.autotools
-
-# Java annotation processor (APT)
-.factorypath
-
-# PDT-specific (PHP Development Tools)
-.buildpath
-
-# sbteclipse plugin
-.target
-
-# Tern plugin
-.tern-project
-
-# TeXlipse plugin
-.texlipse
-
-# STS (Spring Tool Suite)
-.springBeans
-
-# Code Recommenders
-.recommenders/
-
-# Annotation Processing
-.apt_generated/
-.apt_generated_test/
-
-# Scala IDE specific (Scala & Java development for Eclipse)
-.cache-main
-.scala_dependencies
-.worksheet
-
-# Uncomment this line if you wish to ignore the project description file.
-# Typically, this file would be tracked if it contains build/dependency configurations:
-#.project
-
-### Eclipse Patch ###
-# Spring Boot Tooling
-.sts4-cache/
-
-### Intellij+all ###
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
-# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
-
-# User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
-
-# AWS User-specific
-.idea/**/aws.xml
-
-# Generated files
-.idea/**/contentModel.xml
-
-# Sensitive or high-churn files
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
-.idea/**/dbnavigator.xml
-
-# Gradle
-.idea/**/gradle.xml
-.idea/**/libraries
-
-# Gradle and Maven with auto-import
-# When using Gradle or Maven with auto-import, you should exclude module files,
-# since they will be recreated, and may cause churn.  Uncomment if using
-# auto-import.
-.idea/artifacts
-.idea/compiler.xml
-.idea/jarRepositories.xml
-.idea/modules.xml
-.idea/*.iml
-.idea/modules
-*.iml
-*.ipr
-
-# CMake
-cmake-build-*/
-
-# Mongo Explorer plugin
-.idea/**/mongoSettings.xml
-
-# File-based project format
-*.iws
-
-# IntelliJ
-out/
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Cursive Clojure plugin
-.idea/replstate.xml
-
-# SonarLint plugin
-.idea/sonarlint/
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
-
-# Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
-
-### Intellij+all Patch ###
-# Ignore everything but code style settings and run configurations
-# that are supposed to be shared within teams.
-
-.idea/*
-
-!.idea/codeStyles
-!.idea/runConfigurations
-
-### Maven ###
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-# https://github.com/takari/maven-wrapper#usage-without-binary-jar
-.mvn/wrapper/maven-wrapper.jar
-
-# Eclipse m2e generated files
-# Eclipse Core
-.project
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
-
-### Windows ###
-# Windows thumbnail cache files
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-
-# Dump file
-*.stackdump
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
-# End of https://www.toptal.com/developers/gitignore/api/maven,eclipse,windows,intellij+all
-*.log
-
-/unifa4web/src/main/webapp/VAADIN/themes/unifa/styles.scss.cache
-/rmsfb-bno-tests/html/
-/rmsfb-admintool/rmsfb_admintool*.zip
-/rmsfb-admintool/src/main/resources/schema/gi/000010/ginster_000010_rev1.zip
-/rmsfb-admintool/src/main/resources/schema/gi/000011/ginster_000011_rev2_doc.zip
-/rmsfb-admintool/src/main/resources/schema/gi/000012/12erSchemaRev1_Dokumentation.zip
-
-/rmsfb-import/eimport_testa/elster_out/*
-/rmsfb-import/eimport_testa/steubel_out/*
-/rmsfb-import/eimport_testa/log/*
-
-/rmsfb-import/test/data/elster_in/*.*
-/rmsfb-import/test/data/elster_out/*.*
-/rmsfb-import/test/data/steubel_in/*.*
-/rmsfb-import/test/data/steubel_out/*.*
-/rmsfb-import/test/log/*.*
-/rmsfb-import/test/log/*
-/rmsfb-import/test/tmp/*.*
-
-/rmsfb-import/test_automated/data/elster_in/*
-/rmsfb-import/test_automated/data/elster_out/*
-/rmsfb-import/test_automated/data/elster_out_sik/*
-/rmsfb-import/test_automated/data/steubel_in/*
-/rmsfb-import/test_automated/data/steubel_out/*
-/rmsfb-import/test_automated/data/steubel_out_sik/*
-/rmsfb-import/test_automated/log/*
-/rmsfb-import/test_automated/log_sik/*
-/rmsfb-import/test_automated/data/check_data/*
-
-# local database file will recreated when not existent
-/rmsfb-zentral/konsens/app/rms-fb/data/rmsfb.mv.db
-/.idea/codeStyles/codeStyleConfig.xml
-/.gradle/configuration-cache/71ec6372-2aea-4114-9010-73234b90b8b7/.globals.work.bin
-/.gradle/configuration-cache/71ec6372-2aea-4114-9010-73234b90b8b7/.strings.work.bin
-/.gradle/configuration-cache/71ec6372-2aea-4114-9010-73234b90b8b7/_app.work.bin
-/app/build/classes/java/main/org/senatov/App.class
-/.gradle/buildOutputCleanup/buildOutputCleanup.lock
-/.gradle/buildOutputCleanup/cache.properties
-/.gradle/9.4.1/checksums/checksums.lock
-/.gradle/configuration-cache/configuration-cache.lock
-/build/reports/configuration-cache/4nutsxzceq1gwkuht4z4115wf/2rma9dgjikk53vx8a4jddo3tg/configuration-cache-report.html
-/.gradle/9.4.1/executionHistory/executionHistory.bin
-/.gradle/9.4.1/executionHistory/executionHistory.lock
-/.gradle/file-system.probe
-/.gradle/9.4.1/fileHashes/fileHashes.bin
-/.gradle/9.4.1/fileHashes/fileHashes.lock
-/.gradle/9.4.1/gc.properties
-/.gradle/configuration-cache/gc.properties
-/.gradle/vcs-1/gc.properties
-/gradle/wrapper/gradle-wrapper.jar
-/.gradle/9.4.1/fileChanges/last-build.bin
-/.gradle/9.4.1/checksums/md5-checksums.bin
-/app/build/resources/main/org/senatov/MiMiComparator.fxml
-/.gradle/buildOutputCleanup/outputFiles.bin
-/build/reports/problems/problems-report.html
-/.gradle/9.4.1/fileHashes/resourceHashesCache.bin
-/.gradle/9.4.1/checksums/sha1-checksums.bin
-/.gradle/configuration-cache/71ec6372-2aea-4114-9010-73234b90b8b7/work.bin
