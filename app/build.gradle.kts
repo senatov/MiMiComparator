@@ -26,6 +26,8 @@ javafx {
 }
 
 dependencies {
+    // AtlantaFX — macOS-style Cupertino theme for JavaFX
+    implementation("io.github.mkpaz:atlantafx-base:2.0.1")
     testImplementation(platform("org.junit:junit-bom:5.10.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
