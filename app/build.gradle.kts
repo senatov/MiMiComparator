@@ -39,6 +39,9 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:3.17.0")
     implementation("org.apache.commons:commons-collections4:4.5.0-M3")
     implementation("commons-io:commons-io:2.18.0")
+    implementation("com.fasterxml.jackson.core:jackson-core:2.18.3")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
     // test
     testImplementation(platform("org.junit:junit-bom:5.10.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

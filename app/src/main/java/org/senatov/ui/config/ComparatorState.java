@@ -1,4 +1,4 @@
-package org.senatov;
+package org.senatov.ui.config;
 
 import java.util.ArrayList;
 import java.util.List;
