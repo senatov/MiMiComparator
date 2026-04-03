@@ -13,7 +13,8 @@
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="org.senatov.MainController"
-            prefWidth="1100" prefHeight="760"
+            prefWidth="1100" prefHeight="1100"
+            style="-fx-font-family:'SF Pro Text'; -fx-font-size:14; -fx-font-weight:100;"
             styleClass="root-pane">
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
@@ -56,7 +57,7 @@
                 <ToggleButton fx:id="dirModeToggle" text="📁 Dirs" onAction="#onToggleDirMode"/>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label fx:id="diffCountLabel" text="diffs: —"
-                       style="-fx-text-fill:#888; -fx-font-size:12;"/>
+                       style="-fx-text-fill:#8c1a65;"/>
             </ToolBar>
         </VBox>
     </top>
@@ -71,13 +72,10 @@
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Left:" style="-fx-font-weight:bold;"/>
                     <TextField fx:id="leftPathField" HBox.hgrow="ALWAYS"
-                               promptText="file or directory…" editable="false"
-                               style="-fx-font-size:12;"/>
+                               promptText="file or directory…" editable="false"/>
                     <Button text="…" onAction="#onOpenLeft" prefWidth="30"/>
                 </HBox>
-                <ListView fx:id="leftListView" VBox.vgrow="ALWAYS"
-                          style="-fx-font-family:'JetBrains Mono','Menlo','Courier New',monospace;
-                                 -fx-font-size:13;"/>
+                <ListView fx:id="leftListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
             <!-- ── CENTER action strip (movable divider w/ buttons) ── -->
@@ -129,13 +127,10 @@
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Right:" style="-fx-font-weight:bold;"/>
                     <TextField fx:id="rightPathField" HBox.hgrow="ALWAYS"
-                               promptText="file or directory…" editable="false"
-                               style="-fx-font-size:12;"/>
+                               promptText="file or directory…" editable="false"/>
                     <Button text="…" onAction="#onOpenRight" prefWidth="30"/>
                 </HBox>
-                <ListView fx:id="rightListView" VBox.vgrow="ALWAYS"
-                          style="-fx-font-family:'JetBrains Mono','Menlo','Courier New',monospace;
-                                 -fx-font-size:13;"/>
+                <ListView fx:id="rightListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
         </HBox>

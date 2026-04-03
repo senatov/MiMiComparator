@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Log4j2 config for MiMiComparator — console + file -->
 <Configuration status="WARN">
     <Properties>
-        <Property name="LOG_DIR">${sys:java.io.tmpdir}</Property>
-        <Property name="PATTERN">%d{HH:mm:ss.SSS} %-5level [%t] %logger{1} — %msg%n</Property>
+        <Property name="LOG_FILE">${sys:java.io.tmpdir}/MiMiComparator.log</Property>
+        <Property name="PATTERN">%d{HH:mm:ss.SSS} %-5level [%t] %logger{1} - %msg%n</Property>
     </Properties>
+
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="${PATTERN}"/>
         </Console>
+
         <RollingFile name="File"
-                     fileName="${LOG_DIR}/MiMiComparator.log"
-                     filePattern="${LOG_DIR}/MiMiComparator-%d{yyyy-MM-dd}.log.gz">
+                     fileName="${LOG_FILE}"
+                     filePattern="${sys:java.io.tmpdir}/MiMiComparator.%i.log.gz">
             <PatternLayout pattern="${PATTERN}"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="10 MB"/>
-                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="20 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="5"/>
+            <DefaultRolloverStrategy max="4" fileIndex="min"/>
         </RollingFile>
     </Appenders>
+
     <Loggers>
         <Logger name="org.senatov" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Logger>
+
         <Root level="INFO">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="File"/>
         </Root>
     </Loggers>
 </Configuration>

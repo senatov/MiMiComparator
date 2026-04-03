@@ -3,6 +3,7 @@
 # Gradle
 .gradle/
 build/
+dist/
 app/build/
 !gradle/wrapper/gradle-wrapper.jar
 
