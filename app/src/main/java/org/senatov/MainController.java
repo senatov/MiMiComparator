@@ -1,7 +1,7 @@
 /*
  * MainController.java — FXML controller for MiMiComparator
- * Handles file/dir compare, center-strip actions, sync scroll.
- * CLI autocompare, DiffCellFactory coloring, deep compare.
+ * Tree expand/collapse, filter, column headers, sync scroll,
+ * CLI autocompare, DiffCellFactory coloring.
  * Iakov Senatov, 2026
  */
 package org.senatov;
@@ -27,6 +27,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -35,10 +36,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.senatov.cli.CliArgs;
 import org.senatov.compare.CompareResult;
+import org.senatov.compare.DirCompareResult;
 import org.senatov.compare.DirectoryComparator;
 import org.senatov.compare.FileContentComparator;
 import org.senatov.helpers.log.LogHelper;
 import org.senatov.model.CompareLineItem;
+import org.senatov.model.tree.DirTreeModel;
 import org.senatov.ui.cell.DiffCellFactory;
 
 import java.io.File;
@@ -47,6 +50,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,12 +58,6 @@ import java.util.stream.Stream;
 @Slf4j
 public class MainController {
 
-    private static final String PALE_YELLOW_BG =
-            "-fx-control-inner-background: #FFFDE7; -fx-background-color: #FFFDE7;";
-    private static final String MONO_FONT_STYLE =
-            "-fx-font-family:'JetBrains Mono','Menlo','Courier New',monospace;"
-                    + "-fx-font-size:13;";
-    private static final String PANEL_BG_STYLE = "-fx-background-color: #FFFDE7;";
     private static final String STATUS_DIR_MODE = "DIR mode";
     private static final String STATUS_FILE_MODE = "FILE mode";
     private static final String STATUS_SWAPPED = "⇄ swapped";
@@ -69,11 +67,13 @@ public class MainController {
     @FXML private VBox leftPanel;
     @FXML private TextField leftPathField;
     @FXML private ListView<CompareLineItem> leftListView;
+    @FXML private HBox leftColumnHeader;
 
     // --- right panel ---
     @FXML private VBox rightPanel;
     @FXML private TextField rightPathField;
     @FXML private ListView<CompareLineItem> rightListView;
+    @FXML private HBox rightColumnHeader;
 
     // --- center strip ---
     @FXML private VBox centerStrip;
@@ -90,6 +90,7 @@ public class MainController {
     @FXML private CheckMenuItem showIdenticalCheck;
     @FXML private CheckMenuItem showDirsCheck;
     @FXML private Label diffCountLabel;
+    @FXML private TextField filterField;
     @FXML private Label statusLeft;
     @FXML private Label statusCenter;
     @FXML private Label statusRight;
@@ -98,25 +99,28 @@ public class MainController {
     private Path rightPath;
     private boolean dirMode = false;
     private CliArgs pendingCliArgs;
+    private DirTreeModel leftTreeModel;
+    private DirTreeModel rightTreeModel;
+    private DirCompareResult lastDirResult;
 
 
     @FXML
     private void initialize() {
         log.debug("[{}]", LogHelper.method());
-        log.info("controller init");
 
-        applyPaleYellowPanels();
         installDiffCellFactories();
+        setupClickToExpand();
         addProgrammaticButtons();
         setupSyncScroll();
         updateCenterStripState();
+        updateColumnHeaderVisibility();
 
         Platform.runLater(this::executeCliAutoCompare);
     }
 
 
     public void applyCliArgs(CliArgs args) {
-        log.info("CLI args received: L={} R={} auto={}",
+        log.info("CLI args: L={} R={} auto={}",
                 args.getLeftPath(), args.getRightPath(), args.isAutoCompare());
         this.pendingCliArgs = args;
     }
@@ -127,7 +131,6 @@ public class MainController {
             return;
         }
 
-        log.info("CLI autocompare: loading paths");
         pendingCliArgs.left().ifPresent(p -> {
             leftPath = p;
             leftPathField.setText(p.toString());
@@ -148,24 +151,116 @@ public class MainController {
 
 
     private void installDiffCellFactories() {
-        log.debug("[{}]", LogHelper.method());
-        DiffCellFactory factory = new DiffCellFactory();
+        log.debug("[{}] dirMode={}", LogHelper.method(), dirMode);
+        DiffCellFactory factory = new DiffCellFactory(dirMode);
         leftListView.setCellFactory(factory);
         rightListView.setCellFactory(factory);
     }
 
 
-    private void applyPaleYellowPanels() {
-        log.debug("[{}]", LogHelper.method());
-        leftPanel.setStyle(PANEL_BG_STYLE);
-        rightPanel.setStyle(PANEL_BG_STYLE);
-        log.info("panels painted pale yellow");
+    private void setupClickToExpand() {
+        leftListView.setOnMouseClicked(e -> handleTreeClick(e, leftListView, true));
+        rightListView.setOnMouseClicked(e -> handleTreeClick(e, rightListView, false));
     }
 
 
-    private void addProgrammaticButtons() {
-        log.debug("[{}]", LogHelper.method());
+    private void handleTreeClick(MouseEvent event, ListView<CompareLineItem> listView, boolean isLeft) {
+        if (!dirMode || event.getClickCount() < 2) {
+            return;
+        }
 
+        CompareLineItem item = listView.getSelectionModel().getSelectedItem();
+        if (item == null || !item.isDirectory()) {
+            return;
+        }
+
+        String relPath = item.getRelativePath();
+        log.info("toggle expand: {} side={}", relPath, isLeft ? "L" : "R");
+
+        if (leftTreeModel != null) {
+            leftTreeModel.toggleExpand(relPath);
+        }
+        if (rightTreeModel != null) {
+            rightTreeModel.toggleExpand(relPath);
+        }
+
+        refreshTreeViews();
+    }
+
+
+    private void refreshTreeViews() {
+        if (leftTreeModel == null || rightTreeModel == null) {
+            return;
+        }
+
+        List<CompareLineItem> leftItems = leftTreeModel.toFlatList();
+        List<CompareLineItem> rightItems = rightTreeModel.toFlatList();
+
+        String filterText = filterField.getText();
+        if (StringUtils.isNotBlank(filterText)) {
+            Pattern pattern = buildFilterPattern(filterText);
+            leftItems = applyFilter(leftItems, pattern);
+            rightItems = applyFilter(rightItems, pattern);
+        }
+
+        leftListView.setItems(FXCollections.observableArrayList(leftItems));
+        rightListView.setItems(FXCollections.observableArrayList(rightItems));
+    }
+
+
+    private void updateColumnHeaderVisibility() {
+        boolean show = dirMode;
+        leftColumnHeader.setVisible(show);
+        leftColumnHeader.setManaged(show);
+        rightColumnHeader.setVisible(show);
+        rightColumnHeader.setManaged(show);
+    }
+
+
+    // ═══ filter ═══
+
+    @FXML
+    private void onFilterChanged() {
+        log.info("filter changed: '{}'", filterField.getText());
+        if (dirMode && leftTreeModel != null) {
+            refreshTreeViews();
+        } else if (!dirMode) {
+            onCompare();
+        }
+    }
+
+
+    private Pattern buildFilterPattern(String filterText) {
+        String[] parts = filterText.split("[,;\\s]+");
+        StringBuilder sb = new StringBuilder();
+        for (String part : parts) {
+            String trimmed = part.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append("|");
+            }
+            String regex = trimmed
+                    .replace(".", "\\.")
+                    .replace("*", ".*")
+                    .replace("?", ".");
+            sb.append("(").append(regex).append(")");
+        }
+        return Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
+    }
+
+
+    private List<CompareLineItem> applyFilter(List<CompareLineItem> items, Pattern pattern) {
+        return items.stream()
+                .filter(item -> item.isDirectory() || pattern.matcher(item.getText()).find())
+                .collect(Collectors.toList());
+    }
+
+
+    // ═══ programmatic buttons ═══
+
+    private void addProgrammaticButtons() {
         var swapBtn = new Button("⇄");
         swapBtn.setPrefWidth(36);
         swapBtn.setPrefHeight(28);
@@ -176,8 +271,9 @@ public class MainController {
 
         var homeBtn = new Button("🏠 Home");
         homeBtn.setOnAction(e -> onLoadHome());
-        mainToolBar.getItems().add(7, new Separator());
-        mainToolBar.getItems().add(8, homeBtn);
+        int paneIndex = mainToolBar.getItems().size() - 2;
+        mainToolBar.getItems().add(paneIndex, new Separator());
+        mainToolBar.getItems().add(paneIndex + 1, homeBtn);
 
         var infoBox = new HBox(6);
         infoBox.setAlignment(Pos.CENTER_LEFT);
@@ -196,11 +292,9 @@ public class MainController {
 
     private void onSwapPanels() {
         log.info("swapping panels");
-
         Path tmpPath = leftPath;
         leftPath = rightPath;
         rightPath = tmpPath;
-
         leftPathField.setText(leftPath != null ? leftPath.toString() : "");
         rightPathField.setText(rightPath != null ? rightPath.toString() : "");
 
@@ -208,6 +302,10 @@ public class MainController {
         var rightItems = new ArrayList<>(rightListView.getItems());
         leftListView.setItems(FXCollections.observableArrayList(rightItems));
         rightListView.setItems(FXCollections.observableArrayList(leftItems));
+
+        DirTreeModel tmpModel = leftTreeModel;
+        leftTreeModel = rightTreeModel;
+        rightTreeModel = tmpModel;
 
         String tmpStatus = statusLeft.getText();
         statusLeft.setText(statusRight.getText());
@@ -219,13 +317,14 @@ public class MainController {
     private void onLoadHome() {
         String home = System.getProperty("user.home");
         if (StringUtils.isNotBlank(home)) {
-            log.info("loading home dir: {}", home);
             leftPath = Path.of(home);
             leftPathField.setText(StringUtils.abbreviate(home, 60));
             loadDirectoryPreview(leftPath, leftListView, true);
         }
     }
 
+
+    // ═══ sync scroll ═══
 
     private void setupSyncScroll() {
         Platform.runLater(() -> {
@@ -236,23 +335,21 @@ public class MainController {
 
 
     private void bindScrollBars(ListView<?> source, ListView<?> target) {
-        ScrollBar sourceBar = findScrollBar(source);
-        ScrollBar targetBar = findScrollBar(target);
-
-        if (sourceBar == null || targetBar == null) {
+        ScrollBar srcBar = findScrollBar(source);
+        ScrollBar tgtBar = findScrollBar(target);
+        if (srcBar == null || tgtBar == null) {
             return;
         }
-
-        sourceBar.valueProperty().addListener((obs, oldVal, newVal) -> {
+        srcBar.valueProperty().addListener((o, ov, nv) -> {
             if (syncScrollToggle.isSelected()) {
-                targetBar.setValue(newVal.doubleValue());
+                tgtBar.setValue(nv.doubleValue());
             }
         });
     }
 
 
-    private ScrollBar findScrollBar(ListView<?> listView) {
-        for (var node : listView.lookupAll(".scroll-bar")) {
+    private ScrollBar findScrollBar(ListView<?> lv) {
+        for (var node : lv.lookupAll(".scroll-bar")) {
             if (node instanceof ScrollBar sb && sb.getOrientation() == Orientation.VERTICAL) {
                 return sb;
             }
@@ -262,15 +359,12 @@ public class MainController {
 
 
     private void updateCenterStripState() {
-        boolean hasLeft = leftPath != null;
-        boolean hasRight = rightPath != null;
-        boolean hasBoth = hasLeft && hasRight;
-
+        boolean hasBoth = leftPath != null && rightPath != null;
         copyRightBtn.setDisable(!hasBoth);
         copyLeftBtn.setDisable(!hasBoth);
         diffBtn.setDisable(!hasBoth);
         equalBtn.setDisable(!hasBoth);
-        deleteBtn.setDisable(!hasLeft && !hasRight);
+        deleteBtn.setDisable(leftPath == null && rightPath == null);
     }
 
 
@@ -283,7 +377,6 @@ public class MainController {
             leftPath = p;
             leftPathField.setText(p.toString());
             loadDirectoryPreview(p, leftListView, true);
-            log.info("opened left: {}", p);
         }
     }
 
@@ -295,7 +388,6 @@ public class MainController {
             rightPath = p;
             rightPathField.setText(p.toString());
             loadDirectoryPreview(p, rightListView, false);
-            log.info("opened right: {}", p);
         }
     }
 
@@ -310,18 +402,21 @@ public class MainController {
         log.info("compare: dir={} L={} R={}", dirMode, leftPath, rightPath);
 
         try {
-            CompareResult result;
             if (dirMode) {
-                result = DirectoryComparator.compare(leftPath, rightPath, showIdenticalCheck.isSelected());
+                lastDirResult = DirectoryComparator.compareTree(leftPath, rightPath);
+                leftTreeModel = lastDirResult.leftModel();
+                rightTreeModel = lastDirResult.rightModel();
+                refreshTreeViews();
+                diffCountLabel.setText("diffs: " + lastDirResult.diffCount());
+                statusCenter.setText(lastDirResult.statusText());
             } else {
-                result = FileContentComparator.compare(leftPath, rightPath, showIdenticalCheck.isSelected());
+                CompareResult result = FileContentComparator.compare(
+                        leftPath, rightPath, showIdenticalCheck.isSelected());
+                leftListView.setItems(FXCollections.observableArrayList(result.leftItems()));
+                rightListView.setItems(FXCollections.observableArrayList(result.rightItems()));
+                diffCountLabel.setText("diffs: " + result.diffCount());
+                statusCenter.setText(result.statusText());
             }
-
-            leftListView.setItems(FXCollections.observableArrayList(result.leftItems()));
-            rightListView.setItems(FXCollections.observableArrayList(result.rightItems()));
-            diffCountLabel.setText("diffs: " + result.diffCount());
-            statusCenter.setText(result.statusText());
-            log.info("compare done: {}", result.summary());
         } catch (IOException ex) {
             log.error("compare failed: {}", ex.getMessage());
             showAlert("Compare failed: " + ex.getMessage());
@@ -331,7 +426,6 @@ public class MainController {
 
     @FXML
     private void onRefresh() {
-        log.debug("refresh");
         if (leftPath != null) {
             loadDirectoryPreview(leftPath, leftListView, true);
         }
@@ -341,17 +435,9 @@ public class MainController {
     }
 
 
-    @FXML
-    private void onQuit() {
-        log.info("quit requested");
-        Platform.exit();
-    }
+    @FXML private void onQuit() { Platform.exit(); }
 
-
-    @FXML
-    private void onToggleIdentical() {
-        onCompare();
-    }
+    @FXML private void onToggleIdentical() { onCompare(); }
 
 
     @FXML
@@ -359,48 +445,51 @@ public class MainController {
         setDirMode(!dirMode);
     }
 
+
     private void setDirMode(boolean enabled) {
         dirMode = enabled;
         dirModeToggle.setSelected(enabled);
         showDirsCheck.setSelected(enabled);
         statusCenter.setText(enabled ? STATUS_DIR_MODE : STATUS_FILE_MODE);
-    }
-
-
-    @FXML private void onExpandAll() { }
-    @FXML private void onCollapseAll() { }
-
-
-    // ═══ center strip actions ═══
-
-    @FXML
-    private void onCopyToRight() {
-        statusCenter.setText("→ copy to right (stub)");
+        installDiffCellFactories();
+        updateColumnHeaderVisibility();
     }
 
 
     @FXML
-    private void onCopyToLeft() {
-        statusCenter.setText("← copy to left (stub)");
+    private void onExpandAll() {
+        log.info("expand all");
+        if (leftTreeModel != null) {
+            leftTreeModel.expandAll();
+        }
+        if (rightTreeModel != null) {
+            rightTreeModel.expandAll();
+        }
+        refreshTreeViews();
     }
 
 
     @FXML
-    private void onShowDiff() {
-        statusCenter.setText("showing diffs only");
+    private void onCollapseAll() {
+        log.info("collapse all");
+        if (leftTreeModel != null) {
+            leftTreeModel.collapseAll();
+        }
+        if (rightTreeModel != null) {
+            rightTreeModel.collapseAll();
+        }
+        refreshTreeViews();
     }
 
 
-    @FXML
-    private void onShowEqual() {
-        statusCenter.setText("showing identical only");
-    }
+    // ═══ center strip stubs ═══
 
-
-    @FXML
-    private void onDeleteSelected() {
-        statusCenter.setText("🗑 delete (stub)");
-    }
+    @FXML private void onCopyToRight() { statusCenter.setText("→ copy to right (stub)"); }
+    @FXML private void onCopyToLeft() { statusCenter.setText("← copy to left (stub)"); }
+    @FXML private void onShowDiff() { statusCenter.setText("showing diffs only"); }
+    @FXML private void onShowEqual() { statusCenter.setText("showing identical only"); }
+    @FXML private void onDeleteSelected() { statusCenter.setText("🗑 delete (stub)"); }
+    @FXML private void onSyncScroll() { }
 
 
     @FXML
@@ -417,9 +506,6 @@ public class MainController {
             copyToClipboard(rightPath.toString());
         }
     }
-
-
-    @FXML private void onSyncScroll() { }
 
 
     @FXML
@@ -444,7 +530,6 @@ public class MainController {
             File f = dc.showDialog(getStage());
             return f != null ? f.toPath() : null;
         }
-
         var fc = new FileChooser();
         fc.setTitle(title);
         File f = fc.showOpenDialog(getStage());
@@ -464,7 +549,8 @@ public class MainController {
                 List<String> lines = Files.readAllLines(path);
                 List<CompareLineItem> items = new ArrayList<>();
                 for (int i = 0; i < lines.size(); i++) {
-                    items.add(new CompareLineItem(i + 1, lines.get(i), CompareLineItem.DiffStatus.IDENTICAL));
+                    items.add(new CompareLineItem(i + 1, lines.get(i),
+                            CompareLineItem.DiffStatus.IDENTICAL));
                 }
                 listView.setItems(FXCollections.observableArrayList(items));
                 updateStatus(isLeft, lines.size() + " lines");
@@ -473,7 +559,6 @@ public class MainController {
             log.error("cant read {}: {}", path, ex.getMessage());
             showAlert("Can't read: " + path + "\n" + ex.getMessage());
         }
-
         updateCenterStripState();
     }
 
@@ -483,9 +568,11 @@ public class MainController {
             return stream
                     .sorted()
                     .map(p -> {
-                        String prefix = Files.isDirectory(p) ? "📁 " : "   ";
-                        String name = prefix + p.getFileName();
-                        return new CompareLineItem(0, name, CompareLineItem.DiffStatus.IDENTICAL);
+                        boolean isDir = Files.isDirectory(p);
+                        return new CompareLineItem(
+                                0, p.getFileName().toString(),
+                                CompareLineItem.DiffStatus.IDENTICAL,
+                                0, isDir, p.getFileName().toString());
                     })
                     .collect(Collectors.toList());
         }
@@ -497,9 +584,9 @@ public class MainController {
     private void updateStatus(boolean isLeft, String text) {
         if (isLeft) {
             statusLeft.setText(text);
-            return;
+        } else {
+            statusRight.setText(text);
         }
-        statusRight.setText(text);
     }
 
 

@@ -7,6 +7,7 @@
 <!--
   MiMiComparator — dual-pane comparator UI
   Left panel | center action strip | right panel
+  Column headers: Name | Size | Modified
   Iakov Senatov, 2026
 -->
 
@@ -36,8 +37,8 @@
                     <CheckMenuItem fx:id="showDirsCheck" text="Directory mode"
                                    selected="false" onAction="#onToggleDirMode"/>
                     <SeparatorMenuItem/>
-                    <MenuItem text="Expand All"   onAction="#onExpandAll"/>
-                    <MenuItem text="Collapse All" onAction="#onCollapseAll"/>
+                    <MenuItem text="Expand All"   onAction="#onExpandAll"   accelerator="Shortcut+E"/>
+                    <MenuItem text="Collapse All" onAction="#onCollapseAll" accelerator="Shortcut+Shift+E"/>
                 </Menu>
                 <Menu text="Help">
                     <MenuItem text="About MiMiComparator" onAction="#onAbout"/>
@@ -55,6 +56,14 @@
                 <ToggleButton fx:id="syncScrollToggle" text="↕ Sync" selected="true"/>
                 <Separator orientation="VERTICAL"/>
                 <ToggleButton fx:id="dirModeToggle" text="📁 Dirs" onAction="#onToggleDirMode"/>
+                <Separator orientation="VERTICAL"/>
+                <Button text="⊞ Expand" onAction="#onExpandAll"/>
+                <Button text="⊟ Collapse" onAction="#onCollapseAll"/>
+                <Separator orientation="VERTICAL"/>
+                <!-- filter -->
+                <Label text="Filters:" style="-fx-text-fill:#666;"/>
+                <TextField fx:id="filterField" promptText="*.java, *.txt …"
+                           prefWidth="180" onAction="#onFilterChanged"/>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label fx:id="diffCountLabel" text="diffs: —"
                        style="-fx-text-fill:#8c1a65;"/>
@@ -67,7 +76,7 @@
         <HBox VBox.vgrow="ALWAYS">
 
             <!-- ── LEFT panel ── -->
-            <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS" spacing="2">
+            <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS" spacing="0">
                 <padding><Insets top="4" right="2" bottom="4" left="4"/></padding>
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Left:" style="-fx-font-weight:bold;"/>
@@ -75,10 +84,22 @@
                                promptText="file or directory…" editable="false"/>
                     <Button text="…" onAction="#onOpenLeft" prefWidth="30"/>
                 </HBox>
+                <!-- column header -->
+                <HBox fx:id="leftColumnHeader" spacing="0"
+                      style="-fx-background-color:linear-gradient(to bottom,#F8F8F8,#E8E8E8);
+                             -fx-border-color:#CCC;-fx-border-width:0 0 1 0;">
+                    <padding><Insets top="3" right="4" bottom="3" left="4"/></padding>
+                    <Label text="Name" style="-fx-font-weight:bold;-fx-font-size:12;" HBox.hgrow="ALWAYS"
+                           maxWidth="1.7976931348623157E308"/>
+                    <Label text="Size" style="-fx-font-weight:bold;-fx-font-size:12;-fx-alignment:CENTER_RIGHT;"
+                           minWidth="90" prefWidth="90"/>
+                    <Label text="Modified" style="-fx-font-weight:bold;-fx-font-size:12;-fx-alignment:CENTER_RIGHT;"
+                           minWidth="140" prefWidth="140"/>
+                </HBox>
                 <ListView fx:id="leftListView" VBox.vgrow="ALWAYS"/>
             </VBox>
 
-            <!-- ── CENTER action strip (movable divider w/ buttons) ── -->
+            <!-- ── CENTER action strip ── -->
             <VBox fx:id="centerStrip" alignment="CENTER" spacing="8"
                   prefWidth="52" minWidth="40" maxWidth="80"
                   style="-fx-background-color:linear-gradient(to bottom, #e8e8e8, #d0d0d0);
@@ -86,7 +107,6 @@
                          -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.15),4,0,0,1);">
                 <padding><Insets top="12" right="4" bottom="12" left="4"/></padding>
 
-                <!-- copy / move / diff action buttons -->
                 <Button fx:id="copyRightBtn" text="→" onAction="#onCopyToRight"
                         prefWidth="36" prefHeight="28"
                         style="-fx-font-size:16; -fx-font-weight:bold;">
@@ -122,13 +142,25 @@
             </VBox>
 
             <!-- ── RIGHT panel ── -->
-            <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS" spacing="2">
+            <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS" spacing="0">
                 <padding><Insets top="4" right="4" bottom="4" left="2"/></padding>
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label text="Right:" style="-fx-font-weight:bold;"/>
                     <TextField fx:id="rightPathField" HBox.hgrow="ALWAYS"
                                promptText="file or directory…" editable="false"/>
                     <Button text="…" onAction="#onOpenRight" prefWidth="30"/>
+                </HBox>
+                <!-- column header -->
+                <HBox fx:id="rightColumnHeader" spacing="0"
+                      style="-fx-background-color:linear-gradient(to bottom,#F8F8F8,#E8E8E8);
+                             -fx-border-color:#CCC;-fx-border-width:0 0 1 0;">
+                    <padding><Insets top="3" right="4" bottom="3" left="4"/></padding>
+                    <Label text="Name" style="-fx-font-weight:bold;-fx-font-size:12;" HBox.hgrow="ALWAYS"
+                           maxWidth="1.7976931348623157E308"/>
+                    <Label text="Size" style="-fx-font-weight:bold;-fx-font-size:12;-fx-alignment:CENTER_RIGHT;"
+                           minWidth="90" prefWidth="90"/>
+                    <Label text="Modified" style="-fx-font-weight:bold;-fx-font-size:12;-fx-alignment:CENTER_RIGHT;"
+                           minWidth="140" prefWidth="140"/>
                 </HBox>
                 <ListView fx:id="rightListView" VBox.vgrow="ALWAYS"/>
             </VBox>

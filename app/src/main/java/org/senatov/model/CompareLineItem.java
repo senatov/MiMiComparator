@@ -1,21 +1,61 @@
 /*
  * CompareLineItem — one row in the compare list.
- * Carries text + diff status for cell factory coloring.
+ * Carries text + diff status + tree indent for dir mode.
+ * Supports expandable directories with disclosure triangle.
+ * Iakov Senatov, 2026
  */
 package org.senatov.model;
 
-public record CompareLineItem(
-    int lineNumber,
-    String text,
-    DiffStatus status
-) {
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+public final class CompareLineItem {
+
+    private final int lineNumber;
+    private final String text;
+    private final DiffStatus status;
+    private final int indentLevel;
+    private final boolean directory;
+    private final String relativePath;
+    private final long size;
+    private final long lastModifiedMs;
+    @Setter
+    private boolean expanded;
 
     public enum DiffStatus {
-        IDENTICAL,   // lines match
-        MODIFIED,    // lines differ
-        ADDED,       // only on this side
-        MISSING,     // absent on this side
-        HEADER       // section separator / dir name
+        IDENTICAL,
+        MODIFIED,
+        ADDED,
+        MISSING,
+        HEADER
+    }
+
+
+    public CompareLineItem(int lineNumber, String text, DiffStatus status) {
+        this(lineNumber, text, status, 0, false, "", 0, 0);
+    }
+
+
+    public CompareLineItem(int lineNumber, String text, DiffStatus status,
+                           int indentLevel, boolean directory, String relativePath) {
+        this(lineNumber, text, status, indentLevel, directory, relativePath, 0, 0);
+    }
+
+
+    public CompareLineItem(int lineNumber, String text, DiffStatus status,
+                           int indentLevel, boolean directory, String relativePath,
+                           long size, long lastModifiedMs) {
+        this.lineNumber = lineNumber;
+        this.text = text;
+        this.status = status;
+        this.indentLevel = indentLevel;
+        this.directory = directory;
+        this.relativePath = relativePath;
+        this.size = size;
+        this.lastModifiedMs = lastModifiedMs;
+        this.expanded = false;
     }
 
 
@@ -27,9 +67,15 @@ public record CompareLineItem(
             case MISSING   -> "- ";
             case HEADER    -> "# ";
         };
+
+        String indent = "  ".repeat(indentLevel);
+        String disclosure = directory ? (expanded ? "▼ " : "▶ ") : "  ";
+        String icon = directory ? "📁 " : "   ";
+
         if (lineNumber > 0) {
-            return String.format("%s%4d │ %s", marker, lineNumber, text);
+            return String.format("%s%s%s%s%s", marker, indent, disclosure, icon, text);
         }
-        return marker + text;
+
+        return marker + indent + disclosure + icon + text;
     }
 }
