@@ -12,6 +12,8 @@ public class ComparatorState {
     private WindowState window = new WindowState();
     private PanelState leftPanel = new PanelState();
     private PanelState rightPanel = new PanelState();
+    private String leftInputPath = "";
+    private String rightInputPath = "";
     private boolean dirMode = true;
     private boolean syncScroll = true;
     private boolean showDirs = true;
@@ -49,6 +51,22 @@ public class ComparatorState {
 
     public void setRightPanel(PanelState rightPanel) {
         this.rightPanel = rightPanel != null ? rightPanel : new PanelState();
+    }
+
+    public String getLeftInputPath() {
+        return leftInputPath;
+    }
+
+    public void setLeftInputPath(String leftInputPath) {
+        this.leftInputPath = safeString(leftInputPath);
+    }
+
+    public String getRightInputPath() {
+        return rightInputPath;
+    }
+
+    public void setRightInputPath(String rightInputPath) {
+        this.rightInputPath = safeString(rightInputPath);
     }
 
     public boolean isDirMode() {

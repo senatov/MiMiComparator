@@ -24,13 +24,15 @@ public final class CliArgs {
     private final Path rightPath;
     private final boolean autoCompare;
     private final boolean dirMode;
+    private final boolean dirModeExplicit;
 
 
-    private CliArgs(Path leftPath, Path rightPath) {
+    private CliArgs(Path leftPath, Path rightPath, Boolean forcedDirMode) {
         this.leftPath = leftPath;
         this.rightPath = rightPath;
         this.autoCompare = leftPath != null && rightPath != null;
-        this.dirMode = detectDirMode(leftPath, rightPath);
+        this.dirMode = forcedDirMode != null ? forcedDirMode : detectDirMode(leftPath, rightPath);
+        this.dirModeExplicit = forcedDirMode != null;
     }
 
 
@@ -39,11 +41,12 @@ public final class CliArgs {
 
         if (rawArgs == null || rawArgs.isEmpty()) {
             log.info("no CLI args — GUI chooser mode");
-            return new CliArgs(null, null);
+            return new CliArgs(null, null, null);
         }
 
         Path left = null;
         Path right = null;
+        Boolean forcedDirMode = null;
 
         for (int i = 0; i < rawArgs.size(); i++) {
             String arg = rawArgs.get(i);
@@ -52,6 +55,10 @@ public final class CliArgs {
                 left = resolvePath(rawArgs.get(++i));
             } else if ("--right".equals(arg) && i + 1 < rawArgs.size()) {
                 right = resolvePath(rawArgs.get(++i));
+            } else if ("--dirs".equals(arg)) {
+                forcedDirMode = true;
+            } else if ("--files".equals(arg)) {
+                forcedDirMode = false;
             } else if (!arg.startsWith("-") && left == null) {
                 left = resolvePath(arg);
             } else if (!arg.startsWith("-") && right == null) {
@@ -61,9 +68,11 @@ public final class CliArgs {
             }
         }
 
-        log.info("parsed CLI: left={} right={} autoCompare={}",
-                left, right, left != null && right != null);
-        return new CliArgs(left, right);
+        log.info("parsed CLI: left={} right={} autoCompare={} dirMode={} explicit={}",
+                left, right, left != null && right != null,
+                forcedDirMode != null ? forcedDirMode : detectDirMode(left, right),
+                forcedDirMode != null);
+        return new CliArgs(left, right, forcedDirMode);
     }
 
 
@@ -74,6 +83,11 @@ public final class CliArgs {
 
     public Optional<Path> right() {
         return Optional.ofNullable(rightPath);
+    }
+
+
+    public boolean hasExplicitDirMode() {
+        return dirModeExplicit;
     }
 
 

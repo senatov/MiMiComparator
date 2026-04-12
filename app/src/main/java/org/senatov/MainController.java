@@ -35,6 +35,8 @@ import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.senatov.cli.CliArgs;
+import org.senatov.ui.config.ComparatorState;
+import org.senatov.ui.config.ComparatorStateService;
 import org.senatov.compare.CompareResult;
 import org.senatov.compare.DirCompareResult;
 import org.senatov.compare.DirectoryComparator;
@@ -102,19 +104,22 @@ public class MainController {
     private DirTreeModel leftTreeModel;
     private DirTreeModel rightTreeModel;
     private DirCompareResult lastDirResult;
+    private final ComparatorStateService stateService = new ComparatorStateService();
+    private ComparatorState comparatorState;
+    private boolean restoringState;
 
 
     @FXML
     private void initialize() {
         log.debug("[{}]", LogHelper.method());
-
+        comparatorState = stateService.load();
         installDiffCellFactories();
         setupClickToExpand();
         addProgrammaticButtons();
         setupSyncScroll();
+        restoreInputsFromState();
         updateCenterStripState();
         updateColumnHeaderVisibility();
-
         Platform.runLater(this::executeCliAutoCompare);
     }
 
@@ -127,26 +132,24 @@ public class MainController {
 
 
     private void executeCliAutoCompare() {
-        if (pendingCliArgs == null || !pendingCliArgs.isAutoCompare()) {
+        if (pendingCliArgs == null) {
             return;
         }
-
-        pendingCliArgs.left().ifPresent(p -> {
-            leftPath = p;
-            leftPathField.setText(p.toString());
-        });
-
-        pendingCliArgs.right().ifPresent(p -> {
-            rightPath = p;
-            rightPathField.setText(p.toString());
-        });
-
-        if (pendingCliArgs.isDirMode()) {
-            setDirMode(true);
+        restoringState = true;
+        try {
+            pendingCliArgs.left().ifPresent(this::applyLeftPath);
+            pendingCliArgs.right().ifPresent(this::applyRightPath);
+            if (pendingCliArgs.hasExplicitDirMode()) {
+                setDirMode(pendingCliArgs.isDirMode());
+            }
+        } finally {
+            restoringState = false;
         }
-
+        persistInputPaths();
         updateCenterStripState();
-        onCompare();
+        if (pendingCliArgs.isAutoCompare()) {
+            onCompare();
+        }
     }
 
 
@@ -374,8 +377,7 @@ public class MainController {
     private void onOpenLeft() {
         Path p = chooseFileOrDir("Open Left");
         if (p != null) {
-            leftPath = p;
-            leftPathField.setText(p.toString());
+            applyLeftPath(p);
             loadDirectoryPreview(p, leftListView, true);
         }
     }
@@ -385,8 +387,7 @@ public class MainController {
     private void onOpenRight() {
         Path p = chooseFileOrDir("Open Right");
         if (p != null) {
-            rightPath = p;
-            rightPathField.setText(p.toString());
+            applyRightPath(p);
             loadDirectoryPreview(p, rightListView, false);
         }
     }
@@ -396,6 +397,10 @@ public class MainController {
     private void onCompare() {
         if (leftPath == null || rightPath == null) {
             showAlert("Load both sides first.");
+            return;
+        }
+        if (leftPath.equals(rightPath)) {
+            showAlert("Both sides point to the same location. Comparing them is pointless 🙄");
             return;
         }
 
@@ -453,6 +458,9 @@ public class MainController {
         statusCenter.setText(enabled ? STATUS_DIR_MODE : STATUS_FILE_MODE);
         installDiffCellFactories();
         updateColumnHeaderVisibility();
+        if (!restoringState) {
+            persistInputPaths();
+        }
     }
 
 
@@ -481,6 +489,70 @@ public class MainController {
         refreshTreeViews();
     }
 
+
+    private void restoreInputsFromState() {
+        if (comparatorState == null) {
+            return;
+        }
+        restoringState = true;
+        try {
+            restoreSavedPath(comparatorState.getLeftInputPath(), true);
+            restoreSavedPath(comparatorState.getRightInputPath(), false);
+        } finally {
+            restoringState = false;
+        }
+        persistInputPaths();
+    }
+
+
+    private void restoreSavedPath(String rawPath, boolean isLeft) {
+        if (StringUtils.isBlank(rawPath)) {
+            return;
+        }
+        try {
+            Path restoredPath = Path.of(rawPath);
+            if (isLeft) {
+                applyLeftPath(restoredPath);
+                loadDirectoryPreview(restoredPath, leftListView, true);
+                return;
+            }
+            applyRightPath(restoredPath);
+            loadDirectoryPreview(restoredPath, rightListView, false);
+        } catch (Exception exception) {
+            log.warn("failed to restore {} input path: {}", isLeft ? "left" : "right", rawPath, exception);
+        }
+    }
+
+
+    private void applyLeftPath(Path path) {
+        leftPath = path;
+        leftPathField.setText(path != null ? path.toString() : "");
+        if (!restoringState) {
+            persistInputPaths();
+        }
+    }
+
+
+    private void applyRightPath(Path path) {
+        rightPath = path;
+        rightPathField.setText(path != null ? path.toString() : "");
+        if (!restoringState) {
+            persistInputPaths();
+        }
+    }
+
+
+    private void persistInputPaths() {
+        if (restoringState) {
+            return;
+        }
+        if (comparatorState == null) {
+            comparatorState = ComparatorState.defaults();
+        }
+        comparatorState.setLeftInputPath(leftPath != null ? leftPath.toString() : "");
+        comparatorState.setRightInputPath(rightPath != null ? rightPath.toString() : "");
+        stateService.save(comparatorState);
+    }
 
     // ═══ center strip stubs ═══
 

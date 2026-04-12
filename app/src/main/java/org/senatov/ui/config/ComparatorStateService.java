@@ -3,7 +3,6 @@ package org.senatov.ui.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.extern.slf4j.Slf4j;
-import org.senatov.ui.config.ComparatorState;
 import org.senatov.helpers.log.LogHelper;
 
 import java.io.IOException;
@@ -25,39 +24,33 @@ public class ComparatorStateService {
     }
 
     public ComparatorState load() {
-        log.debug("[{}]", LogHelper.method());
-
+        logMethod();
         try {
             ensureStateDirectoryExists();
-
             Path stateFile = getStateFilePath();
             if (!Files.exists(stateFile)) {
                 log.info("state file not found, using defaults: {}", stateFile);
-                return ComparatorState.defaults();
+                return defaultState();
             }
 
             ComparatorState state = objectMapper.readValue(stateFile.toFile(), ComparatorState.class);
             log.info("state loaded from {}", stateFile);
-            return state != null ? state : ComparatorState.defaults();
+            return state != null ? state : defaultState();
         } catch (Exception ex) {
-            log.error("failed to load state, using defaults: {}", ex.getMessage());
-            log.debug("state load exception", ex);
-            return ComparatorState.defaults();
+            logLoadFailure(ex);
+            return defaultState();
         }
     }
 
     public void save(ComparatorState state) {
-        log.debug("[{}]", LogHelper.method());
-
-        ComparatorState safeState = state != null ? state : ComparatorState.defaults();
-
+        logMethod();
+        ComparatorState safeState = state != null ? state : defaultState();
         try {
             ensureStateDirectoryExists();
             writeStateAtomically(safeState);
             log.info("state saved to {}", getStateFilePath());
         } catch (Exception ex) {
-            log.error("failed to save state: {}", ex.getMessage());
-            log.debug("state save exception", ex);
+            logSaveFailure(ex);
         }
     }
 
@@ -68,6 +61,27 @@ public class ComparatorStateService {
 
     public Path getStateFilePath() {
         return getStateDirectoryPath().resolve(STATE_FILE_NAME);
+    }
+
+    private ComparatorState defaultState() {
+        return ComparatorState.defaults();
+    }
+
+
+    private void logMethod() {
+        log.debug("[{}]", LogHelper.method());
+    }
+
+
+    private void logLoadFailure(Exception ex) {
+        log.error("failed to load state, using defaults: {}", ex.getMessage());
+        log.debug("state load exception", ex);
+    }
+
+
+    private void logSaveFailure(Exception ex) {
+        log.error("failed to save state: {}", ex.getMessage());
+        log.debug("state save exception", ex);
     }
 
     private ObjectMapper buildObjectMapper() {
@@ -84,7 +98,6 @@ public class ComparatorStateService {
     private void writeStateAtomically(ComparatorState state) throws IOException {
         Path targetFile = getStateFilePath();
         Path tempFile = targetFile.resolveSibling(STATE_FILE_NAME + ".tmp");
-
         objectMapper.writeValue(tempFile.toFile(), state);
         Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }

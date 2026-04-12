@@ -19,15 +19,20 @@ import javafx.util.Callback;
 import org.senatov.compare.DirectoryComparator;
 import org.senatov.model.CompareLineItem;
 import org.senatov.model.CompareLineItem.DiffStatus;
+import org.senatov.App;
 
 
 public final class DiffCellFactory
         implements Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
 
-    private static final String MONO =
-            "-fx-font-family:'JetBrains Mono','Menlo','Courier New',monospace;-fx-font-size:13;";
-    private static final String MONO_SMALL =
-            "-fx-font-family:'JetBrains Mono','Menlo','Courier New',monospace;-fx-font-size:12;";
+    private static String monoStyle() {
+        return "-fx-font-family:'" + App.sfProDisplayFamily() + "','Helvetica Neue',Arial,sans-serif;-fx-font-size:14;-fx-font-weight:300;";
+    }
+
+
+    private static String monoSmallStyle() {
+        return "-fx-font-family:'" + App.sfProDisplayFamily() + "','Helvetica Neue',Arial,sans-serif;-fx-font-size:13;-fx-font-weight:300;";
+    }
     private static final int INDENT_PX = 18;
 
     private final boolean dirMode;
@@ -74,16 +79,16 @@ public final class DiffCellFactory
 
 
         DirCell() {
-            nameLabel.setStyle(MONO + "-fx-text-fill:" + TXT + ";");
+            nameLabel.setStyle(monoStyle() + "-fx-text-fill:" + TXT + ";");
             nameLabel.setMaxWidth(Double.MAX_VALUE);
             HBox.setHgrow(nameLabel, Priority.ALWAYS);
 
-            sizeLabel.setStyle(MONO_SMALL + "-fx-text-fill:#555;");
+            sizeLabel.setStyle(monoSmallStyle() + "-fx-text-fill:#555;");
             sizeLabel.setMinWidth(90);
             sizeLabel.setPrefWidth(90);
             sizeLabel.setAlignment(Pos.CENTER_RIGHT);
 
-            dateLabel.setStyle(MONO_SMALL + "-fx-text-fill:#777;");
+            dateLabel.setStyle(monoSmallStyle() + "-fx-text-fill:#777;");
             dateLabel.setMinWidth(140);
             dateLabel.setPrefWidth(140);
             dateLabel.setAlignment(Pos.CENTER_RIGHT);
@@ -123,7 +128,7 @@ public final class DiffCellFactory
             }
 
             nameLabel.setText(indent + marker + disclosure + icon + item.getText());
-            nameLabel.setStyle(MONO + "-fx-text-fill:" + fg + ";");
+            nameLabel.setStyle(monoStyle() + "-fx-text-fill:" + fg + ";");
             nameLabel.setPadding(new Insets(0, 0, 0, item.getIndentLevel() * INDENT_PX));
 
             // size + date from DirTreeNode data stored in text for files
@@ -168,7 +173,7 @@ public final class DiffCellFactory
 
             if (empty || item == null) {
                 setText(null);
-                setStyle(MONO + "-fx-background-color:transparent;");
+                setStyle(monoStyle() + "-fx-background-color:transparent;");
                 return;
             }
 
@@ -186,7 +191,7 @@ public final class DiffCellFactory
                 default -> bg = FILE_IDENTICAL;
             }
 
-            setStyle(MONO + "-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";");
+            setStyle(monoStyle() + "-fx-background-color:" + bg + ";-fx-text-fill:" + fg + ";");
         }
     }
 }

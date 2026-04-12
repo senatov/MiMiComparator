@@ -26,7 +26,14 @@
   Iakov Senatov, 2026
 -->
 
-<BorderPane prefHeight="1100" prefWidth="1100" style="-fx-font-family:'SF Pro Text'; -fx-font-size:14; -fx-font-weight:100;" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.senatov.MainController">
+<BorderPane prefHeight="1100"
+            prefWidth="1100"
+            style="-fx-font-family:'SF Pro Text'; -fx-font-size:14; -fx-font-weight:100;"
+            styleClass="root-pane"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.senatov.MainController"
+>
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
     <top>
