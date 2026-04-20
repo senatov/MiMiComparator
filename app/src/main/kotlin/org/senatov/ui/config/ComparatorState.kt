@@ -17,6 +17,7 @@ data class ComparatorState(
     var rightInputPath: String = "",
     var isDirMode: Boolean = true,
     var isSyncScroll: Boolean = true,
+    var splitRatio: Double = 0.5,
     var isShowDirs: Boolean = true,
     var isShowEqual: Boolean = true,
     var isShowDifferent: Boolean = true,

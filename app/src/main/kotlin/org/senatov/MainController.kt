@@ -17,9 +17,11 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
+import javafx.scene.layout.Priority
 import javafx.scene.layout.VBox
 import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
+import javafx.stage.Popup
 import javafx.stage.Stage
 import org.apache.commons.lang3.StringUtils
 import org.senatov.cli.CliArgs
@@ -62,12 +64,14 @@ class MainController {
     @FXML private lateinit var rightListView: ListView<CompareLineItem>
     @FXML private lateinit var rightColumnHeader: HBox
     // --- center strip ---
+    @FXML private lateinit var contentBox: HBox
     @FXML private lateinit var centerStrip: VBox
     @FXML private lateinit var copyRightBtn: Button
     @FXML private lateinit var copyLeftBtn: Button
     @FXML private lateinit var diffBtn: Button
     @FXML private lateinit var equalBtn: Button
     @FXML private lateinit var deleteBtn: Button
+    @FXML private lateinit var swapBtn: Button
     // --- toolbar ---
     @FXML private lateinit var mainToolBar: ToolBar
     @FXML private lateinit var syncScrollToggle: ToggleButton
@@ -90,6 +94,9 @@ class MainController {
     private val stateService = ComparatorStateService()
     private var comparatorState: ComparatorState? = null
     private var restoringState = false
+    private var leftPanelRatio = 0.5
+    private val ratioPopupLabel = Label()
+    private val ratioPopup = Popup()
 
 
     @FXML
@@ -98,8 +105,10 @@ class MainController {
         comparatorState = stateService.load()
         installDiffCellFactories()
         setupClickToExpand()
-        addProgrammaticButtons()
+        addProgrammaticUi()
+        restoreUiFromState()
         setupSyncScroll()
+        setupResizableCenterStrip()
         restoreInputsFromState()
         updateCenterStripState()
         updateColumnHeaderVisibility()
@@ -196,15 +205,9 @@ class MainController {
     private fun applyFilter(items: List<CompareLineItem>, pattern: Pattern): List<CompareLineItem> =
         items.filter { it.isDirectory || pattern.matcher(it.text).find() }
 
-    // ═══ programmatic buttons ═══
-    private fun addProgrammaticButtons() {
-        val swapBtn = Button("⇄").apply {
-            prefWidth = 36.0; prefHeight = 28.0
-            style = "-fx-font-size:16; -fx-font-weight:bold;"
-            tooltip = Tooltip("Swap left ↔ right")
-            setOnAction { onSwapPanels() }
-        }
-        centerStrip.children.add(3, swapBtn)
+    // ═══ programmatic UI extras ═══
+    private fun addProgrammaticUi() {
+        configureToolbarButtons()
         val homeBtn = Button("🏠 Home").apply { setOnAction { onLoadHome() } }
         val paneIndex = mainToolBar.items.size - 2
         mainToolBar.items.add(paneIndex, Separator())
@@ -221,9 +224,98 @@ class MainController {
         }
         infoBox.children.addAll(javaVer, Separator(), osLabel)
         (statusLeft.parent as? HBox)?.children?.add(infoBox)
+        ratioPopupLabel.style = "-fx-background-color:#fff8c9; -fx-border-color:#d4c36a; -fx-border-radius:8; " +
+            "-fx-background-radius:8; -fx-padding:6 10 6 10; -fx-font-weight:700; -fx-text-fill:#5d4a00;"
+        ratioPopup.content.add(ratioPopupLabel)
+        ratioPopup.isAutoHide = false
+        ratioPopup.isHideOnEscape = false
     }
 
-    private fun onSwapPanels() {
+    private fun configureToolbarButtons() {
+        val actionButtonStyle = "-fx-font-size:14; -fx-font-weight:700;"
+        for (button in listOf(copyRightBtn, copyLeftBtn, diffBtn, equalBtn, deleteBtn, swapBtn)) {
+            button.prefHeight = 28.0
+            button.style = actionButtonStyle
+        }
+        diffBtn.style = "$actionButtonStyle -fx-text-fill:#b32020;"
+        equalBtn.style = "$actionButtonStyle -fx-text-fill:#1f7a1f;"
+    }
+
+    private fun restoreUiFromState() {
+        val state = comparatorState ?: return
+        restoringState = true
+        try {
+            syncScrollToggle.isSelected = state.isSyncScroll
+            setDirMode(state.isDirMode)
+            leftPanelRatio = state.splitRatio.coerceIn(0.15, 0.85)
+        } finally {
+            restoringState = false
+        }
+    }
+
+    private fun setupResizableCenterStrip() {
+        HBox.setHgrow(leftPanel, Priority.ALWAYS)
+        HBox.setHgrow(rightPanel, Priority.ALWAYS)
+        leftPanel.minWidth = 160.0
+        rightPanel.minWidth = 160.0
+
+        Platform.runLater {
+            applyPanelRatio(leftPanelRatio)
+            contentBox.widthProperty().addListener { _, _, _ -> applyPanelRatio(leftPanelRatio) }
+        }
+
+        centerStrip.addEventFilter(MouseEvent.MOUSE_PRESSED) { event ->
+            applyRatioFromPointer(event.sceneX)
+            showRatioPopup(event)
+            event.consume()
+        }
+        centerStrip.addEventFilter(MouseEvent.MOUSE_DRAGGED) { event ->
+            applyRatioFromPointer(event.sceneX)
+            showRatioPopup(event)
+            event.consume()
+        }
+        centerStrip.addEventFilter(MouseEvent.MOUSE_RELEASED) { _ ->
+            hideRatioPopup()
+            persistUiState()
+        }
+    }
+
+    private fun applyRatioFromPointer(sceneX: Double) {
+        val bounds = contentBox.localToScene(contentBox.boundsInLocal) ?: return
+        val usableWidth = bounds.width - centerStrip.width
+        if (usableWidth <= 0.0) return
+        val leftWidth = (sceneX - bounds.minX - centerStrip.width / 2.0).coerceIn(usableWidth * 0.15, usableWidth * 0.85)
+        applyPanelRatio(leftWidth / usableWidth)
+    }
+
+    private fun applyPanelRatio(ratio: Double) {
+        if (contentBox.width <= 0.0) return
+        leftPanelRatio = ratio.coerceIn(0.15, 0.85)
+        val usableWidth = (contentBox.width - centerStrip.width).coerceAtLeast(0.0)
+        if (usableWidth <= 0.0) return
+        leftPanel.prefWidth = usableWidth * leftPanelRatio
+        rightPanel.prefWidth = usableWidth * (1.0 - leftPanelRatio)
+        updateRatioPopupText()
+    }
+
+    private fun showRatioPopup(event: MouseEvent) {
+        updateRatioPopupText()
+        val stage = centerStrip.scene?.window ?: return
+        if (!ratioPopup.isShowing) ratioPopup.show(stage)
+        ratioPopup.x = event.screenX + 16.0
+        ratioPopup.y = event.screenY - 18.0
+    }
+
+    private fun updateRatioPopupText() {
+        val leftPercent = (leftPanelRatio * 100.0).toInt()
+        ratioPopupLabel.text = "$leftPercent% / ${100 - leftPercent}%"
+    }
+
+    private fun hideRatioPopup() {
+        if (ratioPopup.isShowing) ratioPopup.hide()
+    }
+
+    @FXML private fun onSwapPanels() {
         log.info("swapping panels")
         val tmp = leftPath; leftPath = rightPath; rightPath = tmp
         leftPathField.text = leftPath?.toString() ?: ""
@@ -235,12 +327,13 @@ class MainController {
         val tmpM = leftTreeModel; leftTreeModel = rightTreeModel; rightTreeModel = tmpM
         val tmpS = statusLeft.text; statusLeft.text = statusRight.text; statusRight.text = tmpS
         statusCenter.text = STATUS_SWAPPED
+        persistInputPaths()
     }
 
     private fun onLoadHome() {
         val home = System.getProperty("user.home")
         if (home.isNotBlank()) {
-            leftPath = Path.of(home)
+            applyLeftPath(Path.of(home))
             leftPathField.text = StringUtils.abbreviate(home, 60)
             loadDirectoryPreview(leftPath!!, leftListView, isLeft = true)
         }
@@ -325,7 +418,10 @@ class MainController {
     @FXML private fun onQuit() { Platform.exit() }
     @FXML private fun onToggleIdentical() { onCompare() }
 
-    @FXML private fun onToggleDirMode() { setDirMode(!dirMode) }
+    @FXML private fun onToggleDirMode() {
+        setDirMode(!dirMode)
+        persistUiState()
+    }
 
     private fun setDirMode(enabled: Boolean) {
         dirMode = enabled
@@ -387,6 +483,18 @@ class MainController {
         val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
         state.leftInputPath = leftPath?.toString() ?: ""
         state.rightInputPath = rightPath?.toString() ?: ""
+        state.isDirMode = dirMode
+        state.isSyncScroll = syncScrollToggle.isSelected
+        state.splitRatio = leftPanelRatio
+        stateService.save(state)
+    }
+
+    private fun persistUiState() {
+        if (restoringState) return
+        val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
+        state.isDirMode = dirMode
+        state.isSyncScroll = syncScrollToggle.isSelected
+        state.splitRatio = leftPanelRatio
         stateService.save(state)
     }
 
@@ -396,7 +504,7 @@ class MainController {
     @FXML private fun onShowDiff() { statusCenter.text = "showing diffs only" }
     @FXML private fun onShowEqual() { statusCenter.text = "showing identical only" }
     @FXML private fun onDeleteSelected() { statusCenter.text = "🗑 delete (stub)" }
-    @FXML private fun onSyncScroll() {}
+    @FXML private fun onSyncScroll() { persistUiState() }
     @FXML private fun onCopyPathLeft() { leftPath?.let { copyToClipboard(it.toString()) } }
     @FXML private fun onCopyPathRight() { rightPath?.let { copyToClipboard(it.toString()) } }
 
