@@ -12,7 +12,7 @@ import org.gradle.jvm.tasks.Jar
 
 plugins {
     application
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.3.20"
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -21,11 +21,11 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 javafx {
-    version = "21.0.7"
+    version = "26"
     modules = listOf("javafx.controls", "javafx.fxml")
 }
 
