@@ -1,5 +1,5 @@
 package org.senatov.helpers.log
-
+import org.slf4j.Logger
 
 object LogHelper {
 
@@ -32,5 +32,9 @@ object LogHelper {
             }
         }
         return "unknownClass.unknownMethod"
+    }
+
+    inline fun Logger.enter() {
+        debug("[{}]", LogHelper.method())
     }
 }

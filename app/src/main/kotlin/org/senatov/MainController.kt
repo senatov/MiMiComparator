@@ -28,6 +28,7 @@ import org.senatov.cli.CliArgs
 import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
 import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogHelper.enter
 import org.senatov.model.CompareLineItem
 import org.senatov.model.tree.DirTreeModel
 import org.senatov.ui.cell.DiffCellFactory
@@ -53,36 +54,64 @@ class MainController {
     }
 
     // --- left panel ---
-    @FXML private lateinit var leftPanel: VBox
-    @FXML private lateinit var leftPathField: TextField
-    @FXML private lateinit var leftListView: ListView<CompareLineItem>
-    @FXML private lateinit var leftColumnHeader: HBox
+    @FXML
+    private lateinit var leftPanel: VBox
+    @FXML
+    private lateinit var leftPathField: TextField
+    @FXML
+    private lateinit var leftListView: ListView<CompareLineItem>
+    @FXML
+    private lateinit var leftColumnHeader: HBox
 
     // --- right panel ---
-    @FXML private lateinit var rightPanel: VBox
-    @FXML private lateinit var rightPathField: TextField
-    @FXML private lateinit var rightListView: ListView<CompareLineItem>
-    @FXML private lateinit var rightColumnHeader: HBox
+    @FXML
+    private lateinit var rightPanel: VBox
+    @FXML
+    private lateinit var rightPathField: TextField
+    @FXML
+    private lateinit var rightListView: ListView<CompareLineItem>
+    @FXML
+    private lateinit var rightColumnHeader: HBox
+
     // --- center strip ---
-    @FXML private lateinit var contentBox: HBox
-    @FXML private lateinit var centerStrip: VBox
-    @FXML private lateinit var copyRightBtn: Button
-    @FXML private lateinit var copyLeftBtn: Button
-    @FXML private lateinit var diffBtn: Button
-    @FXML private lateinit var equalBtn: Button
-    @FXML private lateinit var deleteBtn: Button
-    @FXML private lateinit var swapBtn: Button
+    @FXML
+    private lateinit var contentBox: HBox
+    @FXML
+    private lateinit var centerStrip: VBox
+    @FXML
+    private lateinit var copyRightBtn: Button
+    @FXML
+    private lateinit var copyLeftBtn: Button
+    @FXML
+    private lateinit var diffBtn: Button
+    @FXML
+    private lateinit var equalBtn: Button
+    @FXML
+    private lateinit var deleteBtn: Button
+    @FXML
+    private lateinit var swapBtn: Button
+
     // --- toolbar ---
-    @FXML private lateinit var mainToolBar: ToolBar
-    @FXML private lateinit var syncScrollToggle: ToggleButton
-    @FXML private lateinit var dirModeToggle: ToggleButton
-    @FXML private lateinit var showIdenticalCheck: CheckMenuItem
-    @FXML private lateinit var showDirsCheck: CheckMenuItem
-    @FXML private lateinit var diffCountLabel: Label
-    @FXML private lateinit var filterField: TextField
-    @FXML private lateinit var statusLeft: Label
-    @FXML private lateinit var statusCenter: Label
-    @FXML private lateinit var statusRight: Label
+    @FXML
+    private lateinit var mainToolBar: ToolBar
+    @FXML
+    private lateinit var syncScrollToggle: ToggleButton
+    @FXML
+    private lateinit var dirModeToggle: ToggleButton
+    @FXML
+    private lateinit var showIdenticalCheck: CheckMenuItem
+    @FXML
+    private lateinit var showDirsCheck: CheckMenuItem
+    @FXML
+    private lateinit var diffCountLabel: Label
+    @FXML
+    private lateinit var filterField: TextField
+    @FXML
+    private lateinit var statusLeft: Label
+    @FXML
+    private lateinit var statusCenter: Label
+    @FXML
+    private lateinit var statusRight: Label
 
     private var leftPath: Path? = null
     private var rightPath: Path? = null
@@ -123,13 +152,16 @@ class MainController {
 
 
     private fun executeCliAutoCompare() {
+        log.enter()
         val cli = pendingCliArgs ?: return
         restoringState = true
         try {
             cli.left()?.let { applyLeftPath(it) }
             cli.right()?.let { applyRightPath(it) }
             if (cli.hasExplicitDirMode()) setDirMode(cli.isDirMode)
-        } finally { restoringState = false }
+        } finally {
+            restoringState = false
+        }
         persistInputPaths()
         updateCenterStripState()
         if (cli.autoCompare) onCompare()
@@ -137,7 +169,7 @@ class MainController {
 
 
     private fun installDiffCellFactories() {
-        log.debug("[{}] dirMode={}", LogHelper.method(), dirMode)
+        log.enter()
         val factory = DiffCellFactory(dirMode)
         leftListView.cellFactory = factory
         rightListView.cellFactory = factory
@@ -145,12 +177,14 @@ class MainController {
 
 
     private fun setupClickToExpand() {
+        log.enter()
         leftListView.setOnMouseClicked { e -> handleTreeClick(e, leftListView, true) }
         rightListView.setOnMouseClicked { e -> handleTreeClick(e, rightListView, false) }
     }
 
 
     private fun handleTreeClick(event: MouseEvent, listView: ListView<CompareLineItem>, isLeft: Boolean) {
+        log.enter()
         if (!dirMode || event.clickCount < 2) return
         val item = listView.selectionModel.selectedItem ?: return
         if (!item.isDirectory) return
@@ -163,6 +197,7 @@ class MainController {
 
 
     private fun refreshTreeViews() {
+        log.enter()
         val lt = leftTreeModel ?: return
         val rt = rightTreeModel ?: return
         var leftItems = lt.toFlatList()
@@ -184,13 +219,16 @@ class MainController {
     }
 
     // ═══ filter ═══
-    @FXML private fun onFilterChanged() {
+    @FXML
+    private fun onFilterChanged() {
+        log.enter()
         log.info("filter changed: '{}'", filterField.text)
         if (dirMode && leftTreeModel != null) refreshTreeViews()
         else if (!dirMode) onCompare()
     }
 
     private fun buildFilterPattern(filterText: String): Pattern {
+        log.enter()
         val sb = StringBuilder()
         for (part in filterText.split("[,;\\s]+".toRegex())) {
             val trimmed = part.trim()
@@ -207,6 +245,7 @@ class MainController {
 
     // ═══ programmatic UI extras ═══
     private fun addProgrammaticUi() {
+        log.enter()
         configureToolbarButtons()
         val homeBtn = Button("🏠 Home").apply { setOnAction { onLoadHome() } }
         val paneIndex = mainToolBar.items.size - 2
@@ -225,13 +264,14 @@ class MainController {
         infoBox.children.addAll(javaVer, Separator(), osLabel)
         (statusLeft.parent as? HBox)?.children?.add(infoBox)
         ratioPopupLabel.style = "-fx-background-color:#fff8c9; -fx-border-color:#d4c36a; -fx-border-radius:8; " +
-            "-fx-background-radius:8; -fx-padding:6 10 6 10; -fx-font-weight:700; -fx-text-fill:#5d4a00;"
+                "-fx-background-radius:8; -fx-padding:6 10 6 10; -fx-font-weight:700; -fx-text-fill:#5d4a00;"
         ratioPopup.content.add(ratioPopupLabel)
         ratioPopup.isAutoHide = false
         ratioPopup.isHideOnEscape = false
     }
 
     private fun configureToolbarButtons() {
+        log.enter()
         val actionButtonStyle = "-fx-font-size:14; -fx-font-weight:700;"
         for (button in listOf(copyRightBtn, copyLeftBtn, diffBtn, equalBtn, deleteBtn, swapBtn)) {
             button.prefHeight = 28.0
@@ -242,6 +282,7 @@ class MainController {
     }
 
     private fun restoreUiFromState() {
+        log.enter()
         val state = comparatorState ?: return
         restoringState = true
         try {
@@ -315,7 +356,8 @@ class MainController {
         if (ratioPopup.isShowing) ratioPopup.hide()
     }
 
-    @FXML private fun onSwapPanels() {
+    @FXML
+    private fun onSwapPanels() {
         log.info("swapping panels")
         val tmp = leftPath; leftPath = rightPath; rightPath = tmp
         leftPathField.text = leftPath?.toString() ?: ""
@@ -369,24 +411,32 @@ class MainController {
     }
 
     // ═══ menu / toolbar actions ═══
-    @FXML private fun onOpenLeft() {
+    @FXML
+    private fun onOpenLeft() {
         chooseFileOrDir("Open Left")?.let { p ->
             applyLeftPath(p)
             loadDirectoryPreview(p, leftListView, isLeft = true)
         }
     }
 
-    @FXML private fun onOpenRight() {
+    @FXML
+    private fun onOpenRight() {
         chooseFileOrDir("Open Right")?.let { p ->
             applyRightPath(p)
             loadDirectoryPreview(p, rightListView, isLeft = false)
         }
     }
 
-    @FXML private fun onCompare() {
-        val lp = leftPath; val rp = rightPath
-        if (lp == null || rp == null) { showAlert("Load both sides first."); return }
-        if (lp == rp) { showAlert("Both sides point to the same location. Comparing them is pointless 🙄"); return }
+    @FXML
+    private fun onCompare() {
+        val lp = leftPath;
+        val rp = rightPath
+        if (lp == null || rp == null) {
+            showAlert("Load both sides first."); return
+        }
+        if (lp == rp) {
+            showAlert("Both sides point to the same location. Comparing them is pointless 🙄"); return
+        }
         log.info("compare: dir={} L={} R={}", dirMode, lp, rp)
         try {
             if (dirMode) {
@@ -410,15 +460,24 @@ class MainController {
         }
     }
 
-    @FXML private fun onRefresh() {
+    @FXML
+    private fun onRefresh() {
         leftPath?.let { loadDirectoryPreview(it, leftListView, isLeft = true) }
         rightPath?.let { loadDirectoryPreview(it, rightListView, isLeft = false) }
     }
 
-    @FXML private fun onQuit() { Platform.exit() }
-    @FXML private fun onToggleIdentical() { onCompare() }
+    @FXML
+    private fun onQuit() {
+        Platform.exit()
+    }
 
-    @FXML private fun onToggleDirMode() {
+    @FXML
+    private fun onToggleIdentical() {
+        onCompare()
+    }
+
+    @FXML
+    private fun onToggleDirMode() {
         setDirMode(!dirMode)
         persistUiState()
     }
@@ -433,13 +492,15 @@ class MainController {
         if (!restoringState) persistInputPaths()
     }
 
-    @FXML private fun onExpandAll() {
+    @FXML
+    private fun onExpandAll() {
         log.info("expand all")
         leftTreeModel?.expandAll(); rightTreeModel?.expandAll()
         refreshTreeViews()
     }
 
-    @FXML private fun onCollapseAll() {
+    @FXML
+    private fun onCollapseAll() {
         log.info("collapse all")
         leftTreeModel?.collapseAll(); rightTreeModel?.collapseAll()
         refreshTreeViews()
@@ -451,16 +512,22 @@ class MainController {
         try {
             restoreSavedPath(state.leftInputPath, isLeft = true)
             restoreSavedPath(state.rightInputPath, isLeft = false)
-        } finally { restoringState = false }
+        } finally {
+            restoringState = false
+        }
         persistInputPaths()
     }
 
     private fun restoreSavedPath(rawPath: String, isLeft: Boolean) {
+        log.info("restoreSavedPath()")
         if (rawPath.isBlank()) return
         try {
             val restored = Path.of(rawPath)
-            if (isLeft) { applyLeftPath(restored); loadDirectoryPreview(restored, leftListView, true) }
-            else { applyRightPath(restored); loadDirectoryPreview(restored, rightListView, false) }
+            if (isLeft) {
+                applyLeftPath(restored); loadDirectoryPreview(restored, leftListView, true)
+            } else {
+                applyRightPath(restored); loadDirectoryPreview(restored, rightListView, false)
+            }
         } catch (ex: Exception) {
             log.warn("failed to restore {} input path: {}", if (isLeft) "left" else "right", rawPath, ex)
         }
@@ -499,22 +566,54 @@ class MainController {
     }
 
     // ═══ center strip stubs ═══
-    @FXML private fun onCopyToRight() { statusCenter.text = "→ copy to right (stub)" }
-    @FXML private fun onCopyToLeft() { statusCenter.text = "← copy to left (stub)" }
-    @FXML private fun onShowDiff() { statusCenter.text = "showing diffs only" }
-    @FXML private fun onShowEqual() { statusCenter.text = "showing identical only" }
-    @FXML private fun onDeleteSelected() { statusCenter.text = "🗑 delete (stub)" }
-    @FXML private fun onSyncScroll() { persistUiState() }
-    @FXML private fun onCopyPathLeft() { leftPath?.let { copyToClipboard(it.toString()) } }
-    @FXML private fun onCopyPathRight() { rightPath?.let { copyToClipboard(it.toString()) } }
+    @FXML
+    private fun onCopyToRight() {
+        statusCenter.text = "→ copy to right (stub)"
+    }
 
-    @FXML private fun onAbout() {
+    @FXML
+    private fun onCopyToLeft() {
+        statusCenter.text = "← copy to left (stub)"
+    }
+
+    @FXML
+    private fun onShowDiff() {
+        statusCenter.text = "showing diffs only"
+    }
+
+    @FXML
+    private fun onShowEqual() {
+        statusCenter.text = "showing identical only"
+    }
+
+    @FXML
+    private fun onDeleteSelected() {
+        statusCenter.text = "🗑 delete (stub)"
+    }
+
+    @FXML
+    private fun onSyncScroll() {
+        persistUiState()
+    }
+
+    @FXML
+    private fun onCopyPathLeft() {
+        leftPath?.let { copyToClipboard(it.toString()) }
+    }
+
+    @FXML
+    private fun onCopyPathRight() {
+        rightPath?.let { copyToClipboard(it.toString()) }
+    }
+
+    @FXML
+    private fun onAbout() {
         Alert(Alert.AlertType.INFORMATION).apply {
             title = "About"; headerText = "MiMiComparator"
             contentText = "Dual-pane file & directory comparator.\n" +
-                "Libs: Log4j2 + Kotlin + Apache Commons + Jackson\n" +
-                "Theme: AtlantaFX Cupertino\n" +
-                "© 2026 Iakov Senatov"
+                    "Libs: Log4j2 + Kotlin + Apache Commons + Jackson\n" +
+                    "Theme: AtlantaFX Cupertino\n" +
+                    "© 2026 Iakov Senatov"
         }.showAndWait()
     }
 
