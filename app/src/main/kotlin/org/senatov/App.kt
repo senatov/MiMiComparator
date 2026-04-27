@@ -18,6 +18,7 @@ import javafx.stage.Stage
 import javafx.util.Duration
 import org.senatov.cli.CliArgs
 import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
 import org.senatov.ui.config.ComparatorState
 import org.senatov.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
@@ -48,14 +49,16 @@ class App : Application() {
             "/fonts/SF-Pro-Display-ThinItalic.otf"
         )
         private const val FONT_PRELOAD_SIZE = 14.0
-        @Volatile var sfProDisplayFamily: String = "SF Pro Display"
+
+        @Volatile
+        var sfProDisplayFamily: String = "SF Pro Display"
             private set
         private var cliArgs: CliArgs? = null
 
         @JvmStatic
         fun main(args: Array<String>) {
             val log = LoggerFactory.getLogger(App::class.java)
-            log.info("MiMiComparator starting...")
+            log.info(LogTag.APP, "starting args={}", args.size)
             cliArgs = CliArgs.parse(args.toList())
             launch(App::class.java, *args)
         }
@@ -64,7 +67,7 @@ class App : Application() {
     }
 
     override fun start(stage: Stage) {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.APP, "[{}]", LogHelper.method())
         Application.setUserAgentStylesheet(CupertinoLight().userAgentStylesheet)
         preloadEmbeddedFonts()
         appState = stateService.load()
@@ -79,12 +82,15 @@ class App : Application() {
         installStageAutosave(stage)
         stage.show()
         saveState(stage)
-        log.info("stage shown x={} y={} w={} h={}",
-            stage.x, stage.y, stage.width, stage.height)
+        log.info(
+            LogTag.APP,
+            "stage shown x={} y={} w={} h={}",
+            stage.x, stage.y, stage.width, stage.height
+        )
     }
 
     private fun applyAppIcons(stage: Stage) {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.APP, "[{}]", LogHelper.method())
         loadStageIcons(stage)
         applyTaskbarIcon()
     }
@@ -94,17 +100,17 @@ class App : Application() {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
                     stage.icons.add(Image(input))
-                    log.info("stage icon loaded: {}", res)
-                } ?: log.debug("app icon png not found: {}", res)
+                    log.debug(LogTag.IO, "stage icon loaded {}", res)
+                } ?: log.debug(LogTag.IO, "stage icon missing {}", res)
             } catch (ex: IOException) {
-                log.error("failed to read stage icon: {}", res, ex)
+                log.error(LogTag.IO, "stage icon read failed {}", res, ex)
             }
         }
     }
 
     private fun applyTaskbarIcon() {
         if (!Taskbar.isTaskbarSupported()) {
-            log.debug("taskbar is not supported on this platform"); return
+            log.debug(LogTag.APP, "taskbar unsupported"); return
         }
         try {
             val taskbar = Taskbar.getTaskbar()
@@ -112,37 +118,37 @@ class App : Application() {
                 App::class.java.getResourceAsStream(res)?.use { input ->
                     val image = ImageIO.read(input) ?: return@use
                     taskbar.iconImage = image
-                    log.info("taskbar icon applied: {}", res)
+                    log.debug(LogTag.APP, "taskbar icon applied {}", res)
                     return
                 }
             }
-            log.debug("no PNG icon applied; icns at {}", APP_ICON_ICNS_RESOURCE)
+            log.debug(LogTag.APP, "taskbar icon skipped icns={}", APP_ICON_ICNS_RESOURCE)
         } catch (ex: Exception) {
-            log.warn("failed to apply taskbar icon", ex)
+            log.warn(LogTag.APP, "taskbar icon failed", ex)
         }
     }
 
     private fun preloadEmbeddedFonts() {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.APP, "[{}]", LogHelper.method())
         for (res in SF_PRO_DISPLAY_FONT_RESOURCES) {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
                     val font = Font.loadFont(input, FONT_PRELOAD_SIZE)
                     if (font != null) {
                         sfProDisplayFamily = font.family
-                        log.info("embedded font loaded: res={} family='{}'", res, sfProDisplayFamily)
+                        log.debug(LogTag.IO, "font loaded {} family='{}'", res, sfProDisplayFamily)
                     } else {
-                        log.warn("failed to load embedded font: {}", res)
+                        log.warn(LogTag.IO, "font load failed {}", res)
                     }
-                } ?: log.debug("embedded font not found: {}", res)
+                } ?: log.debug(LogTag.IO, "font missing {}", res)
             } catch (ex: IOException) {
-                log.error("failed to read embedded font: {}", res, ex)
+                log.error(LogTag.IO, "font read failed {}", res, ex)
             }
         }
     }
 
     private fun applyStageState(stage: Stage, state: ComparatorState) {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
         val win = state.window
         stage.width = win.width; stage.height = win.height
         stage.x = win.x; stage.y = win.y
@@ -150,7 +156,7 @@ class App : Application() {
     }
 
     private fun installStageAutosave(stage: Stage) {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
         stage.xProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.yProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.widthProperty().addListener { _, _, _ -> requestStageAutosave() }
@@ -163,7 +169,9 @@ class App : Application() {
         stageAutosaveDebounce.setOnFinished { saveState(stage) }
     }
 
-    private fun requestStageAutosave() { stageAutosaveDebounce.playFromStart() }
+    private fun requestStageAutosave() {
+        stageAutosaveDebounce.playFromStart()
+    }
 
     private fun saveState(stage: Stage) {
         val state = appState ?: stateService.load().also { appState = it }
@@ -176,13 +184,13 @@ class App : Application() {
     }
 
     private fun loadRootView(): Parent {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.APP, "[{}]", LogHelper.method())
         val loader = FXMLLoader(App::class.java.getResource(FXML_FILE_NAME))
         if (loader.location == null) throw IOException("FXML resource not found: $FXML_FILE_NAME")
         val root: Parent = loader.load()
         val controller: MainController = loader.getController()
         cliArgs?.let { controller.applyCliArgs(it) }
-        log.debug("FXML loaded, CLI args injected")
+        log.debug(LogTag.APP, "FXML loaded")
         return root
     }
 }

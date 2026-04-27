@@ -8,6 +8,7 @@
 package org.senatov.compare
 
 import org.senatov.model.CompareLineItem.DiffStatus
+import org.senatov.helpers.log.LogTag
 import org.senatov.model.tree.DirTreeModel
 import org.senatov.model.tree.DirTreeNode
 import org.slf4j.LoggerFactory
@@ -30,20 +31,20 @@ object DirectoryComparator {
 
 
     fun compareTree(leftDir: Path, rightDir: Path): DirCompareResult {
-        log.info("tree compare: L={} R={}", leftDir, rightDir)
+        log.info(LogTag.COMPARE, "tree start L={} R={}", leftDir, rightDir)
         val leftRoots = mutableListOf<DirTreeNode>()
         val rightRoots = mutableListOf<DirTreeNode>()
-        val diffCounter = intArrayOf(0)
-        buildPairedTree(leftDir, rightDir, "", 0, leftRoots, rightRoots, diffCounter)
-        log.info("tree compare done: {} diffs", diffCounter[0])
-        return DirCompareResult(DirTreeModel(leftRoots), DirTreeModel(rightRoots), diffCounter[0])
+        val stats = TreeStats()
+        buildPairedTree(leftDir, rightDir, "", 0, leftRoots, rightRoots, stats)
+        log.info(LogTag.COMPARE, "tree done dirs={} files={} diffs={}", stats.dirs, stats.files, stats.diffs)
+        return DirCompareResult(DirTreeModel(leftRoots), DirTreeModel(rightRoots), stats.diffs)
     }
 
 
     private fun buildPairedTree(
         leftDir: Path, rightDir: Path, pathPrefix: String, depth: Int,
         leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
-        diffCounter: IntArray
+        stats: TreeStats
     ) {
         val leftNames = safeListNames(leftDir)
         val rightNames = safeListNames(rightDir)
@@ -56,12 +57,13 @@ object DirectoryComparator {
             val relPath = if (pathPrefix.isEmpty()) name else "$pathPrefix/$name"
             when {
                 inLeft && inRight -> handleBothSides(
-                    leftDir, rightDir, name, relPath, depth, leftNodes, rightNodes, diffCounter
+                    leftDir, rightDir, name, relPath, depth, leftNodes, rightNodes, stats
                 )
                 inLeft -> {
-                    diffCounter[0]++
+                    stats.diffs++
                     val lp = leftDir.resolve(name)
                     val isDir = Files.isDirectory(lp)
+                    stats.count(isDir)
                     leftNodes.add(
                         if (isDir) makeDirNode(name, relPath, depth, DiffStatus.ADDED)
                         else makeFileNode(name, relPath, lp, depth, DiffStatus.ADDED)
@@ -69,9 +71,10 @@ object DirectoryComparator {
                     rightNodes.add(makePlaceholder(name, relPath, depth, isDir))
                 }
                 else -> {
-                    diffCounter[0]++
+                    stats.diffs++
                     val rp = rightDir.resolve(name)
                     val isDir = Files.isDirectory(rp)
+                    stats.count(isDir)
                     leftNodes.add(makePlaceholder(name, relPath, depth, isDir))
                     rightNodes.add(
                         if (isDir) makeDirNode(name, relPath, depth, DiffStatus.ADDED)
@@ -86,7 +89,7 @@ object DirectoryComparator {
     private fun handleBothSides(
         leftDir: Path, rightDir: Path, name: String, relPath: String, depth: Int,
         leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
-        diffCounter: IntArray
+        stats: TreeStats
     ) {
         val lp = leftDir.resolve(name)
         val rp = rightDir.resolve(name)
@@ -94,19 +97,23 @@ object DirectoryComparator {
         val rIsDir = Files.isDirectory(rp)
         when {
             lIsDir && rIsDir -> {
+                stats.dirs++
                 val ln = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
                 val rn = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
-                buildPairedTree(lp, rp, relPath, depth + 1, ln.children, rn.children, diffCounter)
+                buildPairedTree(lp, rp, relPath, depth + 1, ln.children, rn.children, stats)
                 leftNodes.add(ln); rightNodes.add(rn)
             }
             !lIsDir && !rIsDir -> {
+                stats.files++
                 val st = compareFileAttrs(lp, rp)
-                if (st != DiffStatus.IDENTICAL) diffCounter[0]++
+                if (st != DiffStatus.IDENTICAL) stats.diffs++
                 leftNodes.add(makeFileNode(name, relPath, lp, depth, st))
                 rightNodes.add(makeFileNode(name, relPath, rp, depth, st))
             }
             else -> {
-                diffCounter[0]++
+                stats.diffs++
+                stats.count(lIsDir)
+                stats.count(rIsDir)
                 leftNodes.add(if (lIsDir) makeDirNode(name, relPath, depth, DiffStatus.MODIFIED)
                     else makeFileNode(name, relPath, lp, depth, DiffStatus.MODIFIED))
                 rightNodes.add(if (rIsDir) makeDirNode(name, relPath, depth, DiffStatus.MODIFIED)
@@ -123,7 +130,7 @@ object DirectoryComparator {
                 stream.map { it.fileName.toString() }.collect(java.util.stream.Collectors.toSet())
             }
         } catch (ex: IOException) {
-            log.warn("cant list dir {}: {}", dir, ex.message)
+            log.warn(LogTag.IO, "list failed {}: {}", dir, ex.message)
             emptySet()
         }
     }
@@ -135,7 +142,8 @@ object DirectoryComparator {
             val ra = Files.readAttributes(right, BasicFileAttributes::class.java)
             if (la.size() == ra.size() && la.lastModifiedTime() == ra.lastModifiedTime())
                 DiffStatus.IDENTICAL else DiffStatus.MODIFIED
-        } catch (_: IOException) {
+        } catch (ex: IOException) {
+            log.debug(LogTag.IO, "attr compare failed L={} R={}: {}", left, right, ex.message)
             DiffStatus.MODIFIED
         }
     }
@@ -149,8 +157,16 @@ object DirectoryComparator {
         return try {
             val attr = Files.readAttributes(filePath, BasicFileAttributes::class.java)
             DirTreeNode(name, relPath, false, attr.size(), attr.lastModifiedTime().toMillis(), status, depth)
-        } catch (_: IOException) {
+        } catch (ex: IOException) {
+            log.debug(LogTag.IO, "attr read failed {}: {}", filePath, ex.message)
             DirTreeNode(name, relPath, false, 0, 0, status, depth)
+        }
+    }
+
+
+    private data class TreeStats(var dirs: Int = 0, var files: Int = 0, var diffs: Int = 0) {
+        fun count(isDir: Boolean) {
+            if (isDir) dirs++ else files++
         }
     }
 

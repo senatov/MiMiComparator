@@ -28,7 +28,7 @@ import org.senatov.cli.CliArgs
 import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
 import org.senatov.helpers.log.LogHelper
-import org.senatov.helpers.log.LogHelper.enter
+import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.senatov.model.tree.DirTreeModel
 import org.senatov.ui.cell.DiffCellFactory
@@ -130,7 +130,7 @@ class MainController {
 
     @FXML
     private fun initialize() {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.UI, "[{}]", LogHelper.method())
         comparatorState = stateService.load()
         installDiffCellFactories()
         setupClickToExpand()
@@ -146,14 +146,14 @@ class MainController {
 
 
     fun applyCliArgs(args: CliArgs) {
-        log.info("CLI args: L={} R={} auto={}", args.leftPath, args.rightPath, args.autoCompare)
+        log.info(LogTag.CLI, "args L={} R={} auto={}", args.leftPath, args.rightPath, args.autoCompare)
         pendingCliArgs = args
     }
 
 
     private fun executeCliAutoCompare() {
-        log.enter()
         val cli = pendingCliArgs ?: return
+        log.info(LogTag.CLI, "apply auto={} dirExplicit={}", cli.autoCompare, cli.hasExplicitDirMode())
         restoringState = true
         try {
             cli.left()?.let { applyLeftPath(it) }
@@ -169,7 +169,6 @@ class MainController {
 
 
     private fun installDiffCellFactories() {
-        log.enter()
         val factory = DiffCellFactory(dirMode)
         leftListView.cellFactory = factory
         rightListView.cellFactory = factory
@@ -177,19 +176,17 @@ class MainController {
 
 
     private fun setupClickToExpand() {
-        log.enter()
         leftListView.setOnMouseClicked { e -> handleTreeClick(e, leftListView, true) }
         rightListView.setOnMouseClicked { e -> handleTreeClick(e, rightListView, false) }
     }
 
 
     private fun handleTreeClick(event: MouseEvent, listView: ListView<CompareLineItem>, isLeft: Boolean) {
-        log.enter()
         if (!dirMode || event.clickCount < 2) return
         val item = listView.selectionModel.selectedItem ?: return
         if (!item.isDirectory) return
         val relPath = item.relativePath
-        log.info("toggle expand: {} side={}", relPath, if (isLeft) "L" else "R")
+        log.debug(LogTag.UI, "toggle {} side={}", relPath, if (isLeft) "L" else "R")
         leftTreeModel?.toggleExpand(relPath)
         rightTreeModel?.toggleExpand(relPath)
         refreshTreeViews()
@@ -197,7 +194,6 @@ class MainController {
 
 
     private fun refreshTreeViews() {
-        log.enter()
         val lt = leftTreeModel ?: return
         val rt = rightTreeModel ?: return
         var leftItems = lt.toFlatList()
@@ -210,6 +206,7 @@ class MainController {
         }
         leftListView.items = FXCollections.observableArrayList(leftItems)
         rightListView.items = FXCollections.observableArrayList(rightItems)
+        log.debug(LogTag.UI, "tree view L={} R={} filter='{}'", leftItems.size, rightItems.size, filterText)
     }
 
 
@@ -221,14 +218,12 @@ class MainController {
     // ═══ filter ═══
     @FXML
     private fun onFilterChanged() {
-        log.enter()
-        log.info("filter changed: '{}'", filterField.text)
+        log.debug(LogTag.UI, "filter '{}'", filterField.text)
         if (dirMode && leftTreeModel != null) refreshTreeViews()
         else if (!dirMode) onCompare()
     }
 
     private fun buildFilterPattern(filterText: String): Pattern {
-        log.enter()
         val sb = StringBuilder()
         for (part in filterText.split("[,;\\s]+".toRegex())) {
             val trimmed = part.trim()
@@ -245,7 +240,6 @@ class MainController {
 
     // ═══ programmatic UI extras ═══
     private fun addProgrammaticUi() {
-        log.enter()
         configureToolbarButtons()
         val homeBtn = Button("🏠 Home").apply { setOnAction { onLoadHome() } }
         val paneIndex = mainToolBar.items.size - 2
@@ -271,7 +265,6 @@ class MainController {
     }
 
     private fun configureToolbarButtons() {
-        log.enter()
         val actionButtonStyle = "-fx-font-size:14; -fx-font-weight:700;"
         for (button in listOf(copyRightBtn, copyLeftBtn, diffBtn, equalBtn, deleteBtn, swapBtn)) {
             button.prefHeight = 28.0
@@ -282,8 +275,8 @@ class MainController {
     }
 
     private fun restoreUiFromState() {
-        log.enter()
         val state = comparatorState ?: return
+        log.debug(LogTag.STATE, "restore UI dir={} sync={} ratio={}", state.isDirMode, state.isSyncScroll, state.splitRatio)
         restoringState = true
         try {
             syncScrollToggle.isSelected = state.isSyncScroll
@@ -358,7 +351,7 @@ class MainController {
 
     @FXML
     private fun onSwapPanels() {
-        log.info("swapping panels")
+        log.info(LogTag.UI, "swap panels")
         val tmp = leftPath; leftPath = rightPath; rightPath = tmp
         leftPathField.text = leftPath?.toString() ?: ""
         rightPathField.text = rightPath?.toString() ?: ""
@@ -375,6 +368,7 @@ class MainController {
     private fun onLoadHome() {
         val home = System.getProperty("user.home")
         if (home.isNotBlank()) {
+            log.info(LogTag.UI, "load home {}", home)
             applyLeftPath(Path.of(home))
             leftPathField.text = StringUtils.abbreviate(home, 60)
             loadDirectoryPreview(leftPath!!, leftListView, isLeft = true)
@@ -414,6 +408,7 @@ class MainController {
     @FXML
     private fun onOpenLeft() {
         chooseFileOrDir("Open Left")?.let { p ->
+            log.info(LogTag.UI, "open left {}", p)
             applyLeftPath(p)
             loadDirectoryPreview(p, leftListView, isLeft = true)
         }
@@ -422,6 +417,7 @@ class MainController {
     @FXML
     private fun onOpenRight() {
         chooseFileOrDir("Open Right")?.let { p ->
+            log.info(LogTag.UI, "open right {}", p)
             applyRightPath(p)
             loadDirectoryPreview(p, rightListView, isLeft = false)
         }
@@ -432,12 +428,14 @@ class MainController {
         val lp = leftPath;
         val rp = rightPath
         if (lp == null || rp == null) {
+            log.warn(LogTag.COMPARE, "compare blocked: missing side L={} R={}", lp, rp)
             showAlert("Load both sides first."); return
         }
         if (lp == rp) {
+            log.warn(LogTag.COMPARE, "compare blocked: same path {}", lp)
             showAlert("Both sides point to the same location. Comparing them is pointless 🙄"); return
         }
-        log.info("compare: dir={} L={} R={}", dirMode, lp, rp)
+        log.info(LogTag.COMPARE, "compare dir={} L={} R={}", dirMode, lp, rp)
         try {
             if (dirMode) {
                 val result = DirectoryComparator.compareTree(lp, rp)
@@ -455,24 +453,27 @@ class MainController {
                 statusCenter.text = result.statusText()
             }
         } catch (ex: IOException) {
-            log.error("compare failed: {}", ex.message)
+            log.error(LogTag.COMPARE, "compare failed: {}", ex.message)
             showAlert("Compare failed: ${ex.message}")
         }
     }
 
     @FXML
     private fun onRefresh() {
+        log.info(LogTag.UI, "refresh")
         leftPath?.let { loadDirectoryPreview(it, leftListView, isLeft = true) }
         rightPath?.let { loadDirectoryPreview(it, rightListView, isLeft = false) }
     }
 
     @FXML
     private fun onQuit() {
+        log.info(LogTag.APP, "quit")
         Platform.exit()
     }
 
     @FXML
     private fun onToggleIdentical() {
+        log.info(LogTag.UI, "show identical {}", showIdenticalCheck.isSelected)
         onCompare()
     }
 
@@ -483,6 +484,7 @@ class MainController {
     }
 
     private fun setDirMode(enabled: Boolean) {
+        if (dirMode != enabled) log.info(LogTag.UI, "mode {}", if (enabled) "dir" else "file")
         dirMode = enabled
         dirModeToggle.isSelected = enabled
         showDirsCheck.isSelected = enabled
@@ -494,14 +496,14 @@ class MainController {
 
     @FXML
     private fun onExpandAll() {
-        log.info("expand all")
+        log.info(LogTag.UI, "expand all")
         leftTreeModel?.expandAll(); rightTreeModel?.expandAll()
         refreshTreeViews()
     }
 
     @FXML
     private fun onCollapseAll() {
-        log.info("collapse all")
+        log.info(LogTag.UI, "collapse all")
         leftTreeModel?.collapseAll(); rightTreeModel?.collapseAll()
         refreshTreeViews()
     }
@@ -519,8 +521,8 @@ class MainController {
     }
 
     private fun restoreSavedPath(rawPath: String, isLeft: Boolean) {
-        log.info("restoreSavedPath()")
         if (rawPath.isBlank()) return
+        log.debug(LogTag.STATE, "restore {} path {}", if (isLeft) "left" else "right", rawPath)
         try {
             val restored = Path.of(rawPath)
             if (isLeft) {
@@ -529,19 +531,21 @@ class MainController {
                 applyRightPath(restored); loadDirectoryPreview(restored, rightListView, false)
             }
         } catch (ex: Exception) {
-            log.warn("failed to restore {} input path: {}", if (isLeft) "left" else "right", rawPath, ex)
+            log.warn(LogTag.STATE, "restore {} failed {}", if (isLeft) "left" else "right", rawPath, ex)
         }
     }
 
     private fun applyLeftPath(path: Path) {
         leftPath = path
         leftPathField.text = path.toString()
+        log.debug(LogTag.UI, "left path {}", path)
         if (!restoringState) persistInputPaths()
     }
 
     private fun applyRightPath(path: Path) {
         rightPath = path
         rightPathField.text = path.toString()
+        log.debug(LogTag.UI, "right path {}", path)
         if (!restoringState) persistInputPaths()
     }
 
@@ -568,31 +572,37 @@ class MainController {
     // ═══ center strip stubs ═══
     @FXML
     private fun onCopyToRight() {
+        log.info(LogTag.UI, "copy right requested")
         statusCenter.text = "→ copy to right (stub)"
     }
 
     @FXML
     private fun onCopyToLeft() {
+        log.info(LogTag.UI, "copy left requested")
         statusCenter.text = "← copy to left (stub)"
     }
 
     @FXML
     private fun onShowDiff() {
+        log.info(LogTag.UI, "show diffs only")
         statusCenter.text = "showing diffs only"
     }
 
     @FXML
     private fun onShowEqual() {
+        log.info(LogTag.UI, "show equal only")
         statusCenter.text = "showing identical only"
     }
 
     @FXML
     private fun onDeleteSelected() {
+        log.info(LogTag.UI, "delete requested")
         statusCenter.text = "🗑 delete (stub)"
     }
 
     @FXML
     private fun onSyncScroll() {
+        log.info(LogTag.UI, "sync scroll {}", syncScrollToggle.isSelected)
         persistUiState()
     }
 
@@ -619,13 +629,15 @@ class MainController {
 
     // ═══ file / dir loading ═══
     private fun chooseFileOrDir(title: String): Path? {
-        return if (dirMode) {
+        val chosen = if (dirMode) {
             DirectoryChooser().apply { this.title = title }
                 .showDialog(getStage())?.toPath()
         } else {
             FileChooser().apply { this.title = title }
                 .showOpenDialog(getStage())?.toPath()
         }
+        log.debug(LogTag.UI, "chooser '{}' -> {}", title, chosen)
+        return chosen
     }
 
     private fun loadDirectoryPreview(path: Path, listView: ListView<CompareLineItem>, isLeft: Boolean) {
@@ -635,6 +647,7 @@ class MainController {
                 val entries = listDirEntries(path)
                 listView.items = FXCollections.observableArrayList(entries)
                 updateStatus(isLeft, "${entries.size} entries")
+                log.info(LogTag.IO, "preview {} dir entries={}", if (isLeft) "left" else "right", entries.size)
             } else {
                 setDirMode(false)
                 val lines = Files.readAllLines(path)
@@ -643,9 +656,10 @@ class MainController {
                 }
                 listView.items = FXCollections.observableArrayList(items)
                 updateStatus(isLeft, "${lines.size} lines")
+                log.info(LogTag.IO, "preview {} file lines={}", if (isLeft) "left" else "right", lines.size)
             }
         } catch (ex: IOException) {
-            log.error("cant read {}: {}", path, ex.message)
+            log.error(LogTag.IO, "read failed {}: {}", path, ex.message)
             showAlert("Can't read: $path\n${ex.message}")
         }
         updateCenterStripState()
@@ -679,5 +693,6 @@ class MainController {
     private fun copyToClipboard(text: String) {
         Clipboard.getSystemClipboard().setContent(ClipboardContent().apply { putString(text) })
         statusCenter.text = STATUS_CLIPBOARD_COPIED
+        log.info(LogTag.UI, "clipboard copied chars={}", text.length)
     }
 }

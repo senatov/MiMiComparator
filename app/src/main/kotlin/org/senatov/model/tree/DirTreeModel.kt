@@ -6,6 +6,7 @@
  */
 package org.senatov.model.tree
 
+import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.slf4j.LoggerFactory
 
@@ -19,23 +20,23 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
     fun toggleExpand(relativePath: String) {
         if (relativePath in expandedPaths) {
             expandedPaths.remove(relativePath)
-            log.debug("collapsed: {}", relativePath)
+            log.debug(LogTag.UI, "collapsed {}", relativePath)
         } else {
             expandedPaths.add(relativePath)
-            log.debug("expanded: {}", relativePath)
+            log.debug(LogTag.UI, "expanded {}", relativePath)
         }
     }
 
 
     fun expandAll() {
         expandAllRecursive(roots)
-        log.info("expanded all dirs, count={}", expandedPaths.size)
+        log.info(LogTag.UI, "expanded all count={}", expandedPaths.size)
     }
 
 
     fun collapseAll() {
         expandedPaths.clear()
-        log.info("collapsed all dirs")
+        log.info(LogTag.UI, "collapsed all")
     }
 
 

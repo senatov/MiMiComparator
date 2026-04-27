@@ -17,7 +17,6 @@ import javafx.scene.layout.Priority
 import javafx.util.Callback
 import org.senatov.App
 import org.senatov.compare.DirectoryComparator
-import org.senatov.helpers.log.LogHelper.enter
 import org.senatov.model.CompareLineItem
 import org.senatov.model.CompareLineItem.DiffStatus
 

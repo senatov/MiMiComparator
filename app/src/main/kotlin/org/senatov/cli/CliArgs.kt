@@ -8,6 +8,7 @@
 package org.senatov.cli
 
 import org.slf4j.LoggerFactory
+import org.senatov.helpers.log.LogTag
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -29,9 +30,9 @@ class CliArgs private constructor(
         private val log = LoggerFactory.getLogger(CliArgs::class.java)
 
         fun parse(rawArgs: List<String>?): CliArgs {
-            log.info("parsing CLI args: {}", rawArgs)
+            log.debug(LogTag.CLI, "parse args={}", rawArgs?.size ?: 0)
             if (rawArgs.isNullOrEmpty()) {
-                log.info("no CLI args — GUI chooser mode")
+                log.info(LogTag.CLI, "GUI mode")
                 return CliArgs(null, null, false, false, false)
             }
             var left: Path? = null
@@ -47,13 +48,13 @@ class CliArgs private constructor(
                     arg == "--files" -> forcedDirMode = false
                     !arg.startsWith("-") && left == null -> left = resolvePath(arg)
                     !arg.startsWith("-") && right == null -> right = resolvePath(arg)
-                    else -> log.warn("ignoring unknown CLI arg: {}", arg)
+                    else -> log.warn(LogTag.CLI, "ignored arg {}", arg)
                 }
                 i++
             }
             val dirMode = forcedDirMode ?: detectDirMode(left, right)
             val auto = left != null && right != null
-            log.info("parsed CLI: left={} right={} auto={} dirMode={} explicit={}",
+            log.info(LogTag.CLI, "parsed left={} right={} auto={} dir={} explicit={}",
                 left, right, auto, dirMode, forcedDirMode != null)
             return CliArgs(left, right, auto, dirMode, forcedDirMode != null)
         }
@@ -62,7 +63,7 @@ class CliArgs private constructor(
         private fun resolvePath(raw: String): Path? {
             val path = Path.of(raw).toAbsolutePath().normalize()
             if (!Files.exists(path)) {
-                log.warn("CLI path does not exist: {}", path)
+                log.warn(LogTag.CLI, "path missing {}", path)
                 return null
             }
             return path

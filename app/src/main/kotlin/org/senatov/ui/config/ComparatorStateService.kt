@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -27,35 +27,35 @@ class ComparatorStateService {
 
 
     fun load(): ComparatorState {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
         return try {
             ensureStateDirectoryExists()
             val stateFile = stateFilePath
             if (!Files.exists(stateFile)) {
-                log.info("state file not found, using defaults: {}", stateFile)
+                log.info(LogTag.STATE, "defaults path={}", stateFile)
                 return ComparatorState.defaults()
             }
             val state = objectMapper.readValue(stateFile.toFile(), ComparatorState::class.java)
-            log.info("state loaded from {}", stateFile)
+            log.info(LogTag.STATE, "loaded {}", stateFile)
             state ?: ComparatorState.defaults()
         } catch (ex: Exception) {
-            log.error("failed to load state, using defaults: {}", ex.message)
-            log.debug("state load exception", ex)
+            log.error(LogTag.STATE, "load failed: {}", ex.message)
+            log.debug(LogTag.STATE, "state load exception", ex)
             ComparatorState.defaults()
         }
     }
 
 
     fun save(state: ComparatorState?) {
-        log.debug("[{}]", LogHelper.method())
+        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
         val safeState = state ?: ComparatorState.defaults()
         try {
             ensureStateDirectoryExists()
             writeStateAtomically(safeState)
-            log.info("state saved to {}", stateFilePath)
+            log.debug(LogTag.STATE, "saved {}", stateFilePath)
         } catch (ex: Exception) {
-            log.error("failed to save state: {}", ex.message)
-            log.debug("state save exception", ex)
+            log.error(LogTag.STATE, "save failed: {}", ex.message)
+            log.debug(LogTag.STATE, "state save exception", ex)
         }
     }
 

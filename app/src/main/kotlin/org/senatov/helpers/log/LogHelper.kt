@@ -1,4 +1,6 @@
 package org.senatov.helpers.log
+import org.slf4j.Marker
+import org.slf4j.MarkerFactory
 import org.slf4j.Logger
 
 object LogHelper {
@@ -34,7 +36,20 @@ object LogHelper {
         return "unknownClass.unknownMethod"
     }
 
-    inline fun Logger.enter() {
-        debug("[{}]", LogHelper.method())
+    fun Logger.enter(marker: Marker? = null) {
+        if (marker == null) {
+            debug("[{}]", LogHelper.method())
+        } else {
+            debug(marker, "[{}]", LogHelper.method())
+        }
     }
+}
+
+object LogTag {
+    val APP: Marker = MarkerFactory.getMarker("APP")
+    val CLI: Marker = MarkerFactory.getMarker("CLI")
+    val COMPARE: Marker = MarkerFactory.getMarker("COMPARE")
+    val IO: Marker = MarkerFactory.getMarker("IO")
+    val STATE: Marker = MarkerFactory.getMarker("STATE")
+    val UI: Marker = MarkerFactory.getMarker("UI")
 }

@@ -7,6 +7,7 @@ package org.senatov.compare
 
 import org.senatov.model.CompareLineItem
 import org.senatov.model.CompareLineItem.DiffStatus
+import org.senatov.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -20,9 +21,10 @@ object FileContentComparator {
 
 
     fun compare(leftFile: Path, rightFile: Path, showIdentical: Boolean): CompareResult {
-        log.info("file compare: L={} R={}", leftFile, rightFile)
+        log.info(LogTag.COMPARE, "file start L={} R={} identical={}", leftFile, rightFile, showIdentical)
         val leftLines = Files.readAllLines(leftFile, StandardCharsets.UTF_8)
         val rightLines = Files.readAllLines(rightFile, StandardCharsets.UTF_8)
+        log.debug(LogTag.IO, "file lines L={} R={}", leftLines.size, rightLines.size)
         val maxLen = max(leftLines.size, rightLines.size)
         val leftItems = mutableListOf<CompareLineItem>()
         val rightItems = mutableListOf<CompareLineItem>()
@@ -42,7 +44,7 @@ object FileContentComparator {
         }
         val summary = if (diffs == 0) "files identical ($maxLen lines)"
             else "$diffs diffs in $maxLen lines"
-        log.info("file compare done: {}", summary)
+        log.info(LogTag.COMPARE, "file done {}", summary)
         return CompareResult(leftItems, rightItems, diffs, summary)
     }
 }
