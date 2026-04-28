@@ -12,7 +12,7 @@ import org.gradle.jvm.tasks.Jar
 
 plugins {
     application
-    kotlin("jvm") version "2.3.20"
+    kotlin("jvm") version "2.3.21"
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -57,7 +57,8 @@ tasks.test {
 }
 
 application {
-    mainClass = "org.senatov.App"
+    mainClass = "org.senatov.mimicomparator.App"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics")
 }
 
 val jpackageInputDir = layout.buildDirectory.dir("jpackage/input")

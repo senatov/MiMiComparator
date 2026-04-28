@@ -3,11 +3,11 @@
  * generates CompareLineItem lists w/ DiffStatus coloring.
  * Iakov Senatov, 2026
  */
-package org.senatov.compare
+package org.senatov.mimicomparator.compare
 
-import org.senatov.model.CompareLineItem
-import org.senatov.model.CompareLineItem.DiffStatus
-import org.senatov.helpers.log.LogTag
+import org.senatov.mimicomparator.model.CompareLineItem
+import org.senatov.mimicomparator.model.CompareLineItem.DiffStatus
+import org.senatov.mimicomparator.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files

@@ -2,6 +2,7 @@
 
 # Gradle
 .gradle/
+.kotlin/
 build/
 dist/
 app/build/

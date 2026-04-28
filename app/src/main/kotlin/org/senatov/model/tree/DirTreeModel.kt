@@ -4,10 +4,10 @@
  * expand/collapse by relativePath.
  * Iakov Senatov, 2026
  */
-package org.senatov.model.tree
+package org.senatov.mimicomparator.model.tree
 
-import org.senatov.helpers.log.LogTag
-import org.senatov.model.CompareLineItem
+import org.senatov.mimicomparator.helpers.log.LogTag
+import org.senatov.mimicomparator.model.CompareLineItem
 import org.slf4j.LoggerFactory
 
 

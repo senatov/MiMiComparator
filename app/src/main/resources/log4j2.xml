@@ -22,7 +22,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.senatov" level="DEBUG" additivity="false">
+        <Logger name="org.senatov.mimicomparator" level="DEBUG" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Logger>

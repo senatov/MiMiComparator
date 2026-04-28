@@ -5,10 +5,10 @@
  * auto-detects file vs dir mode.
  * Iakov Senatov, 2026
  */
-package org.senatov.cli
+package org.senatov.mimicomparator.cli
 
 import org.slf4j.LoggerFactory
-import org.senatov.helpers.log.LogTag
+import org.senatov.mimicomparator.helpers.log.LogTag
 import java.nio.file.Files
 import java.nio.file.Path
 

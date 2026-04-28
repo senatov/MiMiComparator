@@ -5,12 +5,12 @@
  * TC-style: left-only, right-only, same, different.
  * Iakov Senatov, 2026
  */
-package org.senatov.compare
+package org.senatov.mimicomparator.compare
 
-import org.senatov.model.CompareLineItem.DiffStatus
-import org.senatov.helpers.log.LogTag
-import org.senatov.model.tree.DirTreeModel
-import org.senatov.model.tree.DirTreeNode
+import org.senatov.mimicomparator.model.CompareLineItem.DiffStatus
+import org.senatov.mimicomparator.helpers.log.LogTag
+import org.senatov.mimicomparator.model.tree.DirTreeModel
+import org.senatov.mimicomparator.model.tree.DirTreeNode
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
@@ -19,6 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.TreeSet
 
 
@@ -26,7 +27,7 @@ object DirectoryComparator {
 
     private val log = LoggerFactory.getLogger(DirectoryComparator::class.java)
     private val DATE_FMT: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        DateTimeFormatter.ofPattern("d. MMM yyyy 'at' HH:mm:ss", Locale.ENGLISH)
             .withZone(ZoneId.systemDefault())
 
 
@@ -175,13 +176,8 @@ object DirectoryComparator {
         DirTreeNode("‹missing›", relPath, isDir, 0, 0, DiffStatus.MISSING, depth)
 
 
-    fun formatSize(bytes: Long): String = when {
-        bytes <= 0 -> ""
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "%.1f KB".format(bytes / 1024.0)
-        bytes < 1024L * 1024 * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024))
-        else -> "%.1f GB".format(bytes / (1024.0 * 1024 * 1024))
-    }
+    fun formatSize(bytes: Long): String =
+        if (bytes <= 0) "0" else "%,d".format(bytes).replace(",", " ")
 
 
     fun formatDate(millis: Long): String =

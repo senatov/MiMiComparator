@@ -4,7 +4,7 @@
  * CLI: MiMiComparator <left> <right> or --left/--right
  * Iakov Senatov, 2026
  */
-package org.senatov
+package org.senatov.mimicomparator
 
 import atlantafx.base.theme.CupertinoLight
 import javafx.animation.PauseTransition
@@ -16,11 +16,11 @@ import javafx.scene.image.Image
 import javafx.scene.text.Font
 import javafx.stage.Stage
 import javafx.util.Duration
-import org.senatov.cli.CliArgs
-import org.senatov.helpers.log.LogHelper
-import org.senatov.helpers.log.LogTag
-import org.senatov.ui.config.ComparatorState
-import org.senatov.ui.config.ComparatorStateService
+import org.senatov.mimicomparator.cli.CliArgs
+import org.senatov.mimicomparator.helpers.log.LogHelper
+import org.senatov.mimicomparator.helpers.log.LogTag
+import org.senatov.mimicomparator.ui.config.ComparatorState
+import org.senatov.mimicomparator.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
 import java.awt.Taskbar
 import java.io.IOException

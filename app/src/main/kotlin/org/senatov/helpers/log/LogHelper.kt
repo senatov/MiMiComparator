@@ -1,4 +1,4 @@
-package org.senatov.helpers.log
+package org.senatov.mimicomparator.helpers.log
 import org.slf4j.Marker
 import org.slf4j.MarkerFactory
 import org.slf4j.Logger

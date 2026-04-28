@@ -4,7 +4,7 @@
  * CLI autocompare, DiffCellFactory coloring.
  * Iakov Senatov, 2026
  */
-package org.senatov
+package org.senatov.mimicomparator
 
 import javafx.application.Platform
 import javafx.collections.FXCollections
@@ -16,28 +16,32 @@ import javafx.scene.control.*
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.scene.input.MouseEvent
+import javafx.scene.layout.BorderPane
+import javafx.scene.layout.GridPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import javafx.scene.layout.VBox
 import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import javafx.stage.Popup
 import javafx.stage.Stage
-import org.apache.commons.lang3.StringUtils
-import org.senatov.cli.CliArgs
-import org.senatov.compare.DirectoryComparator
-import org.senatov.compare.FileContentComparator
-import org.senatov.helpers.log.LogHelper
-import org.senatov.helpers.log.LogTag
-import org.senatov.model.CompareLineItem
-import org.senatov.model.tree.DirTreeModel
-import org.senatov.ui.cell.DiffCellFactory
-import org.senatov.ui.config.ComparatorState
-import org.senatov.ui.config.ComparatorStateService
+import org.senatov.mimicomparator.cli.CliArgs
+import org.senatov.mimicomparator.compare.DirectoryComparator
+import org.senatov.mimicomparator.compare.FileContentComparator
+import org.senatov.mimicomparator.helpers.log.LogHelper
+import org.senatov.mimicomparator.helpers.log.LogTag
+import org.senatov.mimicomparator.model.CompareLineItem
+import org.senatov.mimicomparator.model.tree.DirTreeModel
+import org.senatov.mimicomparator.ui.cell.DiffCellFactory
+import org.senatov.mimicomparator.ui.config.ComparatorState
+import org.senatov.mimicomparator.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
@@ -51,7 +55,19 @@ class MainController {
         private const val STATUS_FILE_MODE = "FILE mode"
         private const val STATUS_SWAPPED = "⇄ swapped"
         private const val STATUS_CLIPBOARD_COPIED = "📋 copied"
+        private const val TITLE_HOME = "Home"
+        private const val TITLE_COMPARE = "Documents - Folder Compare"
+        private val EVENT_TIME_FMT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
     }
+
+    @FXML
+    private lateinit var rootPane: BorderPane
+    @FXML
+    private lateinit var topChrome: VBox
+    @FXML
+    private lateinit var bottomChrome: VBox
+    @FXML
+    private lateinit var bottomBar: HBox
 
     // --- left panel ---
     @FXML
@@ -105,6 +121,8 @@ class MainController {
     @FXML
     private lateinit var diffCountLabel: Label
     @FXML
+    private lateinit var eventLogView: ListView<String>
+    @FXML
     private lateinit var filterField: TextField
     @FXML
     private lateinit var statusLeft: Label
@@ -119,26 +137,28 @@ class MainController {
     private var pendingCliArgs: CliArgs? = null
     private var leftTreeModel: DirTreeModel? = null
     private var rightTreeModel: DirTreeModel? = null
-    private var lastDirResult: org.senatov.compare.DirCompareResult? = null
+    private var lastDirResult: org.senatov.mimicomparator.compare.DirCompareResult? = null
     private val stateService = ComparatorStateService()
     private var comparatorState: ComparatorState? = null
     private var restoringState = false
     private var leftPanelRatio = 0.5
     private val ratioPopupLabel = Label()
     private val ratioPopup = Popup()
+    private var homeView: BorderPane? = null
 
 
     @FXML
     private fun initialize() {
         log.debug(LogTag.UI, "[{}]", LogHelper.method())
         comparatorState = stateService.load()
+        configureCompareLists()
         installDiffCellFactories()
+        setupEventLog()
         setupClickToExpand()
         addProgrammaticUi()
         restoreUiFromState()
         setupSyncScroll()
         setupResizableCenterStrip()
-        restoreInputsFromState()
         updateCenterStripState()
         updateColumnHeaderVisibility()
         Platform.runLater { executeCliAutoCompare() }
@@ -154,6 +174,11 @@ class MainController {
     private fun executeCliAutoCompare() {
         val cli = pendingCliArgs ?: return
         log.info(LogTag.CLI, "apply auto={} dirExplicit={}", cli.autoCompare, cli.hasExplicitDirMode())
+        if (cli.leftPath == null && cli.rightPath == null && !cli.hasExplicitDirMode()) {
+            showHomeView()
+            return
+        }
+        showCompareView()
         restoringState = true
         try {
             cli.left()?.let { applyLeftPath(it) }
@@ -241,22 +266,6 @@ class MainController {
     // ═══ programmatic UI extras ═══
     private fun addProgrammaticUi() {
         configureToolbarButtons()
-        val homeBtn = Button("🏠 Home").apply { setOnAction { onLoadHome() } }
-        val paneIndex = mainToolBar.items.size - 2
-        mainToolBar.items.add(paneIndex, Separator())
-        mainToolBar.items.add(paneIndex + 1, homeBtn)
-        val infoBox = HBox(6.0).apply {
-            alignment = Pos.CENTER_LEFT
-            padding = Insets(2.0, 6.0, 2.0, 6.0)
-        }
-        val javaVer = Label("Java ${Runtime.version().feature()}").apply {
-            style = "-fx-text-fill:#888; -fx-font-size:11;"
-        }
-        val osLabel = Label(System.getProperty("os.name")).apply {
-            style = "-fx-text-fill:#888; -fx-font-size:11;"
-        }
-        infoBox.children.addAll(javaVer, Separator(), osLabel)
-        (statusLeft.parent as? HBox)?.children?.add(infoBox)
         ratioPopupLabel.style = "-fx-background-color:#fff8c9; -fx-border-color:#d4c36a; -fx-border-radius:8; " +
                 "-fx-background-radius:8; -fx-padding:6 10 6 10; -fx-font-weight:700; -fx-text-fill:#5d4a00;"
         ratioPopup.content.add(ratioPopupLabel)
@@ -265,13 +274,68 @@ class MainController {
     }
 
     private fun configureToolbarButtons() {
-        val actionButtonStyle = "-fx-font-size:14; -fx-font-weight:700;"
-        for (button in listOf(copyRightBtn, copyLeftBtn, diffBtn, equalBtn, deleteBtn, swapBtn)) {
-            button.prefHeight = 28.0
-            button.style = actionButtonStyle
+        mainToolBar.prefHeight = 54.0
+        mainToolBar.style = "-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0; -fx-padding:5 6 5 6;"
+        mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
+            installToolbarGraphic(button)
+            button.minWidth = 42.0
+            button.prefWidth = 42.0
+            button.minHeight = 42.0
+            button.prefHeight = 42.0
+            button.style = "-fx-padding:0; -fx-background-radius:8; -fx-font-smoothing-type:gray;"
         }
-        diffBtn.style = "$actionButtonStyle -fx-text-fill:#b32020;"
-        equalBtn.style = "$actionButtonStyle -fx-text-fill:#1f7a1f;"
+        syncScrollToggle.prefWidth = 42.0
+    }
+
+    private fun installToolbarGraphic(button: ButtonBase) {
+        val rawText = button.text ?: return
+        val parts = rawText.split("\n", limit = 2)
+        val sourceIcon = parts.firstOrNull().orEmpty()
+        val labelText = parts.getOrNull(1).orEmpty()
+        val iconText = higToolbarIcon(sourceIcon, labelText)
+        val color = when (button) {
+            diffBtn -> "#b32020"
+            equalBtn -> "#1f7a1f"
+            else -> "#111111"
+        }
+        val icon = Label(iconText).apply {
+            alignment = Pos.CENTER
+            maxWidth = Double.MAX_VALUE
+            style = "-fx-font-family:'System'; -fx-font-size:20; -fx-font-weight:400; -fx-text-fill:$color; -fx-opacity:1;"
+        }
+        button.text = null
+        button.tooltip = button.tooltip ?: labelText.takeIf { it.isNotBlank() }?.let { Tooltip(it) }
+        button.graphic = icon
+        button.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+    }
+
+    private fun higToolbarIcon(sourceIcon: String, labelText: String): String = when (labelText) {
+        "Home" -> "⌂"
+        "Sessions" -> "▣"
+        "All" -> "✱"
+        "Diffs" -> "≠"
+        "Same" -> "="
+        "Structure" -> "▣"
+        "Minor" -> "≈"
+        "Rules" -> "♟"
+        "Expand" -> "⊞"
+        "Collapse" -> "⊟"
+        "Select" -> "✓"
+        "Files" -> "≠"
+        "Refresh" -> "↻"
+        "Swap" -> "⇄"
+        "Stop" -> "×"
+        "Filters" -> "⊂"
+        "Peek" -> "⌕"
+        else -> sourceIcon
+    }
+
+    private fun configureCompareLists() {
+        val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
+        leftListView.fixedCellSize = 21.0
+        rightListView.fixedCellSize = 21.0
+        leftListView.style = listStyle
+        rightListView.style = listStyle
     }
 
     private fun restoreUiFromState() {
@@ -351,6 +415,7 @@ class MainController {
 
     @FXML
     private fun onSwapPanels() {
+        showCompareView()
         log.info(LogTag.UI, "swap panels")
         val tmp = leftPath; leftPath = rightPath; rightPath = tmp
         leftPathField.text = leftPath?.toString() ?: ""
@@ -365,14 +430,183 @@ class MainController {
         persistInputPaths()
     }
 
+    @FXML
     private fun onLoadHome() {
-        val home = System.getProperty("user.home")
-        if (home.isNotBlank()) {
-            log.info(LogTag.UI, "load home {}", home)
-            applyLeftPath(Path.of(home))
-            leftPathField.text = StringUtils.abbreviate(home, 60)
-            loadDirectoryPreview(leftPath!!, leftListView, isLeft = true)
+        showHomeView()
+    }
+
+    private fun showHomeView() {
+        log.info(LogTag.UI, "show home")
+        rootPane.top = null
+        homeView = buildHomeView()
+        rootPane.center = homeView
+        rootPane.bottom = null
+        updateWindowTitle(TITLE_HOME)
+    }
+
+    private fun showCompareView() {
+        if (rootPane.center !== contentBox) {
+            log.info(LogTag.UI, "show compare")
+            rootPane.top = topChrome
+            rootPane.center = contentBox
+            rootPane.bottom = bottomChrome
+            updateWindowTitle(TITLE_COMPARE)
+            Platform.runLater { applyPanelRatio(leftPanelRatio) }
         }
+    }
+
+    private fun setupEventLog() {
+        eventLogView.isVisible = false
+        eventLogView.isManaged = false
+        eventLogView.fixedCellSize = 18.0
+        eventLogView.style = "-fx-font-size:12; -fx-font-weight:400; -fx-text-fill:#1d1d1f;"
+        bottomChrome.style = "-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:1 0 0 0;"
+        bottomBar.style = "-fx-background-color:#f5f5f7;"
+        listOf(statusLeft, statusCenter, statusRight, diffCountLabel).forEach {
+            it.style = "-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:12; -fx-font-weight:400;"
+        }
+        appendEvent("Username: ${System.getProperty("user.name", "")}")
+        appendEvent("Load comparison: <->")
+    }
+
+    private fun buildHomeView(): BorderPane {
+        val root = BorderPane().apply {
+            style = "-fx-background-color:#f7f7f7; -fx-font-family:'${App.sfProDisplayFamily()}','Helvetica Neue',Arial,sans-serif;"
+        }
+        root.left = buildSessionsPane()
+        root.center = buildHomeContent()
+        return root
+    }
+
+    private fun buildSessionsPane(): VBox {
+        val savedName = savedSessionName()
+        val treeRoot = TreeItem("Sessions").apply {
+            isExpanded = true
+            children.add(TreeItem("New"))
+            children.add(TreeItem("Auto-saved").apply {
+                isExpanded = true
+                children.add(TreeItem("Today").apply {
+                    isExpanded = true
+                    children.add(TreeItem(savedName))
+                })
+                children.add(TreeItem("More than 6 days ago"))
+            })
+        }
+        val tree = TreeView(treeRoot).apply {
+            isShowRoot = false
+            prefWidth = 240.0
+            selectionModel.select(treeRoot.children[1].children[0].children[0])
+            setOnMouseClicked { event ->
+                if (event.clickCount >= 2) openSavedSession()
+            }
+        }
+        val search = TextField().apply {
+            promptText = "Search"
+            prefHeight = 24.0
+        }
+        return VBox(4.0).apply {
+            style = "-fx-background-color:#e6e6e6; -fx-border-color:#bdbdbd; -fx-border-width:0 1 0 0;"
+            children.add(Label("Sessions").apply {
+                style = "-fx-font-size:15; -fx-padding:4 8 2 8;"
+            })
+            children.add(tree)
+            VBox.setVgrow(tree, Priority.ALWAYS)
+            children.add(HBox(4.0, Button("+"), Button("-"), search).apply {
+                padding = Insets(4.0, 6.0, 6.0, 6.0)
+                HBox.setHgrow(search, Priority.ALWAYS)
+            })
+        }
+    }
+
+    private fun buildHomeContent(): VBox {
+        val state = comparatorState ?: ComparatorState.defaults()
+        val left = state.leftInputPath.ifBlank { System.getProperty("user.home", "") }
+        val right = state.rightInputPath
+        val title = Label("▣ ${savedSessionName()}").apply {
+            style = "-fx-font-size:18; -fx-font-weight:700;"
+        }
+        val paths = VBox(4.0, Label(left), Label(right)).apply {
+            style = "-fx-font-size:13; -fx-text-fill:#222;"
+        }
+        val open = Button("Open").apply {
+            prefWidth = 84.0
+            setOnAction { openSavedSession() }
+        }
+        val edit = Button("Edit").apply {
+            prefWidth = 84.0
+            setOnAction { showCompareView() }
+        }
+        val intro = Label("Drag folders or files onto session icon\nor click a session icon to begin:").apply {
+            alignment = Pos.CENTER
+            style = "-fx-font-size:15; -fx-text-alignment:center;"
+        }
+        val actions = GridPane().apply {
+            hgap = 44.0
+            vgap = 34.0
+            alignment = Pos.CENTER
+            add(homeAction("▣", "Folder Compare") { startEmptyCompare(dir = true) }, 0, 0)
+            add(homeAction("▣↻", "Folder Sync") { startEmptyCompare(dir = true) }, 1, 0)
+            add(homeAction("▤", "Text Compare") { startEmptyCompare(dir = false) }, 2, 0)
+            add(homeAction("▤✎", "Text Edit") { startEmptyCompare(dir = false) }, 3, 0)
+            add(homeAction("0101", "Hex Compare") { startEmptyCompare(dir = false) }, 0, 1)
+        }
+        return VBox(26.0).apply {
+            padding = Insets(12.0)
+            children.add(title)
+            children.add(paths)
+            children.add(HBox(10.0, open, edit))
+            children.add(Region().apply { minHeight = 48.0 })
+            children.add(intro)
+            children.add(actions)
+            alignment = Pos.TOP_LEFT
+            VBox.setVgrow(actions, Priority.ALWAYS)
+        }
+    }
+
+    private fun homeAction(icon: String, label: String, action: () -> Unit): VBox {
+        val iconLabel = Label(icon).apply {
+            minWidth = 84.0
+            minHeight = 58.0
+            alignment = Pos.CENTER
+            style = "-fx-font-size:26; -fx-background-color:#f1d89f; -fx-border-color:#777; -fx-border-radius:3; -fx-background-radius:3;"
+        }
+        val text = Label(label).apply {
+            alignment = Pos.CENTER
+            maxWidth = 130.0
+            style = "-fx-font-size:15;"
+        }
+        return VBox(8.0, iconLabel, text).apply {
+            alignment = Pos.CENTER
+            setOnMouseClicked { action() }
+        }
+    }
+
+    private fun startEmptyCompare(dir: Boolean) {
+        showCompareView()
+        setDirMode(dir)
+    }
+
+    private fun openSavedSession() {
+        showCompareView()
+        val state = comparatorState ?: return
+        appendEvent("Load comparison: ${state.leftInputPath} <-> ${state.rightInputPath}")
+        restoringState = true
+        try {
+            restoreSavedPath(state.leftInputPath, isLeft = true)
+            restoreSavedPath(state.rightInputPath, isLeft = false)
+        } finally {
+            restoringState = false
+        }
+        if (leftPath != null && rightPath != null) onCompare()
+    }
+
+    private fun savedSessionName(): String {
+        val raw = comparatorState?.leftInputPath.orEmpty()
+        return raw.takeIf { it.isNotBlank() }?.let { Path.of(it).fileName?.toString() } ?: "Documents"
+    }
+
+    private fun updateWindowTitle(title: String) {
+        (rootPane.scene?.window as? Stage)?.title = title
     }
 
     // ═══ sync scroll ═══
@@ -407,6 +641,7 @@ class MainController {
     // ═══ menu / toolbar actions ═══
     @FXML
     private fun onOpenLeft() {
+        showCompareView()
         chooseFileOrDir("Open Left")?.let { p ->
             log.info(LogTag.UI, "open left {}", p)
             applyLeftPath(p)
@@ -416,6 +651,7 @@ class MainController {
 
     @FXML
     private fun onOpenRight() {
+        showCompareView()
         chooseFileOrDir("Open Right")?.let { p ->
             log.info(LogTag.UI, "open right {}", p)
             applyRightPath(p)
@@ -425,6 +661,7 @@ class MainController {
 
     @FXML
     private fun onCompare() {
+        showCompareView()
         val lp = leftPath;
         val rp = rightPath
         if (lp == null || rp == null) {
@@ -436,6 +673,7 @@ class MainController {
             showAlert("Both sides point to the same location. Comparing them is pointless 🙄"); return
         }
         log.info(LogTag.COMPARE, "compare dir={} L={} R={}", dirMode, lp, rp)
+        appendEvent("Load comparison: $lp <-> $rp")
         try {
             if (dirMode) {
                 val result = DirectoryComparator.compareTree(lp, rp)
@@ -461,6 +699,7 @@ class MainController {
     @FXML
     private fun onRefresh() {
         log.info(LogTag.UI, "refresh")
+        appendEvent("Fast refresh")
         leftPath?.let { loadDirectoryPreview(it, leftListView, isLeft = true) }
         rightPath?.let { loadDirectoryPreview(it, rightListView, isLeft = false) }
     }
@@ -682,6 +921,12 @@ class MainController {
     // ═══ utils ═══
     private fun updateStatus(isLeft: Boolean, text: String) {
         if (isLeft) statusLeft.text = text else statusRight.text = text
+    }
+
+    private fun appendEvent(message: String) {
+        if (!::eventLogView.isInitialized) return
+        eventLogView.items.add("${EVENT_TIME_FMT.format(LocalDateTime.now())}  $message")
+        eventLogView.scrollTo(eventLogView.items.size - 1)
     }
 
     private fun getStage(): Stage = leftPathField.scene.window as Stage

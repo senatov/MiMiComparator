@@ -3,7 +3,7 @@
  * stored as JSON under ~/.mimi/comparator/.
  * Iakov Senatov, 2026
  */
-package org.senatov.ui.config
+package org.senatov.mimicomparator.ui.config
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 

@@ -4,7 +4,7 @@
  * expandable dirs w/ disclosure triangle.
  * Iakov Senatov, 2026
  */
-package org.senatov.model
+package org.senatov.mimicomparator.model
 
 
 class CompareLineItem(

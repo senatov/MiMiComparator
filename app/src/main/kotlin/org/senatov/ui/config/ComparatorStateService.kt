@@ -1,10 +1,10 @@
-package org.senatov.ui.config
+package org.senatov.mimicomparator.ui.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.senatov.helpers.log.LogHelper
-import org.senatov.helpers.log.LogTag
+import org.senatov.mimicomparator.helpers.log.LogHelper
+import org.senatov.mimicomparator.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
 import java.nio.file.Path
