@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="MiMiComparator [run --args=&quot;--left  /Users/senat/Library/CloudStorage/ProtonDrive-javaentwickler@gmail.com-folder/Documents --right /Users/senat/Documents --dirs&quot;]" type="GradleRunConfiguration" factoryName="Gradle" nameIsGenerated="true">
+  <configuration default="false" name="MiMiComparator-Args-Dir" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="executionName" />
       <option name="externalProjectPath" value="$PROJECT_DIR$" />
@@ -11,7 +11,7 @@
       <option name="taskNames">
         <list>
           <option value="run" />
-          <option value="--args=&quot;--left  $USER_HOME$/Library/CloudStorage/ProtonDrive-javaentwickler@gmail.com-folder/Documents --right $USER_HOME$/Documents --dirs&quot;" />
+          <option value="--args=&quot;--left  $USER_HOME$/Downloads/Directory_1 --right $USER_HOME$/Downloads/Directory_2&quot;" />
         </list>
       </option>
       <option name="vmOptions" />

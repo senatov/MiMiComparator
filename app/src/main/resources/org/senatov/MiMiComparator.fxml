@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  MiMiComparator — dual-pane comparator UI (Kotlin edition)
+  Left panel | center action strip | right panel
+  Column headers: Name | Size | Modified
+  Iakov Senatov, 2026
+-->
+
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckMenuItem?>
@@ -19,22 +26,9 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<!--
-  MiMiComparator — dual-pane comparator UI (Kotlin edition)
-  Left panel | center action strip | right panel
-  Column headers: Name | Size | Modified
-  Iakov Senatov, 2026
--->
-
-<BorderPane fx:id="rootPane"
-            prefHeight="900"
-            prefWidth="1180"
-            style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;"
-            styleClass="root-pane"
-            xmlns="http://javafx.com/javafx/26"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="org.senatov.mimicomparator.MainController">
+<BorderPane fx:id="rootPane" prefHeight="900" prefWidth="1180" style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" styleClass="root-pane" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.senatov.mimicomparator.MainController">
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
     <top>
@@ -62,37 +56,52 @@
             </MenuBar>
 
             <!-- toolbar -->
-            <ToolBar fx:id="mainToolBar" prefHeight="54"
-                     style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
-                <Button onAction="#onLoadHome" text="⌂&#10;Home" />
+            <ToolBar fx:id="mainToolBar" prefHeight="54" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                <Button onAction="#onLoadHome" prefHeight="42.0" prefWidth="54.0" text="⌂&#10;Home" />
                 <Button text="▣&#10;Sessions" />
-                <ToggleButton fx:id="showAllToggle" selected="true" text="✱&#10;All" />
-                <ToggleButton fx:id="showDiffsToggle" text="≠&#10;Diffs" />
-                <ToggleButton fx:id="showSameToggle" text="=&#10;Same" />
-                <ToggleButton fx:id="dirModeToggle" onAction="#onToggleDirMode" text="▣&#10;Structure" />
-                <ToggleButton text="≈&#10;Minor" />
-                <Button text="♟&#10;Rules" />
+                <ToggleButton fx:id="showAllToggle" prefHeight="42.0" prefWidth="54.0" selected="true" text="✱&#10;All" />
+                <ToggleButton fx:id="showDiffsToggle" prefHeight="42.0" prefWidth="54.0" text="≠&#10;Diffs" />
+                <ToggleButton fx:id="showSameToggle" prefHeight="42.0" prefWidth="54.0" text="=&#10;Same" />
+                <ToggleButton fx:id="dirModeToggle" onAction="#onToggleDirMode" prefHeight="42.0" prefWidth="54.0" text="▣&#10;Struct." textFill="#191bb9">
+                    <font>
+                        <Font size="18.0" />
+                    </font>
+                </ToggleButton>
+                <ToggleButton prefHeight="42.0" prefWidth="54.0" text="≈&#10;Minor" />
+                <Button prefHeight="42.0" prefWidth="54.0" text="♟&#10;Rules" />
                 <Button fx:id="copyRightBtn" onAction="#onCopyToRight" text="→">
-                    <tooltip><Tooltip text="Copy selected to right" /></tooltip>
+                    <tooltip>
+                        <Tooltip text="Copy selected to right" />
+                    </tooltip>
                 </Button>
                 <Button fx:id="copyLeftBtn" onAction="#onCopyToLeft" text="←">
-                    <tooltip><Tooltip text="Copy selected to left" /></tooltip>
+                    <tooltip>
+                        <Tooltip text="Copy selected to left" />
+                    </tooltip>
                 </Button>
-                <Button onAction="#onExpandAll" text="⊞&#10;Expand" />
-                <Button onAction="#onCollapseAll" text="⊟&#10;Collapse" />
-                <Button text="✓&#10;Select" />
-                <Button fx:id="diffBtn" onAction="#onShowDiff" text="≠&#10;Files">
-                    <tooltip><Tooltip text="Show differences" /></tooltip>
+                <Button onAction="#onExpandAll" prefHeight="42.0" prefWidth="54.0" text="⊞&#10;Expand" />
+                <Button onAction="#onCollapseAll" prefHeight="42.0" prefWidth="54.0" text="⊟&#10;Collapse" />
+                <Button prefHeight="42.0" prefWidth="54.0" text="✓&#10;Select" />
+                <Button fx:id="diffBtn" onAction="#onShowDiff" prefHeight="42.0" prefWidth="54.0" text="≠&#10;Files">
+                    <tooltip>
+                        <Tooltip text="Show differences" />
+                    </tooltip>
                 </Button>
                 <Button fx:id="equalBtn" onAction="#onShowEqual" text="=&#10;Same">
-                    <tooltip><Tooltip text="Show identical" /></tooltip>
+                    <tooltip>
+                        <Tooltip text="Show identical" />
+                    </tooltip>
                 </Button>
-                <Button onAction="#onRefresh" text="↻&#10;Refresh" />
-                <Button fx:id="swapBtn" onAction="#onSwapPanels" text="⇄&#10;Swap">
-                    <tooltip><Tooltip text="Swap left ↔ right" /></tooltip>
+                <Button onAction="#onRefresh" prefHeight="42.0" prefWidth="54.0" text="↻&#10;Refresh" />
+                <Button fx:id="swapBtn" onAction="#onSwapPanels" prefHeight="42.0" prefWidth="54.0" text="⇄&#10;Swap">
+                    <tooltip>
+                        <Tooltip text="Swap left ↔ right" />
+                    </tooltip>
                 </Button>
-                <Button fx:id="deleteBtn" onAction="#onDeleteSelected" text="×&#10;Stop">
-                    <tooltip><Tooltip text="Delete selected" /></tooltip>
+                <Button fx:id="deleteBtn" onAction="#onDeleteSelected" prefHeight="42.0" prefWidth="54.0" text="×&#10;Stop">
+                    <tooltip>
+                        <Tooltip text="Delete selected" />
+                    </tooltip>
                 </Button>
                 <Pane HBox.hgrow="ALWAYS" />
                 <TextField fx:id="filterField" onAction="#onFilterChanged" prefWidth="260" text="**" />
@@ -101,16 +110,18 @@
                 <ToggleButton fx:id="syncScrollToggle" onAction="#onSyncScroll" selected="true" text="↕" />
             </ToolBar>
 
-            <HBox alignment="CENTER_LEFT" spacing="4"
-                  style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
-                <padding><Insets bottom="2" left="6" right="6" top="2" /></padding>
+            <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                <padding>
+                    <Insets bottom="2" left="6" right="6" top="2" />
+                </padding>
                 <TextField fx:id="leftPathField" editable="false" promptText="Left folder or file" style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13;" HBox.hgrow="ALWAYS" />
-                <Button onAction="#onOpenLeft" prefWidth="26" text="▾" />
+                <Button onAction="#onOpenLeft" prefWidth="26" text="▾" textFill="#0d0f54" />
                 <Button onAction="#onOpenLeft" prefWidth="26" text="⌁" />
                 <Separator orientation="VERTICAL" />
                 <TextField fx:id="rightPathField" editable="false" promptText="Right folder or file" style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13;" HBox.hgrow="ALWAYS" />
                 <Button onAction="#onOpenRight" prefWidth="26" text="▾" />
                 <Button onAction="#onOpenRight" prefWidth="26" text="⌁" />
+            <BorderPane prefHeight="200.0" prefWidth="200.0" />
             </HBox>
         </VBox>
     </top>
@@ -122,9 +133,10 @@
             <!-- ── LEFT panel ── -->
             <VBox fx:id="leftPanel" spacing="0" HBox.hgrow="ALWAYS">
                 <!-- column header -->
-                <HBox fx:id="leftColumnHeader" spacing="0"
-                      style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
-                    <padding><Insets bottom="2" left="6" right="4" top="2" /></padding>
+                <HBox fx:id="leftColumnHeader" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                    <padding>
+                        <Insets bottom="2" left="6" right="4" top="2" />
+                    </padding>
                     <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS" />
                     <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Size" />
                     <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Modified" />
@@ -133,18 +145,20 @@
             </VBox>
 
             <!-- ── CENTER action strip ── -->
-            <VBox fx:id="centerStrip" alignment="CENTER" maxWidth="20" minWidth="20" prefWidth="20"
-                  style="-fx-background-color:#efefef; -fx-border-color:#bcbcbc; -fx-border-width:0 1 0 1; -fx-cursor:h-resize;">
-                <padding><Insets bottom="4" left="1" right="1" top="4" /></padding>
-                <Region prefHeight="48" style="-fx-background-color:rgba(120,120,120,0.28); -fx-background-radius:999;" VBox.vgrow="ALWAYS" />
+            <VBox fx:id="centerStrip" alignment="CENTER" maxWidth="20" minWidth="20" prefWidth="20" style="-fx-background-color:#efefef; -fx-border-color:#bcbcbc; -fx-border-width:0 1 0 1; -fx-cursor:h;">
+                <padding>
+                    <Insets bottom="4" left="1" right="1" top="4" />
+                </padding>
+                <Region cache="true" focusTraversable="true" prefWidth="7.0" style="-fx-background-color:rgba(120,120,120,0.28); -fx-background-radius:999;" VBox.vgrow="ALWAYS" />
             </VBox>
 
             <!-- ── RIGHT panel ── -->
             <VBox fx:id="rightPanel" spacing="0" HBox.hgrow="ALWAYS">
                 <!-- column header -->
-                <HBox fx:id="rightColumnHeader" spacing="0"
-                      style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
-                    <padding><Insets bottom="2" left="6" right="4" top="2" /></padding>
+                <HBox fx:id="rightColumnHeader" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                    <padding>
+                        <Insets bottom="2" left="6" right="4" top="2" />
+                    </padding>
                     <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS" />
                     <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Size" />
                     <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Modified" />
@@ -158,17 +172,18 @@
     <!-- ═══ BOTTOM: status bar ═══ -->
     <bottom>
         <VBox fx:id="bottomChrome" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:1 0 0 0;">
-            <ListView fx:id="eventLogView" visible="false" managed="false" prefHeight="112"
-                      style="-fx-background-color:#dfe4ec; -fx-border-color:#bcc3cc; -fx-border-width:0 0 1 0;" />
+            <ListView fx:id="eventLogView" managed="false" prefHeight="112" style="-fx-background-color:#dfe4ec; -fx-border-color:#bcc3cc; -fx-border-width:0 0 1 0;" visible="false" />
             <HBox fx:id="bottomBar" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color:#f5f5f7;">
-                <padding><Insets bottom="4" left="8" right="8" top="4" /></padding>
+                <padding>
+                    <Insets bottom="4" left="8" right="8" top="4" />
+                </padding>
                 <Label fx:id="statusLeft" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="No file loaded" />
                 <Pane HBox.hgrow="ALWAYS" />
                 <Label fx:id="diffCountLabel" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="" />
                 <Pane HBox.hgrow="ALWAYS" />
                 <Label fx:id="statusCenter" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="" />
                 <Pane HBox.hgrow="ALWAYS" />
-                <Label fx:id="statusRight" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="No file loaded" />
+                <Label fx:id="statusRight" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="No file loaded" textFill="#381397" />
             </HBox>
         </VBox>
     </bottom>

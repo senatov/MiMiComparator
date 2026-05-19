@@ -15,7 +15,7 @@
                      filePattern="${sys:java.io.tmpdir}/MiMiComparator.%i.log.gz">
             <PatternLayout pattern="${PATTERN}"/>
             <Policies>
-                <SizeBasedTriggeringPolicy size="20 MB"/>
+                <SizeBasedTriggeringPolicy size="10 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="4" fileIndex="min"/>
         </RollingFile>
