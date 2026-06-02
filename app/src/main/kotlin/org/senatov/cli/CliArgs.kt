@@ -1,14 +1,14 @@
 /*
  * CliArgs — CLI argument parser 4 MiMiComparator.
  * MiMiComparator <left> <right>
- * MiMiComparator --left <path> --right <path>
+ * MiMiComparator --left <path> --right <path>®
  * auto-detects file vs dir mode.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.cli
+package org.senatov.cli
 
 import org.slf4j.LoggerFactory
-import org.senatov.mimicomparator.helpers.log.LogTag
+import org.senatov.helpers.log.LogTag
 import java.nio.file.Files
 import java.nio.file.Path
 

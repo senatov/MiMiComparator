@@ -4,7 +4,7 @@
  * expandable dirs w/ disclosure triangle.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.model
+package org.senatov.model
 
 
 class CompareLineItem(
@@ -20,17 +20,21 @@ class CompareLineItem(
 ) {
 
     enum class DiffStatus {
-        IDENTICAL, MODIFIED, ADDED, MISSING, HEADER
+        IDENTICAL,
+        MODIFIED,
+        ADDED,
+        MISSING,
+        HEADER
     }
 
 
     fun formatted(): String {
         val marker = when (status) {
             DiffStatus.IDENTICAL -> "  "
-            DiffStatus.MODIFIED  -> "≠ "
-            DiffStatus.ADDED     -> "+ "
-            DiffStatus.MISSING   -> "- "
-            DiffStatus.HEADER    -> "# "
+            DiffStatus.MODIFIED -> "≠ "
+            DiffStatus.ADDED -> "+ "
+            DiffStatus.MISSING -> "- "
+            DiffStatus.HEADER -> "# "
         }
         val indent = "  ".repeat(indentLevel)
         val disclosure = if (isDirectory) (if (isExpanded) "▼ " else "▶ ") else "  "

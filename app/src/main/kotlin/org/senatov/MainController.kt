@@ -4,7 +4,7 @@
  * CLI autocompare, DiffCellFactory coloring.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator
+package org.senatov
 
 import javafx.application.Platform
 import javafx.collections.FXCollections
@@ -26,16 +26,18 @@ import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import javafx.stage.Popup
 import javafx.stage.Stage
-import org.senatov.mimicomparator.cli.CliArgs
-import org.senatov.mimicomparator.compare.DirectoryComparator
-import org.senatov.mimicomparator.compare.FileContentComparator
-import org.senatov.mimicomparator.helpers.log.LogHelper
-import org.senatov.mimicomparator.helpers.log.LogTag
-import org.senatov.mimicomparator.model.CompareLineItem
-import org.senatov.mimicomparator.model.tree.DirTreeModel
-import org.senatov.mimicomparator.ui.cell.DiffCellFactory
-import org.senatov.mimicomparator.ui.config.ComparatorState
-import org.senatov.mimicomparator.ui.config.ComparatorStateService
+import org.senatov.App
+import org.senatov.cli.CliArgs
+import org.senatov.compare.DirCompareResult
+import org.senatov.compare.DirectoryComparator
+import org.senatov.compare.FileContentComparator
+import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
+import org.senatov.model.CompareLineItem
+import org.senatov.model.tree.DirTreeModel
+import org.senatov.ui.cell.DiffCellFactory
+import org.senatov.ui.config.ComparatorState
+import org.senatov.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
@@ -137,7 +139,7 @@ class MainController {
     private var pendingCliArgs: CliArgs? = null
     private var leftTreeModel: DirTreeModel? = null
     private var rightTreeModel: DirTreeModel? = null
-    private var lastDirResult: org.senatov.mimicomparator.compare.DirCompareResult? = null
+    private var lastDirResult: DirCompareResult? = null
     private val stateService = ComparatorStateService()
     private var comparatorState: ComparatorState? = null
     private var restoringState = false

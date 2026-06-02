@@ -4,7 +4,7 @@
  * CLI: MiMiComparator <left> <right> or --left/--right
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator
+package org.senatov
 
 import atlantafx.base.theme.CupertinoLight
 import javafx.animation.PauseTransition
@@ -16,11 +16,12 @@ import javafx.scene.image.Image
 import javafx.scene.text.Font
 import javafx.stage.Stage
 import javafx.util.Duration
-import org.senatov.mimicomparator.cli.CliArgs
-import org.senatov.mimicomparator.helpers.log.LogHelper
-import org.senatov.mimicomparator.helpers.log.LogTag
-import org.senatov.mimicomparator.ui.config.ComparatorState
-import org.senatov.mimicomparator.ui.config.ComparatorStateService
+import org.senatov.cli.CliArgs
+import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
+import org.senatov.MainController
+import org.senatov.ui.config.ComparatorState
+import org.senatov.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
 import java.awt.Taskbar
 import java.io.IOException
@@ -102,7 +103,8 @@ class App : Application() {
                     stage.icons.add(Image(input))
                     log.debug(LogTag.IO, "stage icon loaded {}", res)
                 } ?: log.debug(LogTag.IO, "stage icon missing {}", res)
-            } catch (ex: IOException) {
+            }
+            catch (ex: IOException) {
                 log.error(LogTag.IO, "stage icon read failed {}", res, ex)
             }
         }
@@ -123,7 +125,8 @@ class App : Application() {
                 }
             }
             log.debug(LogTag.APP, "taskbar icon skipped icns={}", APP_ICON_ICNS_RESOURCE)
-        } catch (ex: Exception) {
+        }
+        catch (ex: Exception) {
             log.warn(LogTag.APP, "taskbar icon failed", ex)
         }
     }
@@ -141,7 +144,8 @@ class App : Application() {
                         log.warn(LogTag.IO, "font load failed {}", res)
                     }
                 } ?: log.debug(LogTag.IO, "font missing {}", res)
-            } catch (ex: IOException) {
+            }
+            catch (ex: IOException) {
                 log.error(LogTag.IO, "font read failed {}", res, ex)
             }
         }

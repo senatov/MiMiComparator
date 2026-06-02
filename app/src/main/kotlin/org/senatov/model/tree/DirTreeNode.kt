@@ -3,9 +3,9 @@
  * name, path, attrs, children, expand state.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.model.tree
+package org.senatov.model.tree
 
-import org.senatov.mimicomparator.model.CompareLineItem.DiffStatus
+import org.senatov.model.CompareLineItem.DiffStatus
 
 
 class DirTreeNode(

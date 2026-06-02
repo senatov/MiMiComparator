@@ -151,7 +151,7 @@ app/src/main/kotlin/org/senatov/
         └── ComparatorStateService.kt # JSON load/save via Jackson
 ```
 
-> Source files live under `org/senatov/` on disk while the Kotlin package is `org.senatov.mimicomparator`. The build uses Kotlin/JVM source discovery, so the physical folder name does not need to mirror the package name.
+> Source files live under `org/senatov/` on disk while the Kotlin package is `org.senatov`. The build uses Kotlin/JVM source discovery, so the physical folder name does not need to mirror the package name.
 
 ## UI Notes
 

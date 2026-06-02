@@ -57,7 +57,7 @@ tasks.test {
 }
 
 application {
-    mainClass = "org.senatov.mimicomparator.App"
+    mainClass = "org.senatov.App"
     applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics")
 }
 

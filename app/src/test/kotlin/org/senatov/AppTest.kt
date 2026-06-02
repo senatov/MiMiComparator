@@ -2,7 +2,7 @@
  * Smoke test — verifies FXML loads w/o crash.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator
+package org.senatov
 
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull

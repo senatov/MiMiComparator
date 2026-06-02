@@ -25,7 +25,7 @@ TEMP_DIR="${TEMP_DIR:-$PROJECT_DIR/build/jpackage-tmp}"
 JAVA_OPTIONS="${JAVA_OPTIONS:---enable-native-access=ALL-UNNAMED}"
 VERBOSE="${VERBOSE:-1}"
 SIGN_APP="${SIGN_APP:-0}"
-BUNDLE_ID="${BUNDLE_ID:-com.senatov.mimicomparator}"
+BUNDLE_ID="${BUNDLE_ID:-com.senatov}"
 
 function info() {
     print -P "%F{33}[INFO]%f $*"

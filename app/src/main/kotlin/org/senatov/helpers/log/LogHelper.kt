@@ -1,7 +1,8 @@
-package org.senatov.mimicomparator.helpers.log
+package org.senatov.helpers.log
+
+import org.slf4j.Logger
 import org.slf4j.Marker
 import org.slf4j.MarkerFactory
-import org.slf4j.Logger
 
 object LogHelper {
 

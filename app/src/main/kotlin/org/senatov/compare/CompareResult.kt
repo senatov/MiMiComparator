@@ -3,9 +3,9 @@
  * left/right item lists, diff count, summary.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.compare
+package org.senatov.compare
 
-import org.senatov.mimicomparator.model.CompareLineItem
+import org.senatov.model.CompareLineItem
 
 
 data class CompareResult(

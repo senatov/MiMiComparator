@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane fx:id="rootPane" prefHeight="900" prefWidth="1180" style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" styleClass="root-pane" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.senatov.mimicomparator.MainController">
+<BorderPane fx:id="rootPane" prefHeight="900" prefWidth="1180" style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" styleClass="root-pane" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.senatov.MainController">
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
     <top>

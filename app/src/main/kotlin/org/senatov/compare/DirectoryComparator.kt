@@ -5,12 +5,12 @@
  * TC-style: left-only, right-only, same, different.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.compare
+package org.senatov.compare
 
-import org.senatov.mimicomparator.model.CompareLineItem.DiffStatus
-import org.senatov.mimicomparator.helpers.log.LogTag
-import org.senatov.mimicomparator.model.tree.DirTreeModel
-import org.senatov.mimicomparator.model.tree.DirTreeNode
+import org.senatov.model.CompareLineItem.DiffStatus
+import org.senatov.helpers.log.LogTag
+import org.senatov.model.tree.DirTreeModel
+import org.senatov.model.tree.DirTreeNode
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files

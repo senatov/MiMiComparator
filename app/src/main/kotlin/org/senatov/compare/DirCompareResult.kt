@@ -3,9 +3,9 @@
  * paired DirTreeModels + diff count.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.compare
+package org.senatov.compare
 
-import org.senatov.mimicomparator.model.tree.DirTreeModel
+import org.senatov.model.tree.DirTreeModel
 
 
 data class DirCompareResult(

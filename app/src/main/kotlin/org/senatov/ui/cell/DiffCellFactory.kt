@@ -5,7 +5,7 @@
  * File mode: IntelliJ-style diff coloring.
  * Iakov Senatov, 2026
  */
-package org.senatov.mimicomparator.ui.cell
+package org.senatov.ui.cell
 
 import javafx.geometry.Insets
 import javafx.geometry.Pos
@@ -15,13 +15,12 @@ import javafx.scene.control.ListView
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
-import org.senatov.mimicomparator.compare.DirectoryComparator
-import org.senatov.mimicomparator.model.CompareLineItem
-import org.senatov.mimicomparator.model.CompareLineItem.DiffStatus
+import org.senatov.compare.DirectoryComparator
+import org.senatov.model.CompareLineItem
+import org.senatov.model.CompareLineItem.DiffStatus
 
 
-class DiffCellFactory(private val dirMode: Boolean)
-    : Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
+class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
 
     companion object {
         private const val ROW_HEIGHT = 20.0
@@ -33,19 +32,23 @@ class DiffCellFactory(private val dirMode: Boolean)
 
         private fun monoSmallStyle() =
             "-fx-font-family:'System';-fx-font-size:${META_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
+
         private const val INDENT_PX = 18
+
         // dir mode zebra
         private const val DIR_EVEN = "#FFFFFF"
         private const val DIR_ODD = "#F6F6F7"
         private const val DIR_ADDED = "#FFFFFF"
         private const val DIR_MISSING = "#FFFFFF"
         private const val DIR_MODIFIED = "#FFF8D8"
+
         // file mode IntelliJ
         private const val FILE_IDENTICAL = "#FFFFFF"
         private const val FILE_MODIFIED = "#B8D4FF"
         private const val FILE_ADDED = "#C8E6C9"
         private const val FILE_MISSING = "#E0E0E0"
         private const val FILE_HEADER = "#E3F2FD"
+
         // text colors
         private const val TXT = "#111111"
         private const val TXT_MISS = "#6E6E73"
@@ -70,6 +73,7 @@ class DiffCellFactory(private val dirMode: Boolean)
         private val nameLabel = Label()
         private val sizeLabel = Label()
         private val dateLabel = Label()
+
         init {
             markerLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
             markerLabel.minWidth = 15.0
@@ -77,7 +81,8 @@ class DiffCellFactory(private val dirMode: Boolean)
             disclosureLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
             disclosureLabel.minWidth = 14.0
             disclosureLabel.alignment = Pos.CENTER
-            iconLabel.style = "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$TXT;-fx-opacity:1;"
+            iconLabel.style =
+                "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$TXT;-fx-opacity:1;"
             iconLabel.minWidth = 17.0
             iconLabel.alignment = Pos.CENTER
             nameLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
@@ -133,7 +138,8 @@ class DiffCellFactory(private val dirMode: Boolean)
             disclosureLabel.text = if (item.isDirectory) (if (item.isExpanded) "▾" else "▸") else ""
             disclosureLabel.style = monoStyle() + "-fx-text-fill:$fg;"
             iconLabel.text = if (item.isDirectory) "▣" else "▪"
-            iconLabel.style = "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$fg;-fx-opacity:1;"
+            iconLabel.style =
+                "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$fg;-fx-opacity:1;"
             nameLabel.text = item.text
             nameLabel.style = monoStyle() + "-fx-text-fill:$fg;"
             nameBox.padding = Insets(0.0, 0.0, 0.0, (item.indentLevel * INDENT_PX).toDouble())
