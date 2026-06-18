@@ -1,6 +1,6 @@
-<div align="center">
+<div style="text-align: center;">
 
-<img src="Doc/AppIcon-1024.png" alt="MiMiComparator" width="120">
+<img src="Doc/AppIcon-1024.png" alt="MiMiComparator" style="width: 120px;">
 
 # MiMiComparator
 
@@ -52,8 +52,13 @@ The app is currently focused on macOS and follows a compact native-style desktop
 
 ## Screenshot
 
-<p align="center">
-  <img src="Doc/Preview0.png" alt="MiMiComparator screenshot" width="900">
+<p style="text-align: center;">
+  <img src="Doc/Preview0.png" alt="MiMiComparator screenshot" style="width: 900px;">
+</p>
+
+...
+<p style="text-align: center;">
+  <img src="Doc/Preview1.png" alt="MiMiComparator screenshot" style="width: 900px;">
 </p>
 
 ## Tech Stack
