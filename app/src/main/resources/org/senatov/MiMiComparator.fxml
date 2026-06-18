@@ -27,12 +27,12 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
-
-<BorderPane fx:id="rootPane" prefHeight="900" prefWidth="1180" style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" styleClass="root-pane" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.senatov.MainController">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="rootPane" prefHeight="900" prefWidth="1180"
+            style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" xmlns="http://javafx.com/javafx/26" fx:controller="org.senatov.MainController">
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
     <top>
-        <VBox fx:id="topChrome" spacing="0" style="-fx-background-color:#f5f5f7;">
+        <VBox fx:id="topChrome" style="-fx-background-color:#f5f5f7;">
             <MenuBar useSystemMenuBar="true">
                 <Menu text="File">
                     <MenuItem accelerator="Shortcut+L" onAction="#onOpenLeft" text="Open Left…" />
@@ -45,7 +45,7 @@
                 </Menu>
                 <Menu text="View">
                     <CheckMenuItem fx:id="showIdenticalCheck" onAction="#onToggleIdentical" selected="true" text="Show identical lines" />
-                    <CheckMenuItem fx:id="showDirsCheck" onAction="#onToggleDirMode" selected="false" text="Directory mode" />
+                    <CheckMenuItem fx:id="showDirsCheck" onAction="#onToggleDirMode" text="Directory mode"/>
                     <SeparatorMenuItem />
                     <MenuItem accelerator="Shortcut+E" onAction="#onExpandAll" text="Expand All" />
                     <MenuItem accelerator="Shortcut+Shift+E" onAction="#onCollapseAll" text="Collapse All" />
@@ -59,9 +59,9 @@
             <ToolBar fx:id="mainToolBar" prefHeight="54" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                 <Button onAction="#onLoadHome" prefHeight="42.0" prefWidth="54.0" text="⌂&#10;Home" />
                 <Button text="▣&#10;Sessions" />
-                <ToggleButton fx:id="showAllToggle" prefHeight="42.0" prefWidth="54.0" selected="true" text="✱&#10;All" />
-                <ToggleButton fx:id="showDiffsToggle" prefHeight="42.0" prefWidth="54.0" text="≠&#10;Diffs" />
-                <ToggleButton fx:id="showSameToggle" prefHeight="42.0" prefWidth="54.0" text="=&#10;Same" />
+                <ToggleButton prefHeight="42.0" prefWidth="54.0" selected="true" text="✱&#10;All"/>
+                <ToggleButton prefHeight="42.0" prefWidth="54.0" text="≠&#10;Diffs"/>
+                <ToggleButton prefHeight="42.0" prefWidth="54.0" text="=&#10;Same"/>
                 <ToggleButton fx:id="dirModeToggle" onAction="#onToggleDirMode" prefHeight="42.0" prefWidth="54.0" text="▣&#10;Struct." textFill="#191bb9">
                     <font>
                         <Font size="18.0" />
@@ -110,18 +110,20 @@
                 <ToggleButton fx:id="syncScrollToggle" onAction="#onSyncScroll" selected="true" text="↕" />
             </ToolBar>
 
-            <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+            <HBox alignment="CENTER_LEFT" maxHeight="31" minHeight="31" prefHeight="31" spacing="4"
+                  style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                 <padding>
-                    <Insets bottom="2" left="6" right="6" top="2" />
+                    <Insets bottom="3" left="6" right="6" top="3"/>
                 </padding>
-                <TextField fx:id="leftPathField" editable="false" promptText="Left folder or file" style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13;" HBox.hgrow="ALWAYS" />
-                <Button onAction="#onOpenLeft" prefWidth="26" text="▾" textFill="#0d0f54" />
-                <Button onAction="#onOpenLeft" prefWidth="26" text="⌁" />
+                <TextField fx:id="leftPathField" promptText="Left folder or file"
+                           style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#onOpenLeft" prefHeight="24" prefWidth="26" text="▾" textFill="#0d0f54"/>
+                <Button onAction="#onOpenLeft" prefHeight="24" prefWidth="26" text="⌁"/>
                 <Separator orientation="VERTICAL" />
-                <TextField fx:id="rightPathField" editable="false" promptText="Right folder or file" style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13;" HBox.hgrow="ALWAYS" />
-                <Button onAction="#onOpenRight" prefWidth="26" text="▾" />
-                <Button onAction="#onOpenRight" prefWidth="26" text="⌁" />
-            <BorderPane prefHeight="200.0" prefWidth="200.0" />
+                <TextField fx:id="rightPathField" promptText="Right folder or file"
+                           style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#onOpenRight" prefHeight="24" prefWidth="26" text="▾"/>
+                <Button onAction="#onOpenRight" prefHeight="24" prefWidth="26" text="⌁"/>
             </HBox>
         </VBox>
     </top>
@@ -131,9 +133,9 @@
         <HBox fx:id="contentBox" VBox.vgrow="ALWAYS">
 
             <!-- ── LEFT panel ── -->
-            <VBox fx:id="leftPanel" spacing="0" HBox.hgrow="ALWAYS">
+            <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS">
                 <!-- column header -->
-                <HBox fx:id="leftColumnHeader" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                <HBox fx:id="leftColumnHeader" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                     <padding>
                         <Insets bottom="2" left="6" right="4" top="2" />
                     </padding>
@@ -153,9 +155,9 @@
             </VBox>
 
             <!-- ── RIGHT panel ── -->
-            <VBox fx:id="rightPanel" spacing="0" HBox.hgrow="ALWAYS">
+            <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS">
                 <!-- column header -->
-                <HBox fx:id="rightColumnHeader" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+                <HBox fx:id="rightColumnHeader" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                     <padding>
                         <Insets bottom="2" left="6" right="4" top="2" />
                     </padding>
@@ -171,7 +173,7 @@
 
     <!-- ═══ BOTTOM: status bar ═══ -->
     <bottom>
-        <VBox fx:id="bottomChrome" spacing="0" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:1 0 0 0;">
+        <VBox fx:id="bottomChrome" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:1 0 0 0;">
             <ListView fx:id="eventLogView" managed="false" prefHeight="112" style="-fx-background-color:#dfe4ec; -fx-border-color:#bcc3cc; -fx-border-width:0 0 1 0;" visible="false" />
             <HBox fx:id="bottomBar" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color:#f5f5f7;">
                 <padding>
@@ -179,9 +181,9 @@
                 </padding>
                 <Label fx:id="statusLeft" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="No file loaded" />
                 <Pane HBox.hgrow="ALWAYS" />
-                <Label fx:id="diffCountLabel" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="" />
+                <Label fx:id="diffCountLabel" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;"/>
                 <Pane HBox.hgrow="ALWAYS" />
-                <Label fx:id="statusCenter" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="" />
+                <Label fx:id="statusCenter" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;"/>
                 <Pane HBox.hgrow="ALWAYS" />
                 <Label fx:id="statusRight" style="-fx-text-fill:#1d1d1f; -fx-font-weight:400;" text="No file loaded" textFill="#381397" />
             </HBox>
