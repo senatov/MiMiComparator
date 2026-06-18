@@ -40,6 +40,12 @@ class MainController {
     @FXML
     internal lateinit var leftPathField: TextField
     @FXML
+    internal lateinit var leftPathMenuButton: Button
+
+    @FXML
+    internal lateinit var leftPathBrowseButton: Button
+
+    @FXML
     internal lateinit var leftListView: ListView<CompareLineItem>
     @FXML
     internal lateinit var leftColumnHeader: HBox
@@ -48,6 +54,12 @@ class MainController {
     internal lateinit var rightPanel: VBox
     @FXML
     internal lateinit var rightPathField: TextField
+
+    @FXML
+    internal lateinit var rightPathMenuButton: Button
+
+    @FXML
+    internal lateinit var rightPathBrowseButton: Button
     @FXML
     internal lateinit var rightListView: ListView<CompareLineItem>
     @FXML
