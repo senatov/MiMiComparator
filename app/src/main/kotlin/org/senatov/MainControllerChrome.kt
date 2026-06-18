@@ -68,10 +68,10 @@ private fun MainController.configurePathButtons() {
 }
 
 private fun installPathButton(button: Button, accent: String) {
-    button.minWidth = 32.0
-    button.prefWidth = 32.0
-    button.minHeight = 24.0
-    button.prefHeight = 24.0
+    button.minWidth = 34.0
+    button.prefWidth = 34.0
+    button.minHeight = 28.0
+    button.prefHeight = 28.0
     button.focusTraversableProperty().set(false)
     applyPathButtonStyle(button, accent, PathButtonState.NORMAL)
     button.setOnMouseEntered {
@@ -114,7 +114,7 @@ private fun applyPathButtonStyle(button: Button, accent: String, state: PathButt
         PathButtonState.HOVER -> "dropshadow(gaussian,rgba(31,111,235,0.34),6,0,0,1)"
         PathButtonState.PRESSED -> "innershadow(gaussian,rgba(0,0,0,0.22),4,0,0,1)"
     }
-    button.style = "-fx-font-family:'System'; -fx-font-size:17; -fx-font-weight:400; " +
+    button.style = "-fx-font-family:'System'; -fx-font-size:23; -fx-font-weight:400; " +
             "-fx-text-fill:$accent; -fx-background-color:$fill; -fx-background-radius:6; " +
             "-fx-border-color:$border; -fx-border-width:1; -fx-border-radius:6; " +
             "-fx-padding:0; -fx-effect:$shadow;"
@@ -168,17 +168,17 @@ private fun MainController.clearPathSide(isLeft: Boolean) {
 }
 
 private fun MainController.configureToolbarButtons() {
-    mainToolBar.prefHeight = 58.0
+    mainToolBar.prefHeight = 60.0
     mainToolBar.style = "-fx-background-color:#f7f7f8; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0; -fx-padding:6 7 6 7;"
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
         installToolbarGraphic(button)
-        button.minWidth = 44.0
-        button.prefWidth = 44.0
-        button.minHeight = 44.0
-        button.prefHeight = 44.0
+        button.minWidth = 46.0
+        button.prefWidth = 46.0
+        button.minHeight = 46.0
+        button.prefHeight = 46.0
         button.style = "-fx-padding:0; -fx-background-color:transparent; -fx-background-radius:8; -fx-font-smoothing-type:gray;"
     }
-    syncScrollToggle.prefWidth = 44.0
+    syncScrollToggle.prefWidth = 46.0
 }
 
 private fun MainController.installToolbarGraphic(button: ButtonBase) {
@@ -201,7 +201,7 @@ private fun MainController.installToolbarGraphic(button: ButtonBase) {
 private data class ToolbarIconSpec(
     val glyph: String,
     val color: String = "#2f343a",
-    val size: Int = 24,
+    val size: Int = 32,
     val emoji: Boolean = false,
 ) {
     val style: String
@@ -214,24 +214,24 @@ private data class ToolbarIconSpec(
 }
 
 private fun toolbarIconSpec(sourceIcon: String, labelText: String): ToolbarIconSpec = when (labelText) {
-    "Home" -> ToolbarIconSpec("⌂", "#4a6f9f", 26)
-    "Sessions" -> ToolbarIconSpec("🗂", size = 23, emoji = true)
-    "All" -> ToolbarIconSpec("✱", "#2d6cdf", 25)
-    "Diffs" -> ToolbarIconSpec("≠", "#d45a5a", 25)
-    "Same" -> ToolbarIconSpec("=", "#4aa564", 25)
-    "Struct." -> ToolbarIconSpec("▣", "#6f63c6", 25)
-    "Minor" -> ToolbarIconSpec("≈", "#2f8b9a", 25)
-    "Rules" -> ToolbarIconSpec("♟", "#6b7280", 24)
-    "Expand" -> ToolbarIconSpec("⊞", "#2f7d60", 24)
-    "Collapse" -> ToolbarIconSpec("⊟", "#8a6f36", 24)
-    "Select" -> ToolbarIconSpec("✓", "#2f7d60", 25)
-    "Files" -> ToolbarIconSpec("≠", "#d45a5a", 25)
-    "Refresh" -> ToolbarIconSpec("↻", "#2f7aa8", 25)
-    "Swap" -> ToolbarIconSpec("⇄", "#6d62be", 25)
-    "Stop" -> ToolbarIconSpec("×", "#9aa0a6", 25)
-    "Filters" -> ToolbarIconSpec("⌕", "#5f7c8a", 24)
-    "Peek" -> ToolbarIconSpec("🔎", size = 22, emoji = true)
-    else -> ToolbarIconSpec(sourceIcon, "#2f343a", 24)
+    "Home" -> ToolbarIconSpec("⌂", "#4a6f9f", 34)
+    "Sessions" -> ToolbarIconSpec("🗂", size = 30, emoji = true)
+    "All" -> ToolbarIconSpec("✱", "#2d6cdf", 34)
+    "Diffs" -> ToolbarIconSpec("≠", "#d45a5a", 34)
+    "Same" -> ToolbarIconSpec("=", "#4aa564", 34)
+    "Struct." -> ToolbarIconSpec("▣", "#6f63c6", 33)
+    "Minor" -> ToolbarIconSpec("≈", "#2f8b9a", 34)
+    "Rules" -> ToolbarIconSpec("♟", "#6b7280", 32)
+    "Expand" -> ToolbarIconSpec("⊞", "#2f7d60", 32)
+    "Collapse" -> ToolbarIconSpec("⊟", "#8a6f36", 32)
+    "Select" -> ToolbarIconSpec("✓", "#2f7d60", 34)
+    "Files" -> ToolbarIconSpec("≠", "#d45a5a", 34)
+    "Refresh" -> ToolbarIconSpec("↻", "#2f7aa8", 34)
+    "Swap" -> ToolbarIconSpec("⇄", "#6d62be", 34)
+    "Stop" -> ToolbarIconSpec("×", "#9aa0a6", 34)
+    "Filters" -> ToolbarIconSpec("⌕", "#5f7c8a", 32)
+    "Peek" -> ToolbarIconSpec("🔎", size = 29, emoji = true)
+    else -> ToolbarIconSpec(sourceIcon, "#2f343a", 32)
 }
 
 internal fun MainController.setupEventLog() {

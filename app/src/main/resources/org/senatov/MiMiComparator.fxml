@@ -56,7 +56,7 @@
             </MenuBar>
 
             <!-- toolbar -->
-            <ToolBar fx:id="mainToolBar" prefHeight="58" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
+            <ToolBar fx:id="mainToolBar" prefHeight="60" style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                 <Button onAction="#onLoadHome" prefHeight="42.0" prefWidth="54.0" text="⌂&#10;Home" />
                 <Button text="▣&#10;Sessions" />
                 <ToggleButton prefHeight="42.0" prefWidth="54.0" selected="true" text="✱&#10;All"/>
@@ -110,20 +110,20 @@
                 <ToggleButton fx:id="syncScrollToggle" onAction="#onSyncScroll" selected="true" text="↕" />
             </ToolBar>
 
-            <HBox alignment="CENTER_LEFT" maxHeight="31" minHeight="31" prefHeight="31" spacing="4"
+            <HBox alignment="CENTER_LEFT" maxHeight="35" minHeight="35" prefHeight="35" spacing="4"
                   style="-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0;">
                 <padding>
                     <Insets bottom="3" left="6" right="6" top="3"/>
                 </padding>
                 <TextField fx:id="leftPathField" promptText="Left folder or file"
                            style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="leftPathMenuButton" onAction="#onOpenLeft" prefHeight="24" prefWidth="32" text="▾"/>
-                <Button fx:id="leftPathBrowseButton" onAction="#onOpenLeft" prefHeight="24" prefWidth="32" text="⌁"/>
+                <Button fx:id="leftPathMenuButton" onAction="#onOpenLeft" prefHeight="28" prefWidth="34" text="▾"/>
+                <Button fx:id="leftPathBrowseButton" onAction="#onOpenLeft" prefHeight="28" prefWidth="34" text="⌁"/>
                 <Separator orientation="VERTICAL" />
                 <TextField fx:id="rightPathField" promptText="Right folder or file"
                            style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="rightPathMenuButton" onAction="#onOpenRight" prefHeight="24" prefWidth="32" text="▾"/>
-                <Button fx:id="rightPathBrowseButton" onAction="#onOpenRight" prefHeight="24" prefWidth="32" text="⌁"/>
+                <Button fx:id="rightPathMenuButton" onAction="#onOpenRight" prefHeight="28" prefWidth="34" text="▾"/>
+                <Button fx:id="rightPathBrowseButton" onAction="#onOpenRight" prefHeight="28" prefWidth="34" text="⌁"/>
             </HBox>
         </VBox>
     </top>
