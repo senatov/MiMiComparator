@@ -32,8 +32,8 @@ internal fun MainController.addProgrammaticUi() {
 
 internal fun MainController.configureCompareLists() {
     val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
-    leftListView.fixedCellSize = 21.0
-    rightListView.fixedCellSize = 21.0
+    leftListView.fixedCellSize = 27.0
+    rightListView.fixedCellSize = 27.0
     leftListView.style = listStyle
     rightListView.style = listStyle
 }
@@ -149,7 +149,8 @@ private fun MainController.commitPathField(field: TextField, isLeft: Boolean) {
     }
     showCompareView()
     applyPath(path, isLeft)
-    loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
+    if (leftPath != null && rightPath != null) compareCurrentInputs()
+    else loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
 }
 
 private fun MainController.clearPathSide(isLeft: Boolean) {
@@ -264,12 +265,12 @@ private fun toolbarHelpText(sourceIcon: String, labelText: String, existingText:
 internal fun MainController.setupEventLog() {
     eventLogView.isVisible = false
     eventLogView.isManaged = false
-    eventLogView.fixedCellSize = 18.0
-    eventLogView.style = "-fx-font-size:12; -fx-font-weight:400; -fx-text-fill:#1d1d1f;"
+    eventLogView.fixedCellSize = 20.0
+    eventLogView.style = "-fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;"
     bottomChrome.style = "-fx-background-color:#f5f5f7; -fx-border-color:#d8d8dc; -fx-border-width:1 0 0 0;"
     bottomBar.style = "-fx-background-color:#f5f5f7;"
     listOf(statusLeft, statusCenter, statusRight, diffCountLabel).forEach {
-        it.style = "-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:12; -fx-font-weight:400;"
+        it.style = "-fx-text-fill:#1d1d1f; -fx-font-size:13; -fx-font-weight:400;"
     }
     appendEvent("Username: ${System.getProperty("user.name", "")}")
     appendEvent("Load comparison: <->")

@@ -56,17 +56,10 @@ private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView
 internal fun MainController.refreshTreeViews() {
     val leftModel = leftTreeModel ?: return
     val rightModel = rightTreeModel ?: return
-    var leftItems = leftModel.toFlatList()
-    var rightItems = rightModel.toFlatList()
-    val filterText = filterField.text
-    if (filterText.isNotBlank()) {
-        val pattern = buildFilterPattern(filterText)
-        leftItems = applyFilter(leftItems, pattern)
-        rightItems = applyFilter(rightItems, pattern)
-    }
+    val (leftItems, rightItems) = filterPairedRows(leftModel.toFlatList(), rightModel.toFlatList())
     leftListView.items = FXCollections.observableArrayList(leftItems)
     rightListView.items = FXCollections.observableArrayList(rightItems)
-    log.debug(LogTag.UI, "tree view L={} R={} filter='{}'", leftItems.size, rightItems.size, filterText)
+    log.debug(LogTag.UI, "tree view L={} R={} filter='{}'", leftItems.size, rightItems.size, filterField.text)
 }
 
 internal fun MainController.updateColumnHeaderVisibility() {
@@ -96,12 +89,39 @@ private fun buildFilterPattern(filterText: String): Pattern {
 private fun applyFilter(items: List<CompareLineItem>, pattern: Pattern): List<CompareLineItem> =
     items.filter { it.isDirectory || pattern.matcher(it.text).find() }
 
+private fun MainController.filterPairedRows(
+    leftItems: List<CompareLineItem>,
+    rightItems: List<CompareLineItem>
+): Pair<List<CompareLineItem>, List<CompareLineItem>> {
+    val pattern = filterField.text.takeIf { it.isNotBlank() }?.let { buildFilterPattern(it) }
+    val leftFiltered = mutableListOf<CompareLineItem>()
+    val rightFiltered = mutableListOf<CompareLineItem>()
+    val count = minOf(leftItems.size, rightItems.size)
+    for (index in 0 until count) {
+        val left = leftItems[index]
+        val right = rightItems[index]
+        if (!showIdenticalCheck.isSelected && left.status == CompareLineItem.DiffStatus.IDENTICAL &&
+            right.status == CompareLineItem.DiffStatus.IDENTICAL
+        ) {
+            continue
+        }
+        if (pattern != null && !matchesEitherSide(left, right, pattern)) continue
+        leftFiltered.add(left)
+        rightFiltered.add(right)
+    }
+    return leftFiltered to rightFiltered
+}
+
+private fun matchesEitherSide(left: CompareLineItem, right: CompareLineItem, pattern: Pattern): Boolean =
+    left.isDirectory || right.isDirectory || pattern.matcher(left.text).find() || pattern.matcher(right.text).find()
+
 internal fun MainController.openPath(isLeft: Boolean) {
     showCompareView()
     chooseFileOrDir(if (isLeft) "Open Left" else "Open Right")?.let { path ->
         log.info(LogTag.UI, "open {} {}", if (isLeft) "left" else "right", path)
         applyPath(path, isLeft)
-        loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
+        if (leftPath != null && rightPath != null) compareCurrentInputs()
+        else loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
     }
 }
 
@@ -151,6 +171,10 @@ private fun MainController.compareFiles(left: Path, right: Path) {
 internal fun MainController.refreshPreviews() {
     log.info(LogTag.UI, "refresh")
     appendEvent("Fast refresh")
+    if (leftPath != null && rightPath != null) {
+        compareCurrentInputs()
+        return
+    }
     leftPath?.let { loadDirectoryPreview(it, leftListView, isLeft = true) }
     rightPath?.let { loadDirectoryPreview(it, rightListView, isLeft = false) }
 }
@@ -316,13 +340,16 @@ private fun MainController.chooseFileOrDir(title: String): Path? {
 private fun listDirEntries(dir: Path): List<CompareLineItem> {
     Files.list(dir).use { stream ->
         return stream.sorted().map { path ->
+            val attr = Files.readAttributes(path, java.nio.file.attribute.BasicFileAttributes::class.java)
             CompareLineItem(
                 lineNumber = 0,
                 text = path.fileName.toString(),
                 status = CompareLineItem.DiffStatus.IDENTICAL,
                 indentLevel = 0,
                 isDirectory = Files.isDirectory(path),
-                relativePath = path.fileName.toString()
+                relativePath = path.fileName.toString(),
+                size = if (Files.isDirectory(path)) 0 else attr.size(),
+                lastModifiedMs = attr.lastModifiedTime().toMillis()
             )
         }.collect(Collectors.toList())
     }

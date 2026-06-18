@@ -28,7 +28,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="rootPane" prefHeight="900" prefWidth="1180"
-            style="-fx-font-family:'System'; -fx-font-size:13; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" xmlns="http://javafx.com/javafx/26" fx:controller="org.senatov.MainController">
+            style="-fx-font-size:14; -fx-font-weight:400; -fx-text-fill:#1d1d1f;" xmlns="http://javafx.com/javafx/26" fx:controller="org.senatov.MainController">
 
     <!-- ═══ TOP: menu + toolbar ═══ -->
     <top>
@@ -44,7 +44,7 @@
                     <MenuItem accelerator="Shortcut+Q" onAction="#onQuit" text="Quit MiMiComparator"/>
                 </Menu>
                 <Menu text="View">
-                    <CheckMenuItem fx:id="showIdenticalCheck" onAction="#onToggleIdentical" selected="true" text="Show identical lines" />
+                    <CheckMenuItem fx:id="showIdenticalCheck" onAction="#onToggleIdentical" text="Show identical lines"/>
                     <CheckMenuItem fx:id="showDirsCheck" onAction="#onToggleDirMode" text="Compare directory structure"/>
                     <SeparatorMenuItem />
                     <MenuItem accelerator="Shortcut+E" onAction="#onExpandAll" text="Expand All Folders"/>
@@ -116,12 +116,12 @@
                     <Insets bottom="3" left="6" right="6" top="3"/>
                 </padding>
                 <TextField fx:id="leftPathField" promptText="Left folder or file"
-                           style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
+                           style="-fx-text-fill:#1d1d1f; -fx-font-size:14; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="leftPathMenuButton" onAction="#onOpenLeft" prefHeight="28" prefWidth="34" text="▾"/>
                 <Button fx:id="leftPathBrowseButton" onAction="#onOpenLeft" prefHeight="28" prefWidth="34" text="⌁"/>
                 <Separator orientation="VERTICAL" />
                 <TextField fx:id="rightPathField" promptText="Right folder or file"
-                           style="-fx-text-fill:#1d1d1f; -fx-font-family:'System'; -fx-font-size:13; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
+                           style="-fx-text-fill:#1d1d1f; -fx-font-size:14; -fx-highlight-fill:#0A84FF; -fx-highlight-text-fill:white;" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="rightPathMenuButton" onAction="#onOpenRight" prefHeight="28" prefWidth="34" text="▾"/>
                 <Button fx:id="rightPathBrowseButton" onAction="#onOpenRight" prefHeight="28" prefWidth="34" text="⌁"/>
             </HBox>
@@ -139,9 +139,9 @@
                     <padding>
                         <Insets bottom="2" left="6" right="4" top="2" />
                     </padding>
-                    <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS" />
-                    <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Size" />
-                    <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Modified" />
+                    <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS"/>
+                    <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Size"/>
+                    <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Modified"/>
                 </HBox>
                 <ListView fx:id="leftListView" style="-fx-background-color:white; -fx-border-width:0;" VBox.vgrow="ALWAYS" />
             </VBox>
@@ -161,9 +161,9 @@
                     <padding>
                         <Insets bottom="2" left="6" right="4" top="2" />
                     </padding>
-                    <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS" />
-                    <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Size" />
-                    <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:12; -fx-text-fill:#1d1d1f;" text="Modified" />
+                    <Label maxWidth="1E308" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Name" HBox.hgrow="ALWAYS"/>
+                    <Label alignment="CENTER_RIGHT" minWidth="96" prefWidth="96" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Size"/>
+                    <Label alignment="CENTER_RIGHT" minWidth="156" prefWidth="156" style="-fx-font-weight:500; -fx-font-size:14; -fx-text-fill:#1d1d1f;" text="Modified"/>
                 </HBox>
                 <ListView fx:id="rightListView" style="-fx-background-color:white; -fx-border-width:0;" VBox.vgrow="ALWAYS" />
             </VBox>

@@ -34,7 +34,7 @@ internal fun MainController.showCompareView() {
 
 private fun MainController.buildHomeView(): BorderPane {
     val root = BorderPane().apply {
-        style = "-fx-background-color:#f7f7f7; -fx-font-family:'${App.sfProDisplayFamily()}','Helvetica Neue',Arial,sans-serif;"
+        style = "-fx-background-color:#f7f7f7;"
     }
     root.left = buildSessionsPane()
     root.center = buildHomeContent()
@@ -91,7 +91,7 @@ private fun MainController.buildHomeContent(): VBox {
         style = "-fx-font-size:18; -fx-font-weight:700;"
     }
     val paths = VBox(4.0, Label(left), Label(right)).apply {
-        style = "-fx-font-size:13; -fx-text-fill:#222;"
+        style = "-fx-font-size:14; -fx-text-fill:#222;"
     }
     val open = Button("Open").apply {
         prefWidth = 84.0

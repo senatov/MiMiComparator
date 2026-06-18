@@ -23,15 +23,15 @@ import org.senatov.model.CompareLineItem.DiffStatus
 class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
 
     companion object {
-        private const val ROW_HEIGHT = 20.0
-        private const val NAME_FONT_SIZE = 13.0
-        private const val META_FONT_SIZE = 12
+        private const val ROW_HEIGHT = 26.0
+        private const val NAME_FONT_SIZE = 15.0
+        private const val META_FONT_SIZE = 14
 
         private fun monoStyle() =
-            "-fx-font-family:'System';-fx-font-size:${NAME_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
+            "-fx-font-size:${NAME_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
 
         private fun monoSmallStyle() =
-            "-fx-font-family:'System';-fx-font-size:${META_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
+            "-fx-font-size:${META_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
 
         private const val INDENT_PX = 18
 
@@ -82,7 +82,7 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
             disclosureLabel.minWidth = 14.0
             disclosureLabel.alignment = Pos.CENTER
             iconLabel.style =
-                "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$TXT;-fx-opacity:1;"
+                "-fx-font-size:15;-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-text-fill:$TXT;-fx-opacity:1;"
             iconLabel.minWidth = 17.0
             iconLabel.alignment = Pos.CENTER
             nameLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
@@ -139,7 +139,7 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
             disclosureLabel.style = monoStyle() + "-fx-text-fill:$fg;"
             iconLabel.text = if (item.isDirectory) "▣" else "▪"
             iconLabel.style =
-                "-fx-font-family:'System';-fx-font-size:14;-fx-font-weight:500;-fx-font-smoothing-type:gray;-fx-text-fill:$fg;-fx-opacity:1;"
+                "-fx-font-size:15;-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-text-fill:$fg;-fx-opacity:1;"
             nameLabel.text = item.text
             nameLabel.style = monoStyle() + "-fx-text-fill:$fg;"
             nameBox.padding = Insets(0.0, 0.0, 0.0, (item.indentLevel * INDENT_PX).toDouble())
