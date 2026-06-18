@@ -74,7 +74,9 @@ private fun MainController.buildSessionsPane(): VBox {
         })
         children.add(tree)
         VBox.setVgrow(tree, Priority.ALWAYS)
-        children.add(HBox(4.0, Button("+"), Button("-"), search).apply {
+        val addSession = Button("+").apply { installStandardHelp("Create a new comparison session") }
+        val removeSession = Button("-").apply { installStandardHelp("Remove the selected session") }
+        children.add(HBox(4.0, addSession, removeSession, search).apply {
             padding = Insets(4.0, 6.0, 6.0, 6.0)
             HBox.setHgrow(search, Priority.ALWAYS)
         })
@@ -93,10 +95,12 @@ private fun MainController.buildHomeContent(): VBox {
     }
     val open = Button("Open").apply {
         prefWidth = 84.0
+        installStandardHelp("Open the selected saved comparison")
         setOnAction { openSavedSession() }
     }
     val edit = Button("Edit").apply {
         prefWidth = 84.0
+        installStandardHelp("Edit the current comparison setup")
         setOnAction { showCompareView() }
     }
     val intro = Label("Drag folders or files onto session icon\nor click a session icon to begin:").apply {
@@ -140,6 +144,7 @@ private fun homeAction(icon: String, label: String, action: () -> Unit): VBox {
     }
     return VBox(8.0, iconLabel, text).apply {
         alignment = Pos.CENTER
+        installStandardHelp("Start $label")
         setOnMouseClicked { action() }
     }
 }

@@ -61,18 +61,19 @@ private fun MainController.installPathField(field: TextField, isLeft: Boolean) {
 }
 
 private fun MainController.configurePathButtons() {
-    installPathButton(leftPathMenuButton, "#1f6feb")
-    installPathButton(rightPathMenuButton, "#1f6feb")
-    installPathButton(leftPathBrowseButton, "#5f7c8a")
-    installPathButton(rightPathBrowseButton, "#5f7c8a")
+    installPathButton(leftPathMenuButton, "#1f6feb", "Open the left path chooser")
+    installPathButton(rightPathMenuButton, "#1f6feb", "Open the right path chooser")
+    installPathButton(leftPathBrowseButton, "#5f7c8a", "Browse for the left file or folder")
+    installPathButton(rightPathBrowseButton, "#5f7c8a", "Browse for the right file or folder")
 }
 
-private fun installPathButton(button: Button, accent: String) {
+private fun installPathButton(button: Button, accent: String, helpText: String) {
     button.minWidth = 34.0
     button.prefWidth = 34.0
     button.minHeight = 28.0
     button.prefHeight = 28.0
     button.focusTraversableProperty().set(false)
+    button.installStandardHelp(helpText)
     applyPathButtonStyle(button, accent, PathButtonState.NORMAL)
     button.setOnMouseEntered {
         animatePathButton(button, 1.06)
@@ -187,13 +188,14 @@ private fun MainController.installToolbarGraphic(button: ButtonBase) {
     val sourceIcon = parts.firstOrNull().orEmpty()
     val labelText = parts.getOrNull(1).orEmpty()
     val spec = toolbarIconSpec(sourceIcon, labelText)
+    val helpText = toolbarHelpText(sourceIcon, labelText, button.tooltip?.text)
     val icon = Label(spec.glyph).apply {
         alignment = Pos.CENTER
         maxWidth = Double.MAX_VALUE
         style = spec.style
     }
     button.text = null
-    button.tooltip = button.tooltip ?: labelText.takeIf { it.isNotBlank() }?.let { Tooltip(it) }
+    button.installStandardHelp(helpText)
     button.graphic = icon
     button.contentDisplay = ContentDisplay.GRAPHIC_ONLY
 }
@@ -232,6 +234,31 @@ private fun toolbarIconSpec(sourceIcon: String, labelText: String): ToolbarIconS
     "Filters" -> ToolbarIconSpec("⌕", "#5f7c8a", 32)
     "Peek" -> ToolbarIconSpec("🔎", size = 29, emoji = true)
     else -> ToolbarIconSpec(sourceIcon, "#2f343a", 32)
+}
+
+private fun toolbarHelpText(sourceIcon: String, labelText: String, existingText: String?): String {
+    existingText?.takeIf { it.isNotBlank() }?.let { return it }
+    return when (labelText.ifBlank { sourceIcon }) {
+        "Home" -> "Show the home screen"
+        "Sessions" -> "Open saved comparison sessions"
+        "All" -> "Show all comparison rows"
+        "Diffs" -> "Show only differing rows"
+        "Same" -> "Show identical rows"
+        "Struct." -> "Toggle directory structure comparison"
+        "Minor" -> "Toggle minor difference handling"
+        "Rules" -> "Open comparison rules"
+        "Expand" -> "Expand all directory nodes"
+        "Collapse" -> "Collapse all directory nodes"
+        "Select" -> "Select comparison items"
+        "Files" -> "Show file differences"
+        "Refresh" -> "Refresh the current comparison"
+        "Swap" -> "Swap left and right sides"
+        "Stop" -> "Stop or clear the current action"
+        "Filters" -> "Open filter options"
+        "Peek" -> "Preview filtered content"
+        "↕" -> "Toggle synchronized scrolling"
+        else -> labelText.ifBlank { "Toolbar action" }
+    }
 }
 
 internal fun MainController.setupEventLog() {

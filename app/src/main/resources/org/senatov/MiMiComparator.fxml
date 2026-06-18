@@ -35,20 +35,20 @@
         <VBox fx:id="topChrome" style="-fx-background-color:#f5f5f7;">
             <MenuBar useSystemMenuBar="true">
                 <Menu text="File">
-                    <MenuItem accelerator="Shortcut+L" onAction="#onOpenLeft" text="Open Left…" />
-                    <MenuItem accelerator="Shortcut+R" onAction="#onOpenRight" text="Open Right…" />
+                    <MenuItem accelerator="Shortcut+L" onAction="#onOpenLeft" text="Open Left File or Folder…"/>
+                    <MenuItem accelerator="Shortcut+R" onAction="#onOpenRight" text="Open Right File or Folder…"/>
                     <SeparatorMenuItem />
-                    <MenuItem accelerator="Shortcut+D" onAction="#onCompare" text="Compare" />
-                    <MenuItem accelerator="Shortcut+Shift+R" onAction="#onRefresh" text="Refresh" />
+                    <MenuItem accelerator="Shortcut+D" onAction="#onCompare" text="Compare Left and Right"/>
+                    <MenuItem accelerator="Shortcut+Shift+R" onAction="#onRefresh" text="Refresh Comparison"/>
                     <SeparatorMenuItem />
-                    <MenuItem accelerator="Shortcut+Q" onAction="#onQuit" text="Quit" />
+                    <MenuItem accelerator="Shortcut+Q" onAction="#onQuit" text="Quit MiMiComparator"/>
                 </Menu>
                 <Menu text="View">
                     <CheckMenuItem fx:id="showIdenticalCheck" onAction="#onToggleIdentical" selected="true" text="Show identical lines" />
-                    <CheckMenuItem fx:id="showDirsCheck" onAction="#onToggleDirMode" text="Directory mode"/>
+                    <CheckMenuItem fx:id="showDirsCheck" onAction="#onToggleDirMode" text="Compare directory structure"/>
                     <SeparatorMenuItem />
-                    <MenuItem accelerator="Shortcut+E" onAction="#onExpandAll" text="Expand All" />
-                    <MenuItem accelerator="Shortcut+Shift+E" onAction="#onCollapseAll" text="Collapse All" />
+                    <MenuItem accelerator="Shortcut+E" onAction="#onExpandAll" text="Expand All Folders"/>
+                    <MenuItem accelerator="Shortcut+Shift+E" onAction="#onCollapseAll" text="Collapse All Folders"/>
                 </Menu>
                 <Menu text="Help">
                     <MenuItem onAction="#onAbout" text="About MiMiComparator" />
