@@ -52,9 +52,6 @@ The app is currently focused on macOS and follows a compact native-style desktop
 
 ## Screenshot
 
-<p style="text-align: center;">
-  <img src="Doc/Preview0.png" alt="MiMiComparator screenshot" style="width: 900px;">
-</p>
 
 ...
 <p style="text-align: center;">
