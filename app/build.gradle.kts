@@ -1,7 +1,5 @@
-import org.gradle.api.GradleException
-import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.Exec
 import org.gradle.jvm.tasks.Jar
+
 /*
  * Build script for the MiMiComparator desktop application.
  * Kotlin + JavaFX edition.
@@ -64,7 +62,7 @@ application {
 val jpackageInputDir = layout.buildDirectory.dir("jpackage/input")
 val appImageOutputDir = layout.buildDirectory.dir("jpackage/output")
 
-val prepareJpackageInput by tasks.registering(Copy::class) {
+val prepareJpackageInput = tasks.register<Copy>("prepareJpackageInput") {
     dependsOn(tasks.named("jar"))
     into(jpackageInputDir)
     from(tasks.named<Jar>("jar"))
