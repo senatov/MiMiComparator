@@ -67,7 +67,7 @@ class App : Application() {
         }
 
         fun sfProDisplayFamily(): String {
-            LogHelper.enter(LoggerFactory.getLogger(App::class.java), LogTag.APP, "sfProDisplayFamily")
+            LoggerFactory.getLogger(App::class.java).debug(LogTag.APP, "sfProDisplayFamily()")
             return sfProDisplayFamily
         }
     }
@@ -113,7 +113,7 @@ class App : Application() {
     }
 
     private fun applyTaskbarIcon() {
-        LogHelper.enter(log, LogTag.APP, "applyTaskbarIcon")
+        log.debug(LogTag.APP, "applyTaskbarIcon()")
         if (!Taskbar.isTaskbarSupported()) {
             log.debug(LogTag.APP, "taskbar unsupported"); return
         }
@@ -135,7 +135,7 @@ class App : Application() {
     }
 
     private fun preloadEmbeddedFonts() {
-        LogHelper.enter(log, LogTag.APP, "preloadEmbeddedFonts")
+        log.debug(LogTag.APP, "preloadEmbeddedFonts()")
         for (res in SF_PRO_DISPLAY_FONT_RESOURCES) {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
@@ -178,7 +178,7 @@ class App : Application() {
     }
 
     private fun requestStageAutosave() {
-        LogHelper.enter(log, LogTag.STATE, "requestStageAutosave")
+        log.debug(LogTag.STATE, "requestStageAutosave()")
         stageAutosaveDebounce.playFromStart()
     }
 
@@ -194,7 +194,7 @@ class App : Application() {
     }
 
     private fun loadRootView(): Parent {
-        LogHelper.enter(log, LogTag.APP, "loadRootView")
+        log.debug(LogTag.APP, "loadRootView()")
         val loader = FXMLLoader(App::class.java.getResource(FXML_FILE_NAME))
         if (loader.location == null) throw IOException("FXML resource not found: $FXML_FILE_NAME")
         val root: Parent = loader.load()

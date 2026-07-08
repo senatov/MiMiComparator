@@ -19,7 +19,7 @@ import java.util.regex.Pattern
 import java.util.stream.Collectors
 
 internal fun MainController.executeCliAutoCompare() {
-    LogHelper.enter(log, LogTag.CLI, "executeCliAutoCompare")
+    log.debug(LogTag.CLI, "executeCliAutoCompare()")
     val cli = pendingCliArgs ?: return
     log.info(LogTag.CLI, "apply auto={} dirExplicit={}", cli.autoCompare, cli.hasExplicitDirMode())
     if (cli.leftPath == null && cli.rightPath == null && !cli.hasExplicitDirMode()) {
@@ -42,7 +42,7 @@ internal fun MainController.executeCliAutoCompare() {
 }
 
 internal fun MainController.setupClickToExpand() {
-    LogHelper.enter(log, LogTag.UI, "setupClickToExpand")
+    log.debug(LogTag.UI, "setupClickToExpand()")
     leftListView.setOnMouseClicked { event -> handleTreeClick(event, leftListView) }
     rightListView.setOnMouseClicked { event -> handleTreeClick(event, rightListView) }
 }
@@ -59,7 +59,7 @@ private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView
 }
 
 internal fun MainController.refreshTreeViews() {
-    LogHelper.enter(log, LogTag.UI, "refreshTreeViews")
+    log.debug(LogTag.UI, "refreshTreeViews()")
     val leftModel = leftTreeModel ?: return
     val rightModel = rightTreeModel ?: return
     val (leftItems, rightItems) = filterPairedRows(leftModel.toFlatList(), rightModel.toFlatList())
@@ -69,7 +69,7 @@ internal fun MainController.refreshTreeViews() {
 }
 
 internal fun MainController.updateColumnHeaderVisibility() {
-    LogHelper.enter(log, LogTag.UI, "updateColumnHeaderVisibility")
+    log.debug(LogTag.UI, "updateColumnHeaderVisibility()")
     leftColumnHeader.isVisible = dirMode
     leftColumnHeader.isManaged = dirMode
     rightColumnHeader.isVisible = dirMode
@@ -77,7 +77,7 @@ internal fun MainController.updateColumnHeaderVisibility() {
 }
 
 internal fun MainController.applyCurrentFilter() {
-    LogHelper.enter(log, LogTag.UI, "applyCurrentFilter")
+    log.debug(LogTag.UI, "applyCurrentFilter()")
     log.debug(LogTag.UI, "filter '{}'", filterField.text)
     if (dirMode && leftTreeModel != null) refreshTreeViews() else if (!dirMode) compareCurrentInputs()
 }
@@ -135,7 +135,7 @@ internal fun MainController.openPath(isLeft: Boolean) {
 }
 
 internal fun MainController.compareCurrentInputs() {
-    LogHelper.enter(log, LogTag.COMPARE, "compareCurrentInputs")
+    log.debug(LogTag.COMPARE, "compareCurrentInputs()")
     showCompareView()
     val lp = leftPath
     val rp = rightPath
@@ -181,7 +181,7 @@ private fun MainController.compareFiles(left: Path, right: Path) {
 }
 
 internal fun MainController.refreshPreviews() {
-    LogHelper.enter(log, LogTag.UI, "refreshPreviews")
+    log.debug(LogTag.UI, "refreshPreviews()")
     appendEvent("Fast refresh")
     if (leftPath != null && rightPath != null) {
         compareCurrentInputs()
@@ -192,7 +192,7 @@ internal fun MainController.refreshPreviews() {
 }
 
 internal fun MainController.toggleDirMode() {
-    LogHelper.enter(log, LogTag.UI, "toggleDirMode")
+    log.debug(LogTag.UI, "toggleDirMode()")
     setDirMode(!dirMode)
     persistUiState()
 }
@@ -210,7 +210,7 @@ internal fun MainController.setDirMode(enabled: Boolean) {
 }
 
 internal fun MainController.expandAllTrees() {
-    LogHelper.enter(log, LogTag.UI, "expandAllTrees")
+    log.debug(LogTag.UI, "expandAllTrees()")
     log.info(LogTag.UI, "expand all")
     leftTreeModel?.expandAll()
     rightTreeModel?.expandAll()
@@ -218,7 +218,7 @@ internal fun MainController.expandAllTrees() {
 }
 
 internal fun MainController.collapseAllTrees() {
-    LogHelper.enter(log, LogTag.UI, "collapseAllTrees")
+    log.debug(LogTag.UI, "collapseAllTrees()")
     log.info(LogTag.UI, "collapse all")
     leftTreeModel?.collapseAll()
     rightTreeModel?.collapseAll()
@@ -226,7 +226,7 @@ internal fun MainController.collapseAllTrees() {
 }
 
 internal fun MainController.restoreUiFromState() {
-    LogHelper.enter(log, LogTag.STATE, "restoreUiFromState")
+    log.debug(LogTag.STATE, "restoreUiFromState()")
     val state = comparatorState ?: return
     log.debug(LogTag.STATE, "restore UI dir={} sync={} ratio={}", state.isDirMode, state.isSyncScroll, state.splitRatio)
     restoringState = true
@@ -268,7 +268,7 @@ internal fun MainController.applyPath(path: Path, isLeft: Boolean) {
 }
 
 internal fun MainController.persistInputPaths() {
-    LogHelper.enter(log, LogTag.STATE, "persistInputPaths")
+    log.debug(LogTag.STATE, "persistInputPaths()")
     if (restoringState) return
     val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
     state.leftInputPath = leftPath?.toString() ?: ""
@@ -280,7 +280,7 @@ internal fun MainController.persistInputPaths() {
 }
 
 internal fun MainController.persistUiState() {
-    LogHelper.enter(log, LogTag.STATE, "persistUiState")
+    log.debug(LogTag.STATE, "persistUiState()")
     if (restoringState) return
     val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
     state.isDirMode = dirMode
@@ -290,7 +290,7 @@ internal fun MainController.persistUiState() {
 }
 
 internal fun MainController.swapPanels() {
-    LogHelper.enter(log, LogTag.UI, "swapPanels")
+    log.debug(LogTag.UI, "swapPanels()")
     showCompareView()
     log.info(LogTag.UI, "swap panels")
     val tmpPath = leftPath
@@ -315,7 +315,7 @@ internal fun MainController.swapPanels() {
 }
 
 internal fun MainController.updateCenterStripState() {
-    LogHelper.enter(log, LogTag.UI, "updateCenterStripState")
+    log.debug(LogTag.UI, "updateCenterStripState()")
     val hasBoth = leftPath != null && rightPath != null
     copyRightBtn.isDisable = !hasBoth
     copyLeftBtn.isDisable = !hasBoth

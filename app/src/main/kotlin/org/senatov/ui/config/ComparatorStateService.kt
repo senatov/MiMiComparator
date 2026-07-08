@@ -27,7 +27,7 @@ class ComparatorStateService {
 
 
     fun load(): ComparatorState {
-        LogHelper.enter(log, LogTag.STATE, "load")
+        log.debug(LogTag.STATE, "load()")
         return try {
             ensureStateDirectoryExists()
             val stateFile = stateFilePath
@@ -67,7 +67,7 @@ class ComparatorStateService {
         get() = stateDirectoryPath.resolve(STATE_FILE_NAME)
 
     private fun ensureStateDirectoryExists() {
-        LogHelper.enter(log, LogTag.STATE, "ensureStateDirectoryExists")
+        log.debug(LogTag.STATE, "ensureStateDirectoryExists()")
         Files.createDirectories(stateDirectoryPath)
     }
 

@@ -31,14 +31,14 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     fun expandAll() {
-        LogHelper.enter(log, LogTag.UI, "expandAll")
+        log.debug(LogTag.UI, "expandAll()")
         expandAllRecursive(roots)
         log.info(LogTag.UI, "expanded all count={}", expandedPaths.size)
     }
 
 
     fun collapseAll() {
-        LogHelper.enter(log, LogTag.UI, "collapseAll")
+        log.debug(LogTag.UI, "collapseAll()")
         expandedPaths.clear()
         log.info(LogTag.UI, "collapsed all")
     }
@@ -51,7 +51,7 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     fun toFlatList(): List<CompareLineItem> {
-        LogHelper.enter(log, LogTag.UI, "toFlatList")
+        log.debug(LogTag.UI, "toFlatList()")
         val result = mutableListOf<CompareLineItem>()
         for (root in roots) {
             flattenNode(root, result)

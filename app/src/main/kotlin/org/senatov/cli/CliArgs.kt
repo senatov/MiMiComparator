@@ -23,17 +23,17 @@ class CliArgs private constructor(
 ) {
 
     fun left(): Path? {
-        LogHelper.enter(log, LogTag.CLI, "left")
+        log.debug(LogTag.CLI, "left()")
         return leftPath
     }
 
     fun right(): Path? {
-        LogHelper.enter(log, LogTag.CLI, "right")
+        log.debug(LogTag.CLI, "right()")
         return rightPath
     }
 
     fun hasExplicitDirMode(): Boolean {
-        LogHelper.enter(log, LogTag.CLI, "hasExplicitDirMode")
+        log.debug(LogTag.CLI, "hasExplicitDirMode()")
         return dirModeExplicit
     }
 

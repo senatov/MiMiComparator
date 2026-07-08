@@ -24,7 +24,7 @@ internal const val TITLE_COMPARE = "Documents - Folder Compare"
 private val EVENT_TIME_FMT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
 internal fun MainController.addProgrammaticUi() {
-    LogHelper.enter(log, LogTag.UI, "addProgrammaticUi")
+    log.debug(LogTag.UI, "addProgrammaticUi()")
     configureToolbarButtons()
     ratioPopupLabel.style = "-fx-background-color:#fff8c9; -fx-border-color:#d4c36a; -fx-border-radius:8; " +
             "-fx-background-radius:8; -fx-padding:6 10 6 10; -fx-font-weight:700; -fx-text-fill:#5d4a00;"
@@ -34,7 +34,7 @@ internal fun MainController.addProgrammaticUi() {
 }
 
 internal fun MainController.configureCompareLists() {
-    LogHelper.enter(log, LogTag.UI, "configureCompareLists")
+    log.debug(LogTag.UI, "configureCompareLists()")
     val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
     leftListView.fixedCellSize = 27.0
     rightListView.fixedCellSize = 27.0
@@ -43,14 +43,14 @@ internal fun MainController.configureCompareLists() {
 }
 
 internal fun MainController.installDiffCellFactories() {
-    LogHelper.enter(log, LogTag.UI, "installDiffCellFactories")
+    log.debug(LogTag.UI, "installDiffCellFactories()")
     val factory = DiffCellFactory(dirMode)
     leftListView.cellFactory = factory
     rightListView.cellFactory = factory
 }
 
 internal fun MainController.configurePathFields() {
-    LogHelper.enter(log, LogTag.UI, "configurePathFields")
+    log.debug(LogTag.UI, "configurePathFields()")
     installPathField(leftPathField, isLeft = true)
     installPathField(rightPathField, isLeft = false)
     configurePathButtons()
@@ -68,7 +68,7 @@ private fun MainController.installPathField(field: TextField, isLeft: Boolean) {
 }
 
 private fun MainController.configurePathButtons() {
-    LogHelper.enter(log, LogTag.UI, "configurePathButtons")
+    log.debug(LogTag.UI, "configurePathButtons()")
     installPathButton(leftPathMenuButton, "#1f6feb", "Open the left path chooser")
     installPathButton(rightPathMenuButton, "#1f6feb", "Open the right path chooser")
     installPathButton(leftPathBrowseButton, "#5f7c8a", "Browse for the left file or folder")
@@ -180,7 +180,7 @@ private fun MainController.clearPathSide(isLeft: Boolean) {
 }
 
 private fun MainController.configureToolbarButtons() {
-    LogHelper.enter(log, LogTag.UI, "configureToolbarButtons")
+    log.debug(LogTag.UI, "configureToolbarButtons()")
     mainToolBar.prefHeight = 60.0
     mainToolBar.style = "-fx-background-color:#f7f7f8; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0; -fx-padding:6 7 6 7;"
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
@@ -275,7 +275,7 @@ private fun toolbarHelpText(sourceIcon: String, labelText: String, existingText:
 }
 
 internal fun MainController.setupEventLog() {
-    LogHelper.enter(log, LogTag.UI, "setupEventLog")
+    log.debug(LogTag.UI, "setupEventLog()")
     eventLogView.isVisible = false
     eventLogView.isManaged = false
     eventLogView.fixedCellSize = 20.0
@@ -301,7 +301,7 @@ internal fun MainController.appendEvent(message: String) {
 }
 
 internal fun MainController.getStage(): Stage {
-    LogHelper.enter(log, LogTag.UI, "getStage")
+    log.debug(LogTag.UI, "getStage()")
     return leftPathField.scene.window as Stage
 }
 
@@ -323,7 +323,7 @@ internal fun MainController.copyToClipboard(text: String) {
 }
 
 internal fun MainController.showAboutDialog() {
-    LogHelper.enter(log, LogTag.UI, "showAboutDialog")
+    log.debug(LogTag.UI, "showAboutDialog()")
     Alert(Alert.AlertType.INFORMATION).apply {
         title = "About"
         headerText = "MiMiComparator"

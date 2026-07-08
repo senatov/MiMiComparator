@@ -11,7 +11,7 @@ import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 
 internal fun MainController.setupSyncScroll() {
-    LogHelper.enter(log, LogTag.UI, "setupSyncScroll")
+    log.debug(LogTag.UI, "setupSyncScroll()")
     Platform.runLater {
         bindScrollBars(leftListView, rightListView)
         bindScrollBars(rightListView, leftListView)
@@ -32,7 +32,7 @@ private fun findScrollBar(listView: ListView<*>): ScrollBar? =
         .firstOrNull { it.orientation == Orientation.VERTICAL }
 
 internal fun MainController.setupResizableCenterStrip() {
-    LogHelper.enter(log, LogTag.UI, "setupResizableCenterStrip")
+    log.debug(LogTag.UI, "setupResizableCenterStrip()")
     HBox.setHgrow(leftPanel, Priority.ALWAYS)
     HBox.setHgrow(rightPanel, Priority.ALWAYS)
     leftPanel.minWidth = 160.0
@@ -90,12 +90,12 @@ private fun MainController.showRatioPopup(event: MouseEvent) {
 }
 
 private fun MainController.updateRatioPopupText() {
-    LogHelper.enter(log, LogTag.UI, "updateRatioPopupText")
+    log.debug(LogTag.UI, "updateRatioPopupText()")
     val leftPercent = (leftPanelRatio * 100.0).toInt()
     ratioPopupLabel.text = "$leftPercent% / ${100 - leftPercent}%"
 }
 
 private fun MainController.hideRatioPopup() {
-    LogHelper.enter(log, LogTag.UI, "hideRatioPopup")
+    log.debug(LogTag.UI, "hideRatioPopup()")
     if (ratioPopup.isShowing) ratioPopup.hide()
 }

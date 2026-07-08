@@ -122,7 +122,7 @@ class MainController {
 
     @FXML
     private fun initialize() {
-        LogHelper.enter(log, LogTag.UI, "initialize")
+        log.debug(LogTag.UI, "initialize()")
         comparatorState = stateService.load()
         configureCompareLists()
         installDiffCellFactories()
@@ -188,7 +188,7 @@ class MainController {
     private fun onAbout() = uiAction("onAbout") { showAboutDialog() }
 
     private inline fun uiAction(method: String, action: () -> Unit) {
-        LogHelper.enter(log, LogTag.UI, method)
+        log.debug(LogTag.UI, "{}()", method)
         action()
     }
 }
