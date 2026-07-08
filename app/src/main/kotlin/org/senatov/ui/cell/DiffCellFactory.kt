@@ -20,12 +20,13 @@ import org.senatov.model.CompareLineItem
 import org.senatov.model.DiffStatus
 
 
-class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
+class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolean = false) :
+    Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
 
     companion object {
-        private const val ROW_HEIGHT = 26.0
-        private const val NAME_FONT_SIZE = 15.0
-        private const val META_FONT_SIZE = 14
+        private const val ROW_HEIGHT = 22.0
+        private const val NAME_FONT_SIZE = 14.0
+        private const val META_FONT_SIZE = 13
 
         private fun monoStyle() =
             "-fx-font-size:${NAME_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
@@ -60,11 +61,11 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
 
 
     override fun call(listView: ListView<CompareLineItem>): ListCell<CompareLineItem> =
-        if (dirMode) DirCell() else FileCell()
+        if (dirMode) DirCell(mirrored) else FileCell()
 
 
     // ═══ Dir mode cell: columns Name | Size | Modified ═══
-    private class DirCell : ListCell<CompareLineItem>() {
+    private class DirCell(private val mirrored: Boolean) : ListCell<CompareLineItem>() {
         private val row = HBox(4.0)
         private val nameBox = HBox(2.0)
         private val markerLabel = Label()
@@ -92,15 +93,16 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
             nameBox.children.addAll(markerLabel, disclosureLabel, iconLabel, nameLabel)
             HBox.setHgrow(nameBox, Priority.ALWAYS)
             sizeLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
-            sizeLabel.minWidth = 96.0
-            sizeLabel.prefWidth = 96.0
+            sizeLabel.minWidth = 92.0
+            sizeLabel.prefWidth = 92.0
             sizeLabel.alignment = Pos.CENTER_RIGHT
             dateLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
-            dateLabel.minWidth = 156.0
-            dateLabel.prefWidth = 156.0
+            dateLabel.minWidth = 128.0
+            dateLabel.prefWidth = 128.0
             dateLabel.alignment = Pos.CENTER_RIGHT
             row.alignment = Pos.CENTER_LEFT
-            row.children.addAll(nameBox, sizeLabel, dateLabel)
+            if (mirrored) row.children.addAll(dateLabel, sizeLabel, nameBox)
+            else row.children.addAll(nameBox, sizeLabel, dateLabel)
             row.padding = Insets(0.0, 5.0, 0.0, 5.0)
             row.minHeight = ROW_HEIGHT
             row.prefHeight = ROW_HEIGHT

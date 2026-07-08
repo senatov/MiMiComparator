@@ -5,6 +5,7 @@ import javafx.scene.control.ListView
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
+import org.senatov.compare.CompareMode
 import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
 import org.senatov.helpers.log.LogTag
@@ -21,13 +22,24 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
 import java.util.stream.Collectors
+import kotlin.math.max
 
 internal fun MainController.executeCliAutoCompare() {
     log.debug(LogTag.CLI, "executeCliAutoCompare()")
     val cli = pendingCliArgs ?: return
     log.info(LogTag.CLI, "apply auto={} dirExplicit={}", cli.autoCompare, cli.hasExplicitDirMode())
     if (cli.leftPath == null && cli.rightPath == null && !cli.hasExplicitDirMode()) {
-        showHomeView()
+        showCompareView()
+        val state = comparatorState ?: return
+        restoringState = true
+        try {
+            restoreSavedPath(state.leftInputPath, ComparisonSide.LEFT)
+            restoreSavedPath(state.rightInputPath, ComparisonSide.RIGHT)
+        }
+        finally {
+            restoringState = false
+        }
+        if (leftPath != null && rightPath != null) compareCurrentInputs()
         return
     }
     showCompareView()
@@ -51,6 +63,99 @@ internal fun MainController.setupClickToExpand() {
     rightListView.setOnMouseClicked { event -> handleTreeClick(event, rightListView) }
 }
 
+internal fun MainController.setupSelectionPreview() {
+    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, value ->
+        synchronizeSelection(value.toInt(), leftListView)
+    }
+    rightListView.selectionModel.selectedIndexProperty().addListener { _, _, value ->
+        synchronizeSelection(value.toInt(), rightListView)
+    }
+}
+
+private fun MainController.synchronizeSelection(index: Int, source: ListView<CompareLineItem>) {
+    if (syncingSelection || index < 0) return
+    syncingSelection = true
+    try {
+        val target = if (source === leftListView) rightListView else leftListView
+        target.selectionModel.select(index)
+        target.scrollTo(index)
+        operationListView.selectionModel.select(index)
+        operationListView.scrollTo(index)
+        showSelectedFilePreview(index)
+    }
+    finally {
+        syncingSelection = false
+    }
+}
+
+private fun MainController.showSelectedFilePreview(index: Int) {
+    val leftItem = leftListView.items.getOrNull(index)
+    val rightItem = rightListView.items.getOrNull(index)
+    if (leftItem?.isDirectory == true || rightItem?.isDirectory == true) {
+        clearPreview("Folder selected")
+        return
+    }
+    val relativePath = leftItem?.relativePath?.ifBlank { null }
+        ?: rightItem?.relativePath?.ifBlank { null }
+    val leftFile = if (dirMode && relativePath != null) leftPath?.resolve(relativePath) else leftPath
+    val rightFile = if (dirMode && relativePath != null) rightPath?.resolve(relativePath) else rightPath
+    val leftLines = readPreviewLines(leftFile)
+    val rightLines = readPreviewLines(rightFile)
+    if (leftLines == null && rightLines == null) {
+        clearPreview("Cannot show file")
+        return
+    }
+
+    val leftOutput = mutableListOf<String>()
+    val rightOutput = mutableListOf<String>()
+    var differences = 0
+    val count = max(leftLines?.size ?: 0, rightLines?.size ?: 0)
+    for (lineIndex in 0 until count) {
+        val leftLine = leftLines?.getOrNull(lineIndex)
+        val rightLine = rightLines?.getOrNull(lineIndex)
+        val different = leftLine != rightLine
+        if (different) differences++
+        val leftStatus = when {
+            leftLine == null -> 'X'
+            rightLine == null -> 'A'
+            different -> 'M'
+            else -> 'I'
+        }
+        val rightStatus = when {
+            rightLine == null -> 'X'
+            leftLine == null -> 'A'
+            different -> 'M'
+            else -> 'I'
+        }
+        leftOutput += "$leftStatus${lineIndex + 1}\t${leftLine.orEmpty()}"
+        rightOutput += "$rightStatus${lineIndex + 1}\t${rightLine.orEmpty()}"
+    }
+    previewLeftView.items = FXCollections.observableArrayList(leftOutput)
+    previewRightView.items = FXCollections.observableArrayList(rightOutput)
+    previewDiffCountLabel.text = if (differences == 1) "1 difference" else "$differences differences"
+    statusCenter.text = if (differences == 0) "Contents are identical" else "Text representation differs from file content on disk"
+    previewNoticeBox.style = if (differences == 0) {
+        "-fx-background-color:#f3f7ff; -fx-border-color:#b8d1ff; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
+    } else {
+        "-fx-background-color:#fff8e8; -fx-border-color:#efc968; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
+    }
+    previewNoticeIcon.text = if (differences == 0) "●" else "▲"
+    bottomChrome.prefHeight = (rootPane.height * 0.30).coerceIn(210.0, 300.0)
+}
+
+private fun MainController.readPreviewLines(path: Path?): List<String>? {
+    if (path == null || !Files.isRegularFile(path)) return null
+    return runCatching { Files.readAllLines(path) }.getOrNull()
+}
+
+private fun MainController.clearPreview(message: String) {
+    previewLeftView.items.clear()
+    previewRightView.items.clear()
+    previewDiffCountLabel.text = "0 differences"
+    statusCenter.text = message
+    bottomChrome.prefHeight = 220.0
+}
+
 private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView<CompareLineItem>) {
     log.debug(LogTag.UI, "handleTreeClick(clickCount={})", event.clickCount)
     if (!dirMode || event.clickCount < 2) return
@@ -69,6 +174,7 @@ internal fun MainController.refreshTreeViews() {
     val (leftItems, rightItems) = filterPairedRows(leftModel.toFlatList(), rightModel.toFlatList())
     leftListView.items = FXCollections.observableArrayList(leftItems)
     rightListView.items = FXCollections.observableArrayList(rightItems)
+    updateOperationRows(leftItems, rightItems)
     log.debug(LogTag.UI, "tree view L={} R={} filter='{}'", leftItems.size, rightItems.size, filterField.text)
 }
 
@@ -109,11 +215,9 @@ private fun MainController.filterPairedRows(
     for (index in 0 until count) {
         val left = leftItems[index]
         val right = rightItems[index]
-        if (!showIdenticalCheck.isSelected && left.status == DiffStatus.IDENTICAL &&
-            right.status == DiffStatus.IDENTICAL
-        ) {
-            continue
-        }
+        val identical = left.status == DiffStatus.IDENTICAL && right.status == DiffStatus.IDENTICAL
+        if (!showIdenticalCheck.isSelected && identical) continue
+        if (showOnlyIdentical && !identical) continue
         if (pattern != null && !matchesEitherSide(left, right, pattern)) continue
         leftFiltered.add(left)
         rightFiltered.add(right)
@@ -163,7 +267,7 @@ internal fun MainController.compareCurrentInputs() {
 
 private fun MainController.compareDirectories(left: Path, right: Path) {
     log.debug(LogTag.COMPARE, "compareDirectories(left={}, right={})", left, right)
-    val result = DirectoryComparator.compareTree(left, right)
+    val result = DirectoryComparator.compareTree(left, right, CompareMode.fromDisplayName(compareModeChoice.value))
     leftTreeModel = result.leftModel
     rightTreeModel = result.rightModel
     refreshTreeViews()
@@ -174,8 +278,14 @@ private fun MainController.compareDirectories(left: Path, right: Path) {
 private fun MainController.compareFiles(left: Path, right: Path) {
     log.debug(LogTag.COMPARE, "compareFiles(left={}, right={})", left, right)
     val result = FileContentComparator.compare(left, right, showIdenticalCheck.isSelected)
-    leftListView.items = FXCollections.observableArrayList(result.leftItems)
-    rightListView.items = FXCollections.observableArrayList(result.rightItems)
+    val pairedItems = result.leftItems.zip(result.rightItems).filter { (leftItem, rightItem) ->
+        !showOnlyIdentical || (leftItem.status == DiffStatus.IDENTICAL && rightItem.status == DiffStatus.IDENTICAL)
+    }
+    val visibleLeft = pairedItems.map { it.first }
+    val visibleRight = pairedItems.map { it.second }
+    leftListView.items = FXCollections.observableArrayList(visibleLeft)
+    rightListView.items = FXCollections.observableArrayList(visibleRight)
+    updateOperationRows(visibleLeft, visibleRight)
     diffCountLabel.text = "diffs: ${result.diffCount}"
     statusCenter.text = result.statusText()
 }
@@ -264,6 +374,7 @@ internal fun MainController.applyPath(path: Path, side: ComparisonSide) {
         rightPathField.text = path.toString()
     }
     log.debug(LogTag.UI, "{} path {}", side.logName, path)
+    updateComparisonTitle()
     if (!restoringState) persistInputPaths()
 }
 
@@ -276,6 +387,7 @@ internal fun MainController.persistInputPaths() {
     state.isDirMode = dirMode
     state.isSyncScroll = syncScrollToggle.isSelected
     state.splitRatio = leftPanelRatio
+    state.compareMode = compareModeChoice.value ?: COMPARE_MODES.first()
     stateService.save(state)
 }
 
@@ -286,6 +398,7 @@ internal fun MainController.persistUiState() {
     state.isDirMode = dirMode
     state.isSyncScroll = syncScrollToggle.isSelected
     state.splitRatio = leftPanelRatio
+    state.compareMode = compareModeChoice.value ?: COMPARE_MODES.first()
     stateService.save(state)
 }
 
@@ -303,6 +416,7 @@ internal fun MainController.swapPanels() {
     val rightItems = ArrayList(rightListView.items)
     leftListView.items = FXCollections.observableArrayList(rightItems)
     rightListView.items = FXCollections.observableArrayList(leftItems)
+    updateOperationRows(rightItems, leftItems)
 
     val tmpModel = leftTreeModel
     leftTreeModel = rightTreeModel
@@ -311,17 +425,39 @@ internal fun MainController.swapPanels() {
     statusLeft.text = statusRight.text
     statusRight.text = tmpStatus
     statusCenter.text = STATUS_SWAPPED
+    updateComparisonTitle()
     persistInputPaths()
+}
+
+internal fun MainController.updateOperationRows(
+    leftItems: List<CompareLineItem>,
+    rightItems: List<CompareLineItem>,
+) {
+    val count = minOf(leftItems.size, rightItems.size)
+    val operations = (0 until count).map { index ->
+        val left = leftItems[index]
+        val right = rightItems[index]
+        when {
+            left.status == DiffStatus.MISSING -> "←"
+            right.status == DiffStatus.MISSING -> "→"
+            left.status == DiffStatus.MODIFIED || right.status == DiffStatus.MODIFIED -> "≠"
+            left.status == DiffStatus.IDENTICAL && right.status == DiffStatus.IDENTICAL -> "="
+            else -> ""
+        }
+    }
+    operationListView.items = FXCollections.observableArrayList(operations)
 }
 
 internal fun MainController.updateCenterStripState() {
     log.debug(LogTag.UI, "updateCenterStripState()")
     val hasBoth = leftPath != null && rightPath != null
-    copyRightBtn.isDisable = !hasBoth
-    copyLeftBtn.isDisable = !hasBoth
+    // File-system mutation is not implemented yet. Keep the reference controls
+    // visible, but never present a status-only stub as a working copy command.
+    copyRightBtn.isDisable = true
+    copyLeftBtn.isDisable = true
     diffBtn.isDisable = !hasBoth
     equalBtn.isDisable = !hasBoth
-    deleteBtn.isDisable = leftPath == null && rightPath == null
+    deleteBtn.isDisable = true
 }
 
 internal fun MainController.loadDirectoryPreview(path: Path, side: ComparisonSide) {

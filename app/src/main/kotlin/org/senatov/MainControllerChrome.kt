@@ -7,8 +7,10 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.stage.Stage
 import javafx.util.Duration
+import org.senatov.compare.CompareMode
 import org.senatov.helpers.log.LogTag
 import org.senatov.ui.cell.DiffCellFactory
+import org.senatov.ui.config.ComparatorState
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -20,6 +22,7 @@ internal const val STATUS_SWAPPED = "⇄ swapped"
 internal const val STATUS_CLIPBOARD_COPIED = "📋 copied"
 internal const val TITLE_HOME = "Home"
 internal const val TITLE_COMPARE = "Documents - Folder Compare"
+internal val COMPARE_MODES = CompareMode.entries.map { it.displayName }
 private val EVENT_TIME_FMT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
 
 internal fun MainController.addProgrammaticUi() {
@@ -35,17 +38,62 @@ internal fun MainController.addProgrammaticUi() {
 internal fun MainController.configureCompareLists() {
     log.debug(LogTag.UI, "configureCompareLists()")
     val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
-    leftListView.fixedCellSize = 27.0
-    rightListView.fixedCellSize = 27.0
+    leftListView.fixedCellSize = 23.0
+    rightListView.fixedCellSize = 23.0
     leftListView.style = listStyle
     rightListView.style = listStyle
+    operationListView.fixedCellSize = 23.0
+    operationListView.isFocusTraversable = false
+    operationListView.selectionModel.selectionMode = SelectionMode.SINGLE
+    operationListView.style = "-fx-background-color:#fafafa; -fx-border-width:0; -fx-padding:0;"
+    operationListView.setCellFactory {
+        object : ListCell<String>() {
+            override fun updateItem(item: String?, empty: Boolean) {
+                super.updateItem(item, empty)
+                text = if (empty) null else item
+                alignment = Pos.CENTER
+                style = when (item) {
+                    "→", "←" -> "-fx-text-fill:#2f80ed; -fx-font-size:19; -fx-background-color:#fafafa; -fx-padding:0;"
+                    "≠" -> "-fx-text-fill:#e15361; -fx-font-size:17; -fx-font-weight:bold; -fx-background-color:#fafafa; -fx-padding:0;"
+                    "=" -> "-fx-text-fill:#6a9f73; -fx-font-size:16; -fx-background-color:#fafafa; -fx-padding:0;"
+                    else -> "-fx-background-color:#fafafa; -fx-padding:0;"
+                }
+            }
+        }
+    }
+}
+
+internal fun MainController.configurePreviewPane() {
+    listOf(previewLeftView, previewRightView).forEach { view ->
+        view.fixedCellSize = 22.0
+        view.style = "-fx-background-color:white; -fx-border-width:0; -fx-font-family:'System'; -fx-font-size:13;"
+        view.setCellFactory {
+            object : ListCell<String>() {
+                override fun updateItem(item: String?, empty: Boolean) {
+                    super.updateItem(item, empty)
+                    if (empty || item == null) {
+                        text = null
+                        style = "-fx-background-color:white;"
+                        return
+                    }
+                    val status = item.first()
+                    text = item.drop(1)
+                    style = when (status) {
+                        'M' -> "-fx-background-color:#c8ddf7; -fx-text-fill:#273458; -fx-padding:2 8;"
+                        'A' -> "-fx-background-color:#d9edda; -fx-text-fill:#273458; -fx-padding:2 8;"
+                        'X' -> "-fx-background-color:#eeeeee; -fx-text-fill:#999999; -fx-padding:2 8;"
+                        else -> "-fx-background-color:white; -fx-text-fill:#273458; -fx-padding:2 8;"
+                    }
+                }
+            }
+        }
+    }
 }
 
 internal fun MainController.installDiffCellFactories() {
     log.debug(LogTag.UI, "installDiffCellFactories()")
-    val factory = DiffCellFactory(dirMode)
-    leftListView.cellFactory = factory
-    rightListView.cellFactory = factory
+    leftListView.cellFactory = DiffCellFactory(dirMode)
+    rightListView.cellFactory = DiffCellFactory(dirMode, mirrored = true)
 }
 
 internal fun MainController.configurePathFields() {
@@ -53,6 +101,8 @@ internal fun MainController.configurePathFields() {
     installPathField(leftPathField, ComparisonSide.LEFT)
     installPathField(rightPathField, ComparisonSide.RIGHT)
     configurePathButtons()
+    filterDebounce.setOnFinished { applyCurrentFilter() }
+    filterField.textProperty().addListener { _, _, _ -> filterDebounce.playFromStart() }
 }
 
 private fun MainController.installPathField(field: TextField, side: ComparisonSide) {
@@ -68,58 +118,33 @@ private fun MainController.installPathField(field: TextField, side: ComparisonSi
 
 private fun MainController.configurePathButtons() {
     log.debug(LogTag.UI, "configurePathButtons()")
-    installPathButton(leftPathMenuButton, "#1f6feb", "Open the left path chooser")
-    installPathButton(rightPathMenuButton, "#1f6feb", "Open the right path chooser")
-    installPathButton(leftPathBrowseButton, "#5f7c8a", "Browse for the left file or folder")
-    installPathButton(rightPathBrowseButton, "#5f7c8a", "Browse for the right file or folder")
+    installPathButton(leftPathMenuButton, "Open the left path chooser")
+    installPathButton(rightPathMenuButton, "Open the right path chooser")
+    installPathButton(leftPathBrowseButton, "Browse for the left file or folder")
+    installPathButton(rightPathBrowseButton, "Browse for the right file or folder")
 }
 
-private fun installPathButton(button: Button, accent: String, helpText: String) {
-    button.minWidth = 34.0
-    button.prefWidth = 34.0
-    button.minHeight = 28.0
-    button.prefHeight = 28.0
+private fun installPathButton(button: Button, helpText: String) {
+    button.minWidth = 27.0
+    button.prefWidth = 27.0
+    button.minHeight = 24.0
+    button.prefHeight = 24.0
     button.focusTraversableProperty().set(false)
     button.installStandardHelp(helpText)
-    applyPathButtonStyle(button, accent, PathButtonState.NORMAL)
+    button.style = "-fx-font-family:'System'; -fx-font-size:15; -fx-text-fill:#75839a; " +
+            "-fx-background-color:transparent; -fx-border-width:0; -fx-padding:0;"
     button.setOnMouseEntered {
         animatePathButton(button, 1.06)
-        applyPathButtonStyle(button, accent, PathButtonState.HOVER)
     }
     button.setOnMouseExited {
         animatePathButton(button, 1.0)
-        applyPathButtonStyle(button, accent, PathButtonState.NORMAL)
     }
     button.setOnMousePressed {
         animatePathButton(button, 0.94)
-        applyPathButtonStyle(button, accent, PathButtonState.PRESSED)
     }
     button.setOnMouseReleased {
         animatePathButton(button, if (button.isHover) 1.06 else 1.0)
-        applyPathButtonStyle(button, accent, if (button.isHover) PathButtonState.HOVER else PathButtonState.NORMAL)
     }
-}
-
-private fun applyPathButtonStyle(button: Button, accent: String, state: PathButtonState) {
-    val fill = when (state) {
-        PathButtonState.NORMAL -> "#ffffff"
-        PathButtonState.HOVER -> "#eef5ff"
-        PathButtonState.PRESSED -> "#dceaff"
-    }
-    val border = when (state) {
-        PathButtonState.NORMAL -> "#aeb7c2"
-        PathButtonState.HOVER -> "#6ea8fe"
-        PathButtonState.PRESSED -> "#1f6feb"
-    }
-    val shadow = when (state) {
-        PathButtonState.NORMAL -> "dropshadow(gaussian,rgba(0,0,0,0.18),3,0,0,1)"
-        PathButtonState.HOVER -> "dropshadow(gaussian,rgba(31,111,235,0.34),6,0,0,1)"
-        PathButtonState.PRESSED -> "innershadow(gaussian,rgba(0,0,0,0.22),4,0,0,1)"
-    }
-    button.style = "-fx-font-family:'System'; -fx-font-size:23; -fx-font-weight:400; " +
-            "-fx-text-fill:$accent; -fx-background-color:$fill; -fx-background-radius:6; " +
-            "-fx-border-color:$border; -fx-border-width:1; -fx-border-radius:6; " +
-            "-fx-padding:0; -fx-effect:$shadow;"
 }
 
 private fun animatePathButton(button: Button, scale: Double) {
@@ -169,22 +194,39 @@ private fun MainController.clearPathSide(side: ComparisonSide) {
         updateStatus(ComparisonSide.RIGHT, "No file loaded")
     }
     updateCenterStripState()
+    updateComparisonTitle()
+    operationListView.items.clear()
     persistInputPaths()
 }
 
 private fun MainController.configureToolbarButtons() {
     log.debug(LogTag.UI, "configureToolbarButtons()")
-    mainToolBar.prefHeight = 60.0
-    mainToolBar.style = "-fx-background-color:#f7f7f8; -fx-border-color:#d8d8dc; -fx-border-width:0 0 1 0; -fx-padding:6 7 6 7;"
+    mainToolBar.prefHeight = 44.0
+    mainToolBar.style = "-fx-background-color:#f4f4f4; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-padding:4 8;"
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
-        installToolbarGraphic(button)
-        button.minWidth = 46.0
-        button.prefWidth = 46.0
-        button.minHeight = 46.0
-        button.prefHeight = 46.0
-        button.style = "-fx-padding:0; -fx-background-color:transparent; -fx-background-radius:8; -fx-font-smoothing-type:gray;"
+        button.minWidth = 29.0
+        button.prefWidth = 29.0
+        button.minHeight = 29.0
+        button.prefHeight = 29.0
+        button.style =
+            "-fx-padding:0; -fx-font-size:19; -fx-text-fill:#607188; -fx-background-color:transparent; -fx-background-radius:4;"
     }
-    syncScrollToggle.prefWidth = 46.0
+    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; -fx-background-radius:5;"
+}
+
+internal fun MainController.configureCompareModes() {
+    compareModeChoice.items.setAll(COMPARE_MODES)
+    val savedMode = comparatorState?.compareMode
+    compareModeChoice.selectionModel.select(
+        savedMode?.takeIf { it in COMPARE_MODES } ?: COMPARE_MODES.first()
+    )
+}
+
+internal fun MainController.applyCompareMode() {
+    val state = comparatorState ?: ComparatorState().also { comparatorState = it }
+    state.compareMode = compareModeChoice.value ?: COMPARE_MODES.first()
+    if (!restoringState) stateService.save(state)
+    if (leftPath != null && rightPath != null) compareCurrentInputs()
 }
 
 private fun MainController.installToolbarGraphic(button: ButtonBase) {
@@ -286,6 +328,20 @@ internal fun MainController.getStage(): Stage {
 internal fun MainController.updateWindowTitle(title: String) {
     log.debug(LogTag.UI, "updateWindowTitle(title={})", title)
     (rootPane.scene?.window as? Stage)?.title = title
+}
+
+internal fun MainController.updateComparisonTitle() {
+    val left = leftPath
+    val right = rightPath
+    if (left == null && right == null) {
+        updateWindowTitle(TITLE_COMPARE)
+        return
+    }
+    val leftName = left?.fileName?.toString() ?: "…"
+    val rightName = right?.fileName?.toString() ?: "…"
+    val parent = left?.parent ?: right?.parent
+    val suffix = parent?.let { " (${it})" }.orEmpty()
+    updateWindowTitle("$leftName - $rightName$suffix")
 }
 
 internal fun MainController.showAlert(msg: String) {

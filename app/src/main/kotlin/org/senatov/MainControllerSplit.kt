@@ -14,6 +14,12 @@ internal fun MainController.setupSyncScroll() {
     Platform.runLater {
         bindScrollBars(leftListView, rightListView)
         bindScrollBars(rightListView, leftListView)
+        bindScrollBars(leftListView, operationListView)
+        bindScrollBars(rightListView, operationListView)
+        bindScrollBars(operationListView, leftListView)
+        bindScrollBars(operationListView, rightListView)
+        bindScrollBars(previewLeftView, previewRightView)
+        bindScrollBars(previewRightView, previewLeftView)
     }
 }
 

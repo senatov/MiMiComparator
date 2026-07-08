@@ -14,7 +14,11 @@ object DirectoryComparator {
         .ofPattern("d. MMM yyyy 'at' HH:mm:ss", Locale.ENGLISH)
         .withZone(ZoneId.systemDefault())
 
-    fun compareTree(leftDirectory: Path, rightDirectory: Path): DirCompareResult {
+    fun compareTree(
+        leftDirectory: Path,
+        rightDirectory: Path,
+        mode: CompareMode = CompareMode.SIZE_AND_TIMESTAMP,
+    ): DirCompareResult {
         log.debug(
             LogTag.COMPARE,
             "compareTree(leftDirectory={}, rightDirectory={})",
@@ -22,7 +26,7 @@ object DirectoryComparator {
             rightDirectory,
         )
         log.info(LogTag.COMPARE, "tree start left={} right={}", leftDirectory, rightDirectory)
-        return DirectoryTreeBuilder().build(DirectoryPair(leftDirectory, rightDirectory))
+        return DirectoryTreeBuilder(mode).build(DirectoryPair(leftDirectory, rightDirectory))
     }
 
     fun formatSize(bytes: Long): String {

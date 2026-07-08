@@ -4,6 +4,7 @@
  */
 package org.senatov
 
+import javafx.animation.PauseTransition
 import javafx.application.Platform
 import javafx.fxml.FXML
 import javafx.scene.control.*
@@ -11,6 +12,7 @@ import javafx.scene.layout.BorderPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Popup
+import javafx.util.Duration
 import org.senatov.cli.CliArgs
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
@@ -67,6 +69,9 @@ class MainController {
     internal lateinit var contentBox: HBox
     @FXML
     internal lateinit var centerStrip: VBox
+
+    @FXML
+    internal lateinit var operationListView: ListView<String>
     @FXML
     internal lateinit var copyRightBtn: Button
     @FXML
@@ -94,8 +99,26 @@ class MainController {
     internal lateinit var diffCountLabel: Label
     @FXML
     internal lateinit var eventLogView: ListView<String>
+
+    @FXML
+    internal lateinit var previewLeftView: ListView<String>
+
+    @FXML
+    internal lateinit var previewRightView: ListView<String>
+
+    @FXML
+    internal lateinit var previewDiffCountLabel: Label
+
+    @FXML
+    internal lateinit var previewNoticeBox: HBox
+
+    @FXML
+    internal lateinit var previewNoticeIcon: Label
     @FXML
     internal lateinit var filterField: TextField
+
+    @FXML
+    internal lateinit var compareModeChoice: ComboBox<String>
     @FXML
     internal lateinit var statusLeft: Label
     @FXML
@@ -115,14 +138,20 @@ class MainController {
     internal var leftPanelRatio = 0.5
     internal val ratioPopupLabel = Label()
     internal val ratioPopup = Popup()
+    internal var syncingSelection = false
+    internal var showOnlyIdentical = false
+    internal val filterDebounce = PauseTransition(Duration.millis(180.0))
 
     @FXML
     private fun initialize() {
         log.debug(LogTag.UI, "initialize()")
         comparatorState = stateService.load()
         configureCompareLists()
+        configurePreviewPane()
+        setupSelectionPreview()
         installDiffCellFactories()
         configurePathFields()
+        configureCompareModes()
         setupEventLog()
         setupClickToExpand()
         addProgrammaticUi()
@@ -152,7 +181,10 @@ class MainController {
     @FXML
     private fun onQuit() = uiAction("onQuit") { Platform.exit() }
     @FXML
-    private fun onToggleIdentical() = uiAction("onToggleIdentical") { compareCurrentInputs() }
+    private fun onToggleIdentical() = uiAction("onToggleIdentical") {
+        showOnlyIdentical = false
+        compareCurrentInputs()
+    }
     @FXML
     private fun onToggleDirMode() = uiAction("onToggleDirMode") { toggleDirMode() }
     @FXML
@@ -161,6 +193,10 @@ class MainController {
     private fun onCollapseAll() = uiAction("onCollapseAll") { collapseAllTrees() }
     @FXML
     private fun onFilterChanged() = uiAction("onFilterChanged") { applyCurrentFilter() }
+
+    @FXML
+    private fun onCompareModeChanged() = uiAction("onCompareModeChanged") { applyCompareMode() }
+
     @FXML
     private fun onSwapPanels() = uiAction("onSwapPanels") { swapPanels() }
     @FXML
@@ -168,9 +204,17 @@ class MainController {
     @FXML
     private fun onCopyToLeft() = uiAction("onCopyToLeft") { setStubStatus("← copy to left (stub)") }
     @FXML
-    private fun onShowDiff() = uiAction("onShowDiff") { setStubStatus("showing diffs only") }
+    private fun onShowDiff() = uiAction("onShowDiff") {
+        showOnlyIdentical = false
+        showIdenticalCheck.isSelected = false
+        compareCurrentInputs()
+    }
     @FXML
-    private fun onShowEqual() = uiAction("onShowEqual") { setStubStatus("showing identical only") }
+    private fun onShowEqual() = uiAction("onShowEqual") {
+        showOnlyIdentical = true
+        showIdenticalCheck.isSelected = true
+        compareCurrentInputs()
+    }
     @FXML
     private fun onDeleteSelected() = uiAction("onDeleteSelected") { setStubStatus("🗑 delete (stub)") }
     @FXML
