@@ -7,7 +7,6 @@ import javafx.scene.control.ScrollBar
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 
 internal fun MainController.setupSyncScroll() {
@@ -19,7 +18,7 @@ internal fun MainController.setupSyncScroll() {
 }
 
 private fun MainController.bindScrollBars(source: ListView<*>, target: ListView<*>) {
-    LogHelper.enter(log, LogTag.UI, "bindScrollBars", "source" to source, "target" to target)
+    log.debug(LogTag.UI, "bindScrollBars(source={}, target={})", source, target)
     val srcBar = findScrollBar(source) ?: return
     val tgtBar = findScrollBar(target) ?: return
     srcBar.valueProperty().addListener { _, _, nv ->
@@ -60,7 +59,7 @@ internal fun MainController.setupResizableCenterStrip() {
 }
 
 private fun MainController.applyRatioFromPointer(sceneX: Double) {
-    LogHelper.enter(log, LogTag.UI, "applyRatioFromPointer", "sceneX" to sceneX)
+    log.debug(LogTag.UI, "applyRatioFromPointer(sceneX={})", sceneX)
     val bounds = contentBox.localToScene(contentBox.boundsInLocal) ?: return
     val usableWidth = bounds.width - centerStrip.width
     if (usableWidth <= 0.0) return
@@ -70,7 +69,7 @@ private fun MainController.applyRatioFromPointer(sceneX: Double) {
 }
 
 internal fun MainController.applyPanelRatio(ratio: Double) {
-    LogHelper.enter(log, LogTag.UI, "applyPanelRatio", "ratio" to ratio)
+    log.debug(LogTag.UI, "applyPanelRatio(ratio={})", ratio)
     if (contentBox.width <= 0.0) return
     leftPanelRatio = ratio.coerceIn(0.15, 0.85)
     val usableWidth = (contentBox.width - centerStrip.width).coerceAtLeast(0.0)
@@ -81,7 +80,7 @@ internal fun MainController.applyPanelRatio(ratio: Double) {
 }
 
 private fun MainController.showRatioPopup(event: MouseEvent) {
-    LogHelper.enter(log, LogTag.UI, "showRatioPopup", "event" to event)
+    log.debug(LogTag.UI, "showRatioPopup(sceneX={}, sceneY={})", event.screenX, event.screenY)
     updateRatioPopupText()
     val stage = centerStrip.scene?.window ?: return
     if (!ratioPopup.isShowing) ratioPopup.show(stage)

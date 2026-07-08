@@ -1,19 +1,7 @@
 package org.senatov.helpers.log
 
-import org.slf4j.Logger
 import org.slf4j.Marker
 import org.slf4j.MarkerFactory
-
-object LogHelper {
-
-    /** Logs a stable method-entry message and its named arguments. */
-    fun enter(log: Logger, marker: Marker, method: String, vararg arguments: Pair<String, Any?>) {
-        if (!log.isInfoEnabled(marker)) return
-        val renderedArguments = arguments.joinToString(", ") { (name, value) -> "$name=$value" }
-        log.info(marker, "{}({})", method, renderedArguments)
-    }
-
-}
 
 object LogTag {
     val APP: Marker = MarkerFactory.getMarker("APP")
