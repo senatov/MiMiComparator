@@ -9,7 +9,6 @@ import javafx.scene.control.TextField
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.*
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.ui.config.ComparatorState
 import java.nio.file.Path
@@ -17,8 +16,7 @@ import java.nio.file.Path
 internal fun MainController.showHomeView() {
     log.debug(LogTag.UI, "showHomeView()")
     rootPane.top = null
-    homeView = buildHomeView()
-    rootPane.center = homeView
+    rootPane.center = buildHomeView()
     rootPane.bottom = null
     updateWindowTitle(TITLE_HOME)
 }
@@ -90,7 +88,7 @@ private fun MainController.buildSessionsPane(): VBox {
 
 private fun MainController.buildHomeContent(): VBox {
     log.debug(LogTag.UI, "buildHomeContent()")
-    val state = comparatorState ?: ComparatorState.defaults()
+    val state = comparatorState ?: ComparatorState()
     val left = state.leftInputPath.ifBlank { System.getProperty("user.home", "") }
     val right = state.rightInputPath
     val title = Label("▣ ${savedSessionName()}").apply {
@@ -156,7 +154,7 @@ private fun homeAction(icon: String, label: String, action: () -> Unit): VBox {
 }
 
 internal fun MainController.startEmptyCompare(dir: Boolean) {
-    LogHelper.enter(log, LogTag.UI, "startEmptyCompare", "dir" to dir)
+    log.debug(LogTag.UI, "startEmptyCompare(dir={})", dir)
     showCompareView()
     setDirMode(dir)
 }

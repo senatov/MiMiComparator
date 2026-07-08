@@ -92,10 +92,12 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
             nameBox.children.addAll(markerLabel, disclosureLabel, iconLabel, nameLabel)
             HBox.setHgrow(nameBox, Priority.ALWAYS)
             sizeLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
-            sizeLabel.minWidth = 96.0; sizeLabel.prefWidth = 96.0
+            sizeLabel.minWidth = 96.0
+            sizeLabel.prefWidth = 96.0
             sizeLabel.alignment = Pos.CENTER_RIGHT
             dateLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
-            dateLabel.minWidth = 156.0; dateLabel.prefWidth = 156.0
+            dateLabel.minWidth = 156.0
+            dateLabel.prefWidth = 156.0
             dateLabel.alignment = Pos.CENTER_RIGHT
             row.alignment = Pos.CENTER_LEFT
             row.children.addAll(nameBox, sizeLabel, dateLabel)
@@ -109,7 +111,8 @@ class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareL
         override fun updateItem(item: CompareLineItem?, empty: Boolean) {
             super.updateItem(item, empty)
             if (empty || item == null) {
-                text = null; graphic = null
+                text = null
+                graphic = null
                 style = "-fx-background-color:transparent;"
                 return
             }

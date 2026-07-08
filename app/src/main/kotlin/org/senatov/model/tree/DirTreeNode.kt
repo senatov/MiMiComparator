@@ -20,12 +20,6 @@ class DirTreeNode(
     val children: MutableList<DirTreeNode> = mutableListOf()
 ) : Comparable<DirTreeNode> {
 
-
-    fun addChild(child: DirTreeNode) {
-        children.add(child)
-    }
-
-
     override fun compareTo(other: DirTreeNode): Int {
         if (this.isDirectory != other.isDirectory) {
             return if (this.isDirectory) -1 else 1

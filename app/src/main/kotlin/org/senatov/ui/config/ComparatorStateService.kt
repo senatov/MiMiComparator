@@ -3,7 +3,6 @@ package org.senatov.ui.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -33,22 +32,22 @@ class ComparatorStateService {
             val stateFile = stateFilePath
             if (!Files.exists(stateFile)) {
                 log.info(LogTag.STATE, "defaults path={}", stateFile)
-                return ComparatorState.defaults()
+                return ComparatorState()
             }
             val state = objectMapper.readValue(stateFile.toFile(), ComparatorState::class.java)
             log.info(LogTag.STATE, "loaded {}", stateFile)
-            state ?: ComparatorState.defaults()
+            state ?: ComparatorState()
         } catch (ex: Exception) {
             log.error(LogTag.STATE, "load failed: {}", ex.message)
             log.debug(LogTag.STATE, "state load exception", ex)
-            ComparatorState.defaults()
+            ComparatorState()
         }
     }
 
 
     fun save(state: ComparatorState?) {
-        LogHelper.enter(log, LogTag.STATE, "save", "state" to state)
-        val safeState = state ?: ComparatorState.defaults()
+        log.debug(LogTag.STATE, "save(state={})", state)
+        val safeState = state ?: ComparatorState()
         try {
             ensureStateDirectoryExists()
             writeStateAtomically(safeState)
@@ -72,7 +71,7 @@ class ComparatorStateService {
     }
 
     private fun writeStateAtomically(state: ComparatorState) {
-        LogHelper.enter(log, LogTag.STATE, "writeStateAtomically", "state" to state)
+        log.debug(LogTag.STATE, "writeStateAtomically(state={})", state)
         val targetFile = stateFilePath
         val tempFile = targetFile.resolveSibling("$STATE_FILE_NAME.tmp")
         objectMapper.writeValue(tempFile.toFile(), state)

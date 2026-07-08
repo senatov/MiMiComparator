@@ -12,8 +12,6 @@ import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import javafx.stage.Popup
 import org.senatov.cli.CliArgs
-import org.senatov.compare.DirCompareResult
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.senatov.model.tree.DirTreeModel
@@ -111,14 +109,12 @@ class MainController {
     internal var pendingCliArgs: CliArgs? = null
     internal var leftTreeModel: DirTreeModel? = null
     internal var rightTreeModel: DirTreeModel? = null
-    internal var lastDirResult: DirCompareResult? = null
     internal val stateService = ComparatorStateService()
     internal var comparatorState: ComparatorState? = null
     internal var restoringState = false
     internal var leftPanelRatio = 0.5
     internal val ratioPopupLabel = Label()
     internal val ratioPopup = Popup()
-    internal var homeView: BorderPane? = null
 
     @FXML
     private fun initialize() {
@@ -139,7 +135,6 @@ class MainController {
     }
 
     fun applyCliArgs(args: CliArgs) {
-        LogHelper.enter(log, LogTag.CLI, "applyCliArgs", "args" to args)
         log.info(LogTag.CLI, "args L={} R={} auto={}", args.leftPath, args.rightPath, args.autoCompare)
         pendingCliArgs = args
     }

@@ -7,7 +7,6 @@
  */
 package org.senatov.compare
 
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem.DiffStatus
 import org.senatov.model.tree.DirTreeModel
@@ -32,7 +31,6 @@ object DirectoryComparator {
 
 
     fun compareTree(leftDir: Path, rightDir: Path): DirCompareResult {
-        LogHelper.enter(log, LogTag.COMPARE, "compareTree", "leftDir" to leftDir, "rightDir" to rightDir)
         log.info(LogTag.COMPARE, "tree start L={} R={}", leftDir, rightDir)
         val leftRoots = mutableListOf<DirTreeNode>()
         val rightRoots = mutableListOf<DirTreeNode>()
@@ -48,14 +46,11 @@ object DirectoryComparator {
         leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
         stats: TreeStats
     ) {
-        LogHelper.enter(
-            log, LogTag.COMPARE, "buildPairedTree", "leftDir" to leftDir, "rightDir" to rightDir,
-            "pathPrefix" to pathPrefix, "depth" to depth, "leftNodes" to leftNodes, "rightNodes" to rightNodes, "stats" to stats
-        )
         val leftNames = safeListNames(leftDir)
         val rightNames = safeListNames(rightDir)
         val allNames = TreeSet(String.CASE_INSENSITIVE_ORDER).apply {
-            addAll(leftNames); addAll(rightNames)
+            addAll(leftNames)
+            addAll(rightNames)
         }
         for (name in allNames) {
             val inLeft = name in leftNames
@@ -97,11 +92,6 @@ object DirectoryComparator {
         leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
         stats: TreeStats
     ) {
-        LogHelper.enter(
-            log, LogTag.COMPARE, "handleBothSides", "leftDir" to leftDir, "rightDir" to rightDir,
-            "name" to name, "relPath" to relPath, "depth" to depth, "leftNodes" to leftNodes,
-            "rightNodes" to rightNodes, "stats" to stats
-        )
         val lp = leftDir.resolve(name)
         val rp = rightDir.resolve(name)
         val lIsDir = Files.isDirectory(lp)
@@ -112,7 +102,8 @@ object DirectoryComparator {
                 val ln = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
                 val rn = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
                 buildPairedTree(lp, rp, relPath, depth + 1, ln.children, rn.children, stats)
-                leftNodes.add(ln); rightNodes.add(rn)
+                leftNodes.add(ln)
+                rightNodes.add(rn)
             }
             !lIsDir && !rIsDir -> {
                 stats.files++
@@ -135,7 +126,6 @@ object DirectoryComparator {
 
 
     private fun safeListNames(dir: Path?): Set<String> {
-        LogHelper.enter(log, LogTag.IO, "safeListNames", "dir" to dir)
         if (dir == null || !Files.isDirectory(dir)) return emptySet()
         return try {
             Files.list(dir).use { stream ->
@@ -149,7 +139,6 @@ object DirectoryComparator {
 
 
     private fun compareFileAttrs(left: Path, right: Path): DiffStatus {
-        LogHelper.enter(log, LogTag.COMPARE, "compareFileAttrs", "left" to left, "right" to right)
         return try {
             val la = Files.readAttributes(left, BasicFileAttributes::class.java)
             val ra = Files.readAttributes(right, BasicFileAttributes::class.java)
@@ -163,16 +152,11 @@ object DirectoryComparator {
 
 
     private fun makeDirNode(name: String, relPath: String, depth: Int, status: DiffStatus): DirTreeNode {
-        LogHelper.enter(log, LogTag.COMPARE, "makeDirNode", "name" to name, "relPath" to relPath, "depth" to depth, "status" to status)
         return DirTreeNode(name, relPath, isDirectory = true, size = 0, lastModifiedMs = 0, status = status, depth = depth)
     }
 
 
     private fun makeFileNode(name: String, relPath: String, filePath: Path, depth: Int, status: DiffStatus): DirTreeNode {
-        LogHelper.enter(
-            log, LogTag.COMPARE, "makeFileNode", "name" to name, "relPath" to relPath,
-            "filePath" to filePath, "depth" to depth, "status" to status
-        )
         return try {
             val attr = Files.readAttributes(filePath, BasicFileAttributes::class.java)
             DirTreeNode(name, relPath, false, attr.size(), attr.lastModifiedTime().toMillis(), status, depth)
@@ -185,34 +169,22 @@ object DirectoryComparator {
 
     private data class TreeStats(var dirs: Int = 0, var files: Int = 0, var diffs: Int = 0) {
         fun count(isDir: Boolean) {
-            LogHelper.enter(log, LogTag.COMPARE, "count", "isDir" to isDir)
             if (isDir) dirs++ else files++
         }
     }
 
 
     private fun makePlaceholder(name: String, relPath: String, depth: Int, isDir: Boolean): DirTreeNode {
-        LogHelper.enter(
-            log,
-            LogTag.COMPARE,
-            "makePlaceholder",
-            "name" to name,
-            "relPath" to relPath,
-            "depth" to depth,
-            "isDir" to isDir
-        )
         return DirTreeNode("‹missing›", relPath, isDir, 0, 0, DiffStatus.MISSING, depth)
     }
 
 
     fun formatSize(bytes: Long): String {
-        LogHelper.enter(log, LogTag.COMPARE, "formatSize", "bytes" to bytes)
         return if (bytes <= 0) "0" else "%,d".format(bytes).replace(",", " ")
     }
 
 
     fun formatDate(millis: Long): String {
-        LogHelper.enter(log, LogTag.COMPARE, "formatDate", "millis" to millis)
         return if (millis <= 0) "" else DATE_FMT.format(Instant.ofEpochMilli(millis))
     }
 }

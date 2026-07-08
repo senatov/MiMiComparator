@@ -27,12 +27,6 @@ data class ComparatorState(
     var lastStatusCenter: String = "",
     var lastStatusRight: String = ""
 ) {
-
-    companion object {
-        fun defaults(): ComparatorState = ComparatorState()
-    }
-
-
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class WindowState(
         var x: Double = 120.0,

@@ -7,7 +7,6 @@ import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import javafx.stage.Stage
 import javafx.util.Duration
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.ui.cell.DiffCellFactory
 import java.nio.file.Files
@@ -57,7 +56,7 @@ internal fun MainController.configurePathFields() {
 }
 
 private fun MainController.installPathField(field: TextField, isLeft: Boolean) {
-    LogHelper.enter(log, LogTag.UI, "installPathField", "field" to field, "isLeft" to isLeft)
+    log.debug(LogTag.UI, "installPathField(field={}, isLeft={})", field, isLeft)
     field.minHeight = 24.0
     field.prefHeight = 24.0
     field.maxHeight = 24.0
@@ -138,7 +137,7 @@ private fun animatePathButton(button: Button, scale: Double) {
 }
 
 private fun MainController.commitPathField(field: TextField, isLeft: Boolean) {
-    LogHelper.enter(log, LogTag.UI, "commitPathField", "field" to field, "isLeft" to isLeft)
+    log.debug(LogTag.UI, "commitPathField(field={}, isLeft={})", field, isLeft)
     val raw = field.text.trim()
     val current = if (isLeft) leftPath else rightPath
     if (raw.isBlank()) {
@@ -163,7 +162,7 @@ private fun MainController.commitPathField(field: TextField, isLeft: Boolean) {
 }
 
 private fun MainController.clearPathSide(isLeft: Boolean) {
-    LogHelper.enter(log, LogTag.UI, "clearPathSide", "isLeft" to isLeft)
+    log.debug(LogTag.UI, "clearPathSide(isLeft={})", isLeft)
     if (isLeft) {
         leftPath = null
         leftPathField.text = ""
@@ -195,7 +194,7 @@ private fun MainController.configureToolbarButtons() {
 }
 
 private fun MainController.installToolbarGraphic(button: ButtonBase) {
-    LogHelper.enter(log, LogTag.UI, "installToolbarGraphic", "button" to button)
+    log.debug(LogTag.UI, "installToolbarGraphic(button={})", button)
     val rawText = button.text ?: return
     val parts = rawText.split("\n", limit = 2)
     val sourceIcon = parts.firstOrNull().orEmpty()
@@ -290,12 +289,12 @@ internal fun MainController.setupEventLog() {
 }
 
 internal fun MainController.updateStatus(isLeft: Boolean, text: String) {
-    LogHelper.enter(log, LogTag.UI, "updateStatus", "isLeft" to isLeft, "text" to text)
+    log.debug(LogTag.UI, "updateStatus(isLeft={}, text={})", isLeft, text)
     if (isLeft) statusLeft.text = text else statusRight.text = text
 }
 
 internal fun MainController.appendEvent(message: String) {
-    LogHelper.enter(log, LogTag.UI, "appendEvent", "message" to message)
+    log.debug(LogTag.UI, "appendEvent(message={})", message)
     eventLogView.items.add("${EVENT_TIME_FMT.format(LocalDateTime.now())}  $message")
     eventLogView.scrollTo(eventLogView.items.size - 1)
 }
@@ -306,17 +305,17 @@ internal fun MainController.getStage(): Stage {
 }
 
 internal fun MainController.updateWindowTitle(title: String) {
-    LogHelper.enter(log, LogTag.UI, "updateWindowTitle", "title" to title)
+    log.debug(LogTag.UI, "updateWindowTitle(title={})", title)
     (rootPane.scene?.window as? Stage)?.title = title
 }
 
 internal fun MainController.showAlert(msg: String) {
-    LogHelper.enter(log, LogTag.UI, "showAlert", "msg" to msg)
+    log.debug(LogTag.UI, "showAlert(msg={})", msg)
     Alert(Alert.AlertType.WARNING).apply { contentText = msg }.showAndWait()
 }
 
 internal fun MainController.copyToClipboard(text: String) {
-    LogHelper.enter(log, LogTag.UI, "copyToClipboard", "text" to text)
+    log.debug(LogTag.UI, "copyToClipboard(text={})", text)
     Clipboard.getSystemClipboard().setContent(ClipboardContent().apply { putString(text) })
     statusCenter.text = STATUS_CLIPBOARD_COPIED
     log.info(org.senatov.helpers.log.LogTag.UI, "clipboard copied chars={}", text.length)
@@ -335,6 +334,6 @@ internal fun MainController.showAboutDialog() {
 }
 
 internal fun MainController.setStubStatus(text: String) {
-    LogHelper.enter(log, LogTag.UI, "setStubStatus", "text" to text)
+    log.debug(LogTag.UI, "setStubStatus(text={})", text)
     statusCenter.text = text
 }

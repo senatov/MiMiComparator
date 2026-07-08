@@ -5,7 +5,6 @@
  */
 package org.senatov.compare
 
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.senatov.model.CompareLineItem.DiffStatus
@@ -22,14 +21,6 @@ object FileContentComparator {
 
 
     fun compare(leftFile: Path, rightFile: Path, showIdentical: Boolean): CompareResult {
-        LogHelper.enter(
-            log,
-            LogTag.COMPARE,
-            "compare",
-            "leftFile" to leftFile,
-            "rightFile" to rightFile,
-            "showIdentical" to showIdentical
-        )
         log.info(LogTag.COMPARE, "file start L={} R={} identical={}", leftFile, rightFile, showIdentical)
         val leftLines = Files.readAllLines(leftFile, StandardCharsets.UTF_8)
         val rightLines = Files.readAllLines(rightFile, StandardCharsets.UTF_8)
@@ -43,9 +34,20 @@ object FileContentComparator {
             val r = rightLines.getOrElse(i) { "" }
             val (leftStatus, rightStatus) = when {
                 l == r -> DiffStatus.IDENTICAL to DiffStatus.IDENTICAL
-                i >= leftLines.size -> { diffs++; DiffStatus.MISSING to DiffStatus.ADDED }
-                i >= rightLines.size -> { diffs++; DiffStatus.ADDED to DiffStatus.MISSING }
-                else -> { diffs++; DiffStatus.MODIFIED to DiffStatus.MODIFIED }
+                i >= leftLines.size -> {
+                    diffs++
+                    DiffStatus.MISSING to DiffStatus.ADDED
+                }
+
+                i >= rightLines.size -> {
+                    diffs++
+                    DiffStatus.ADDED to DiffStatus.MISSING
+                }
+
+                else -> {
+                    diffs++
+                    DiffStatus.MODIFIED to DiffStatus.MODIFIED
+                }
             }
             if (!showIdentical && leftStatus == DiffStatus.IDENTICAL) continue
             leftItems.add(CompareLineItem(i + 1, l, leftStatus))

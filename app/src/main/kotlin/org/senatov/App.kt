@@ -17,7 +17,6 @@ import javafx.scene.text.Font
 import javafx.stage.Stage
 import javafx.util.Duration
 import org.senatov.cli.CliArgs
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.ui.config.ComparatorState
 import org.senatov.ui.config.ComparatorStateService
@@ -40,9 +39,6 @@ class App : Application() {
         private val APP_ICON_PNG_RESOURCES = arrayOf(
             "/icons/icon_512x512.png", "/icons/icon_128x128.png"
         )
-        private const val APP_ICON_ICNS_RESOURCE = "/icons/MiMiComparator.icns"
-
-
         private val SF_PRO_DISPLAY_FONT_RESOURCES = arrayOf(
             "/fonts/SF-Pro-Display-Light.otf",
             "/fonts/SF-Pro-Display-LightItalic.otf",
@@ -53,32 +49,25 @@ class App : Application() {
 
         private const val FONT_PRELOAD_SIZE = 14.0
 
-        @Volatile
-        var sfProDisplayFamily: String = "SF Pro Display"
-            private set
         private var cliArgs: CliArgs? = null
 
         @JvmStatic
         fun main(args: Array<String>) {
             val log = LoggerFactory.getLogger(App::class.java)
-            LogHelper.enter(log, LogTag.APP, "main", "args" to args.contentToString())
+            log.debug(LogTag.APP, "main(args={})", args.contentToString())
             cliArgs = CliArgs.parse(args.toList())
             launch(App::class.java, *args)
         }
 
-        fun sfProDisplayFamily(): String {
-            LoggerFactory.getLogger(App::class.java).debug(LogTag.APP, "sfProDisplayFamily()")
-            return sfProDisplayFamily
-        }
     }
 
     override fun start(stage: Stage) {
-        LogHelper.enter(log, LogTag.APP, "start", "stage" to stage)
+        log.debug(LogTag.APP, "start(stage={})", stage)
         Application.setUserAgentStylesheet(CupertinoLight().userAgentStylesheet)
         preloadEmbeddedFonts()
-        appState = stateService.load()
+        val state = stateService.load()
+        appState = state
         val root = loadRootView()
-        val state = appState!!
         val scene = Scene(root, state.window.width, state.window.height)
         stage.title = WINDOW_TITLE
         applyAppIcons(stage)
@@ -92,13 +81,13 @@ class App : Application() {
     }
 
     private fun applyAppIcons(stage: Stage) {
-        LogHelper.enter(log, LogTag.APP, "applyAppIcons", "stage" to stage)
+        log.debug(LogTag.APP, "applyAppIcons(stage={})", stage)
         loadStageIcons(stage)
         applyTaskbarIcon()
     }
 
     private fun loadStageIcons(stage: Stage) {
-        LogHelper.enter(log, LogTag.APP, "loadStageIcons", "stage" to stage)
+        log.debug(LogTag.APP, "loadStageIcons(stage={})", stage)
         for (res in APP_ICON_PNG_RESOURCES) {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
@@ -115,7 +104,8 @@ class App : Application() {
     private fun applyTaskbarIcon() {
         log.debug(LogTag.APP, "applyTaskbarIcon()")
         if (!Taskbar.isTaskbarSupported()) {
-            log.debug(LogTag.APP, "taskbar unsupported"); return
+            log.debug(LogTag.APP, "taskbar unsupported")
+            return
         }
         try {
             val taskbar = Taskbar.getTaskbar()
@@ -127,7 +117,7 @@ class App : Application() {
                     return
                 }
             }
-            log.debug(LogTag.APP, "taskbar icon skipped icns={}", APP_ICON_ICNS_RESOURCE)
+            log.debug(LogTag.APP, "taskbar icon unavailable")
         }
         catch (ex: Exception) {
             log.warn(LogTag.APP, "taskbar icon failed", ex)
@@ -141,8 +131,7 @@ class App : Application() {
                 App::class.java.getResourceAsStream(res)?.use { input ->
                     val font = Font.loadFont(input, FONT_PRELOAD_SIZE)
                     if (font != null) {
-                        sfProDisplayFamily = font.family
-                        log.debug(LogTag.IO, "font loaded {} family='{}'", res, sfProDisplayFamily)
+                        log.debug(LogTag.IO, "font loaded {} family='{}'", res, font.family)
                     } else {
                         log.warn(LogTag.IO, "font load failed {}", res)
                     }
@@ -155,15 +144,17 @@ class App : Application() {
     }
 
     private fun applyStageState(stage: Stage, state: ComparatorState) {
-        LogHelper.enter(log, LogTag.STATE, "applyStageState", "stage" to stage, "state" to state)
+        log.debug(LogTag.STATE, "applyStageState(stage={}, state={})", stage, state)
         val win = state.window
-        stage.width = win.width; stage.height = win.height
-        stage.x = win.x; stage.y = win.y
+        stage.width = win.width
+        stage.height = win.height
+        stage.x = win.x
+        stage.y = win.y
         if (win.isMaximized) stage.isMaximized = true
     }
 
     private fun installStageAutosave(stage: Stage) {
-        LogHelper.enter(log, LogTag.STATE, "installStageAutosave", "stage" to stage)
+        log.debug(LogTag.STATE, "installStageAutosave(stage={})", stage)
         stage.xProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.yProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.widthProperty().addListener { _, _, _ -> requestStageAutosave() }
@@ -173,7 +164,7 @@ class App : Application() {
     }
 
     private fun configureStageAutosaveDebounce(stage: Stage) {
-        LogHelper.enter(log, LogTag.STATE, "configureStageAutosaveDebounce", "stage" to stage)
+        log.debug(LogTag.STATE, "configureStageAutosaveDebounce(stage={})", stage)
         stageAutosaveDebounce.setOnFinished { saveState(stage) }
     }
 
@@ -183,11 +174,13 @@ class App : Application() {
     }
 
     private fun saveState(stage: Stage) {
-        LogHelper.enter(log, LogTag.STATE, "saveState", "stage" to stage)
+        log.debug(LogTag.STATE, "saveState(stage={})", stage)
         val state = appState ?: stateService.load().also { appState = it }
         state.window.apply {
-            x = stage.x; y = stage.y
-            width = stage.width; height = stage.height
+            x = stage.x
+            y = stage.y
+            width = stage.width
+            height = stage.height
             isMaximized = stage.isMaximized
         }
         stateService.save(state)

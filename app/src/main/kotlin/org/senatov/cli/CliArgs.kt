@@ -7,7 +7,6 @@
  */
 package org.senatov.cli
 
-import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.file.Files
@@ -22,16 +21,6 @@ class CliArgs private constructor(
     private val dirModeExplicit: Boolean
 ) {
 
-    fun left(): Path? {
-        log.debug(LogTag.CLI, "left()")
-        return leftPath
-    }
-
-    fun right(): Path? {
-        log.debug(LogTag.CLI, "right()")
-        return rightPath
-    }
-
     fun hasExplicitDirMode(): Boolean {
         log.debug(LogTag.CLI, "hasExplicitDirMode()")
         return dirModeExplicit
@@ -42,7 +31,6 @@ class CliArgs private constructor(
         private val log = LoggerFactory.getLogger(CliArgs::class.java)
 
         fun parse(rawArgs: List<String>?): CliArgs {
-            LogHelper.enter(log, LogTag.CLI, "parse", "rawArgs" to rawArgs)
             log.debug(LogTag.CLI, "parse args={}", rawArgs?.size ?: 0)
             if (rawArgs.isNullOrEmpty()) {
                 log.info(LogTag.CLI, "GUI mode")
@@ -74,7 +62,7 @@ class CliArgs private constructor(
 
 
         private fun resolvePath(raw: String): Path? {
-            LogHelper.enter(log, LogTag.CLI, "resolvePath", "raw" to raw)
+            log.debug(LogTag.CLI, "resolvePath(raw={})", raw)
             val path = Path.of(raw).toAbsolutePath().normalize()
             if (!Files.exists(path)) {
                 log.warn(LogTag.CLI, "path missing {}", path)
@@ -84,7 +72,7 @@ class CliArgs private constructor(
         }
 
         private fun detectDirMode(left: Path?, right: Path?): Boolean {
-            LogHelper.enter(log, LogTag.CLI, "detectDirMode", "left" to left, "right" to right)
+            log.debug(LogTag.CLI, "detectDirMode(left={}, right={})", left, right)
             if (left != null && Files.isDirectory(left)) return true
             if (right != null && Files.isDirectory(right)) return true
             return false
