@@ -9,6 +9,12 @@ import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
+import org.senatov.model.DiffStatus
+import org.senatov.model.FileMetadata
+import org.senatov.model.LineContent
+import org.senatov.model.TreeDisplayState
+import org.senatov.model.tree.TreeEntryDetails
+import org.senatov.model.tree.TreeLocation
 import org.senatov.ui.config.ComparatorState
 import java.io.IOException
 import java.nio.file.Files
@@ -27,8 +33,8 @@ internal fun MainController.executeCliAutoCompare() {
     showCompareView()
     restoringState = true
     try {
-        cli.leftPath?.let { applyPath(it, isLeft = true) }
-        cli.rightPath?.let { applyPath(it, isLeft = false) }
+        cli.leftPath?.let { applyPath(it, ComparisonSide.LEFT) }
+        cli.rightPath?.let { applyPath(it, ComparisonSide.RIGHT) }
         if (cli.hasExplicitDirMode()) setDirMode(cli.isDirMode)
     }
     finally {
@@ -103,8 +109,8 @@ private fun MainController.filterPairedRows(
     for (index in 0 until count) {
         val left = leftItems[index]
         val right = rightItems[index]
-        if (!showIdenticalCheck.isSelected && left.status == CompareLineItem.DiffStatus.IDENTICAL &&
-            right.status == CompareLineItem.DiffStatus.IDENTICAL
+        if (!showIdenticalCheck.isSelected && left.status == DiffStatus.IDENTICAL &&
+            right.status == DiffStatus.IDENTICAL
         ) {
             continue
         }
@@ -118,14 +124,14 @@ private fun MainController.filterPairedRows(
 private fun matchesEitherSide(left: CompareLineItem, right: CompareLineItem, pattern: Pattern): Boolean =
     left.isDirectory || right.isDirectory || pattern.matcher(left.text).find() || pattern.matcher(right.text).find()
 
-internal fun MainController.openPath(isLeft: Boolean) {
-    log.debug(LogTag.UI, "openPath(isLeft={})", isLeft)
+internal fun MainController.openPath(side: ComparisonSide) {
+    log.debug(LogTag.UI, "openPath(side={})", side)
     showCompareView()
-    chooseFileOrDir(if (isLeft) "Open Left" else "Open Right")?.let { path ->
-        log.info(LogTag.UI, "open {} {}", if (isLeft) "left" else "right", path)
-        applyPath(path, isLeft)
+    chooseFileOrDir(side.openDialogTitle)?.let { path ->
+        log.info(LogTag.UI, "open {} {}", side.logName, path)
+        applyPath(path, side)
         if (leftPath != null && rightPath != null) compareCurrentInputs()
-        else loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
+        else loadDirectoryPreview(path, side)
     }
 }
 
@@ -181,8 +187,8 @@ internal fun MainController.refreshPreviews() {
         compareCurrentInputs()
         return
     }
-    leftPath?.let { loadDirectoryPreview(it, leftListView, isLeft = true) }
-    rightPath?.let { loadDirectoryPreview(it, rightListView, isLeft = false) }
+    leftPath?.let { loadDirectoryPreview(it, ComparisonSide.LEFT) }
+    rightPath?.let { loadDirectoryPreview(it, ComparisonSide.RIGHT) }
 }
 
 internal fun MainController.toggleDirMode() {
@@ -234,30 +240,30 @@ internal fun MainController.restoreUiFromState() {
     }
 }
 
-internal fun MainController.restoreSavedPath(rawPath: String, isLeft: Boolean) {
-    log.debug(LogTag.STATE, "restoreSavedPath(rawPath={}, isLeft={})", rawPath, isLeft)
+internal fun MainController.restoreSavedPath(rawPath: String, side: ComparisonSide) {
+    log.debug(LogTag.STATE, "restoreSavedPath(rawPath={}, side={})", rawPath, side)
     if (rawPath.isBlank()) return
-    log.debug(LogTag.STATE, "restore {} path {}", if (isLeft) "left" else "right", rawPath)
+    log.debug(LogTag.STATE, "restore {} path {}", side.logName, rawPath)
     try {
         val restored = Path.of(rawPath)
-        applyPath(restored, isLeft)
-        loadDirectoryPreview(restored, if (isLeft) leftListView else rightListView, isLeft)
+        applyPath(restored, side)
+        loadDirectoryPreview(restored, side)
     }
     catch (ex: Exception) {
-        log.warn(LogTag.STATE, "restore {} failed {}", if (isLeft) "left" else "right", rawPath, ex)
+        log.warn(LogTag.STATE, "restore {} failed {}", side.logName, rawPath, ex)
     }
 }
 
-internal fun MainController.applyPath(path: Path, isLeft: Boolean) {
-    log.debug(LogTag.UI, "applyPath(path={}, isLeft={})", path, isLeft)
-    if (isLeft) {
+internal fun MainController.applyPath(path: Path, side: ComparisonSide) {
+    log.debug(LogTag.UI, "applyPath(path={}, side={})", path, side)
+    if (side == ComparisonSide.LEFT) {
         leftPath = path
         leftPathField.text = path.toString()
     } else {
         rightPath = path
         rightPathField.text = path.toString()
     }
-    log.debug(LogTag.UI, "{} path {}", if (isLeft) "left" else "right", path)
+    log.debug(LogTag.UI, "{} path {}", side.logName, path)
     if (!restoringState) persistInputPaths()
 }
 
@@ -318,24 +324,25 @@ internal fun MainController.updateCenterStripState() {
     deleteBtn.isDisable = leftPath == null && rightPath == null
 }
 
-internal fun MainController.loadDirectoryPreview(path: Path, listView: ListView<CompareLineItem>, isLeft: Boolean) {
-    log.debug(LogTag.IO, "loadDirectoryPreview(path={}, isLeft={})", path, isLeft)
+internal fun MainController.loadDirectoryPreview(path: Path, side: ComparisonSide) {
+    log.debug(LogTag.IO, "loadDirectoryPreview(path={}, side={})", path, side)
+    val listView = if (side == ComparisonSide.LEFT) leftListView else rightListView
     try {
         if (Files.isDirectory(path)) {
             setDirMode(true)
             val entries = listDirEntries(path)
             listView.items = FXCollections.observableArrayList(entries)
-            updateStatus(isLeft, "${entries.size} entries")
-            log.info(LogTag.IO, "preview {} dir entries={}", if (isLeft) "left" else "right", entries.size)
+            updateStatus(side, "${entries.size} entries")
+            log.info(LogTag.IO, "preview {} dir entries={}", side.logName, entries.size)
         } else {
             setDirMode(false)
             val lines = Files.readAllLines(path)
             val items = lines.mapIndexed { i, line ->
-                CompareLineItem(i + 1, line, CompareLineItem.DiffStatus.IDENTICAL)
+                CompareLineItem(LineContent(i + 1, line), DiffStatus.IDENTICAL)
             }
             listView.items = FXCollections.observableArrayList(items)
-            updateStatus(isLeft, "${lines.size} lines")
-            log.info(LogTag.IO, "preview {} file lines={}", if (isLeft) "left" else "right", lines.size)
+            updateStatus(side, "${lines.size} lines")
+            log.info(LogTag.IO, "preview {} file lines={}", side.logName, lines.size)
         }
     }
     catch (ex: IOException) {
@@ -362,14 +369,19 @@ private fun MainController.listDirEntries(dir: Path): List<CompareLineItem> {
         return stream.sorted().map { path ->
             val attr = Files.readAttributes(path, java.nio.file.attribute.BasicFileAttributes::class.java)
             CompareLineItem(
-                lineNumber = 0,
-                text = path.fileName.toString(),
-                status = CompareLineItem.DiffStatus.IDENTICAL,
-                indentLevel = 0,
-                isDirectory = Files.isDirectory(path),
-                relativePath = path.fileName.toString(),
-                size = if (Files.isDirectory(path)) 0 else attr.size(),
-                lastModifiedMs = attr.lastModifiedTime().toMillis()
+                content = LineContent(number = 0, text = path.fileName.toString()),
+                status = DiffStatus.IDENTICAL,
+                treeState = TreeDisplayState(
+                    details = TreeEntryDetails(
+                        location = TreeLocation(path.fileName.toString(), depth = 0),
+                        isDirectory = Files.isDirectory(path),
+                        metadata = FileMetadata(
+                            size = if (Files.isDirectory(path)) 0 else attr.size(),
+                            lastModifiedMs = attr.lastModifiedTime().toMillis(),
+                        ),
+                    ),
+                    isExpanded = false,
+                ),
             )
         }.collect(Collectors.toList())
     }

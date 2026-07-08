@@ -166,8 +166,8 @@ internal fun MainController.openSavedSession() {
     appendEvent("Load comparison: ${state.leftInputPath} <-> ${state.rightInputPath}")
     restoringState = true
     try {
-        restoreSavedPath(state.leftInputPath, isLeft = true)
-        restoreSavedPath(state.rightInputPath, isLeft = false)
+        restoreSavedPath(state.leftInputPath, ComparisonSide.LEFT)
+        restoreSavedPath(state.rightInputPath, ComparisonSide.RIGHT)
     }
     finally {
         restoringState = false

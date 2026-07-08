@@ -14,16 +14,17 @@ import java.nio.file.Path
 
 
 class CliArgs private constructor(
-    val leftPath: Path?,
-    val rightPath: Path?,
+    private val paths: CliPaths,
     val autoCompare: Boolean,
-    val isDirMode: Boolean,
-    private val dirModeExplicit: Boolean
+    private val mode: CliMode,
 ) {
+    val leftPath: Path? get() = paths.left
+    val rightPath: Path? get() = paths.right
+    val isDirMode: Boolean get() = mode.isDirectory
 
     fun hasExplicitDirMode(): Boolean {
         log.debug(LogTag.CLI, "hasExplicitDirMode()")
-        return dirModeExplicit
+        return mode.isExplicit
     }
 
 
@@ -34,7 +35,11 @@ class CliArgs private constructor(
             log.debug(LogTag.CLI, "parse args={}", rawArgs?.size ?: 0)
             if (rawArgs.isNullOrEmpty()) {
                 log.info(LogTag.CLI, "GUI mode")
-                return CliArgs(null, null, false, false, false)
+                return CliArgs(
+                    paths = CliPaths(left = null, right = null),
+                    autoCompare = false,
+                    mode = CliMode(isDirectory = false, isExplicit = false),
+                )
             }
             var left: Path? = null
             var right: Path? = null
@@ -57,7 +62,11 @@ class CliArgs private constructor(
             val auto = left != null && right != null
             log.info(LogTag.CLI, "parsed left={} right={} auto={} dir={} explicit={}",
                 left, right, auto, dirMode, forcedDirMode != null)
-            return CliArgs(left, right, auto, dirMode, forcedDirMode != null)
+            return CliArgs(
+                paths = CliPaths(left, right),
+                autoCompare = auto,
+                mode = CliMode(dirMode, forcedDirMode != null),
+            )
         }
 
 

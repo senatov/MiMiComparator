@@ -1,29 +1,24 @@
-/*
- * DirTreeNode — single node in dir comparison tree.
- * name, path, attrs, children, expand state.
- * Iakov Senatov, 2026
- */
 package org.senatov.model.tree
 
-import org.senatov.model.CompareLineItem.DiffStatus
-
+import org.senatov.model.DiffStatus
 
 class DirTreeNode(
-    val name: String,
-    val relativePath: String,
-    val isDirectory: Boolean,
-    val size: Long,
-    val lastModifiedMs: Long,
-    val status: DiffStatus,
-    val depth: Int,
-    var isExpanded: Boolean = false,
-    val children: MutableList<DirTreeNode> = mutableListOf()
+    val identity: TreeNodeIdentity,
+    val details: TreeEntryDetails,
+    val children: MutableList<DirTreeNode> = mutableListOf(),
 ) : Comparable<DirTreeNode> {
+    val name: String get() = identity.name
+    val status: DiffStatus get() = identity.status
+    val relativePath: String get() = details.location.relativePath
+    val depth: Int get() = details.location.depth
+    val isDirectory: Boolean get() = details.isDirectory
+    val size: Long get() = details.metadata.size
+    val lastModifiedMs: Long get() = details.metadata.lastModifiedMs
 
     override fun compareTo(other: DirTreeNode): Int {
-        if (this.isDirectory != other.isDirectory) {
-            return if (this.isDirectory) -1 else 1
+        if (isDirectory != other.isDirectory) {
+            return if (isDirectory) -1 else 1
         }
-        return this.name.compareTo(other.name, ignoreCase = true)
+        return name.compareTo(other.name, ignoreCase = true)
     }
 }

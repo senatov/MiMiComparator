@@ -1,32 +1,18 @@
-/*
- * CompareLineItem — one row in compare list.
- * txt + diff status + tree indent 4 dir mode.
- * expandable dirs w/ disclosure triangle.
- * Iakov Senatov, 2026
- */
 package org.senatov.model
 
-
 class CompareLineItem(
-    val lineNumber: Int,
-    val text: String,
+    val content: LineContent,
     val status: DiffStatus,
-    val indentLevel: Int = 0,
-    val isDirectory: Boolean = false,
-    val relativePath: String = "",
-    val size: Long = 0L,
-    val lastModifiedMs: Long = 0L,
-    var isExpanded: Boolean = false
+    val treeState: TreeDisplayState? = null,
 ) {
-
-    enum class DiffStatus {
-        IDENTICAL,
-        MODIFIED,
-        ADDED,
-        MISSING,
-        HEADER
-    }
-
+    val lineNumber: Int get() = content.number
+    val text: String get() = content.text
+    val indentLevel: Int get() = treeState?.details?.location?.depth ?: 0
+    val isDirectory: Boolean get() = treeState?.details?.isDirectory ?: false
+    val relativePath: String get() = treeState?.details?.location?.relativePath.orEmpty()
+    val size: Long get() = treeState?.details?.metadata?.size ?: 0
+    val lastModifiedMs: Long get() = treeState?.details?.metadata?.lastModifiedMs ?: 0
+    val isExpanded: Boolean get() = treeState?.isExpanded ?: false
 
     fun formatted(): String {
         val marker = when (status) {

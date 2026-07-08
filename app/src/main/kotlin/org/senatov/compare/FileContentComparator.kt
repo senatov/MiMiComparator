@@ -7,7 +7,8 @@ package org.senatov.compare
 
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
-import org.senatov.model.CompareLineItem.DiffStatus
+import org.senatov.model.DiffStatus
+import org.senatov.model.LineContent
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -57,12 +58,16 @@ object FileContentComparator {
                 }
             }
             if (!showIdentical && leftStatus == DiffStatus.IDENTICAL) continue
-            leftItems.add(CompareLineItem(i + 1, l, leftStatus))
-            rightItems.add(CompareLineItem(i + 1, r, rightStatus))
+            leftItems.add(CompareLineItem(LineContent(i + 1, l), leftStatus))
+            rightItems.add(CompareLineItem(LineContent(i + 1, r), rightStatus))
         }
         val summary = if (diffs == 0) "files identical ($maxLen lines)"
             else "$diffs diffs in $maxLen lines"
         log.info(LogTag.COMPARE, "file done {}", summary)
-        return CompareResult(leftItems, rightItems, diffs, summary)
+        return CompareResult(
+            items = PairedCompareItems(leftItems, rightItems),
+            diffCount = diffs,
+            summary = summary,
+        )
     }
 }

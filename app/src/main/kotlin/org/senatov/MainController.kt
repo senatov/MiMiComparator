@@ -142,9 +142,9 @@ class MainController {
     @FXML
     private fun onLoadHome() = uiAction("onLoadHome") { showHomeView() }
     @FXML
-    private fun onOpenLeft() = uiAction("onOpenLeft") { openPath(isLeft = true) }
+    private fun onOpenLeft() = uiAction("onOpenLeft") { openPath(ComparisonSide.LEFT) }
     @FXML
-    private fun onOpenRight() = uiAction("onOpenRight") { openPath(isLeft = false) }
+    private fun onOpenRight() = uiAction("onOpenRight") { openPath(ComparisonSide.RIGHT) }
     @FXML
     private fun onCompare() = uiAction("onCompare") { compareCurrentInputs() }
     @FXML

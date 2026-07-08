@@ -8,6 +8,8 @@ package org.senatov.model.tree
 
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
+import org.senatov.model.LineContent
+import org.senatov.model.TreeDisplayState
 import org.slf4j.LoggerFactory
 
 
@@ -68,15 +70,9 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
         )
         val expanded = node.isDirectory && node.relativePath in expandedPaths
         val item = CompareLineItem(
-            lineNumber = 0,
-            text = node.name,
+            content = LineContent(number = 0, text = node.name),
             status = node.status,
-            indentLevel = node.depth,
-            isDirectory = node.isDirectory,
-            relativePath = node.relativePath,
-            size = node.size,
-            lastModifiedMs = node.lastModifiedMs,
-            isExpanded = expanded
+            treeState = TreeDisplayState(details = node.details, isExpanded = expanded),
         )
         result.add(item)
         if (!expanded || !node.isDirectory) return

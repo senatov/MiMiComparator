@@ -50,19 +50,19 @@ internal fun MainController.installDiffCellFactories() {
 
 internal fun MainController.configurePathFields() {
     log.debug(LogTag.UI, "configurePathFields()")
-    installPathField(leftPathField, isLeft = true)
-    installPathField(rightPathField, isLeft = false)
+    installPathField(leftPathField, ComparisonSide.LEFT)
+    installPathField(rightPathField, ComparisonSide.RIGHT)
     configurePathButtons()
 }
 
-private fun MainController.installPathField(field: TextField, isLeft: Boolean) {
-    log.debug(LogTag.UI, "installPathField(field={}, isLeft={})", field, isLeft)
+private fun MainController.installPathField(field: TextField, side: ComparisonSide) {
+    log.debug(LogTag.UI, "installPathField(field={}, side={})", field, side)
     field.minHeight = 24.0
     field.prefHeight = 24.0
     field.maxHeight = 24.0
-    field.setOnAction { commitPathField(field, isLeft) }
+    field.setOnAction { commitPathField(field, side) }
     field.focusedProperty().addListener { _, wasFocused, isFocused ->
-        if (wasFocused && !isFocused) commitPathField(field, isLeft)
+        if (wasFocused && !isFocused) commitPathField(field, side)
     }
 }
 
@@ -100,12 +100,6 @@ private fun installPathButton(button: Button, accent: String, helpText: String) 
     }
 }
 
-private enum class PathButtonState {
-    NORMAL,
-    HOVER,
-    PRESSED,
-}
-
 private fun applyPathButtonStyle(button: Button, accent: String, state: PathButtonState) {
     val fill = when (state) {
         PathButtonState.NORMAL -> "#ffffff"
@@ -136,12 +130,12 @@ private fun animatePathButton(button: Button, scale: Double) {
     }
 }
 
-private fun MainController.commitPathField(field: TextField, isLeft: Boolean) {
-    log.debug(LogTag.UI, "commitPathField(field={}, isLeft={})", field, isLeft)
+private fun MainController.commitPathField(field: TextField, side: ComparisonSide) {
+    log.debug(LogTag.UI, "commitPathField(field={}, side={})", field, side)
     val raw = field.text.trim()
-    val current = if (isLeft) leftPath else rightPath
+    val current = if (side == ComparisonSide.LEFT) leftPath else rightPath
     if (raw.isBlank()) {
-        clearPathSide(isLeft)
+        clearPathSide(side)
         return
     }
     val path = runCatching { Path.of(raw).toAbsolutePath().normalize() }.getOrElse {
@@ -156,23 +150,23 @@ private fun MainController.commitPathField(field: TextField, isLeft: Boolean) {
         return
     }
     showCompareView()
-    applyPath(path, isLeft)
+    applyPath(path, side)
     if (leftPath != null && rightPath != null) compareCurrentInputs()
-    else loadDirectoryPreview(path, if (isLeft) leftListView else rightListView, isLeft)
+    else loadDirectoryPreview(path, side)
 }
 
-private fun MainController.clearPathSide(isLeft: Boolean) {
-    log.debug(LogTag.UI, "clearPathSide(isLeft={})", isLeft)
-    if (isLeft) {
+private fun MainController.clearPathSide(side: ComparisonSide) {
+    log.debug(LogTag.UI, "clearPathSide(side={})", side)
+    if (side == ComparisonSide.LEFT) {
         leftPath = null
         leftPathField.text = ""
         leftListView.items.clear()
-        updateStatus(isLeft = true, "No file loaded")
+        updateStatus(ComparisonSide.LEFT, "No file loaded")
     } else {
         rightPath = null
         rightPathField.text = ""
         rightListView.items.clear()
-        updateStatus(isLeft = false, "No file loaded")
+        updateStatus(ComparisonSide.RIGHT, "No file loaded")
     }
     updateCenterStripState()
     persistInputPaths()
@@ -210,21 +204,6 @@ private fun MainController.installToolbarGraphic(button: ButtonBase) {
     button.installStandardHelp(helpText)
     button.graphic = icon
     button.contentDisplay = ContentDisplay.GRAPHIC_ONLY
-}
-
-private data class ToolbarIconSpec(
-    val glyph: String,
-    val color: String = "#2f343a",
-    val size: Int = 32,
-    val emoji: Boolean = false,
-) {
-    val style: String
-        get() {
-            val family = if (emoji) "'Apple Color Emoji','System'" else "'System'"
-            val effect = if (emoji) "" else "-fx-effect:dropshadow(gaussian,rgba(255,255,255,0.85),0,0,0,1);"
-            return "-fx-font-family:$family; -fx-font-size:$size; -fx-font-weight:400; " +
-                    "-fx-text-fill:$color; -fx-opacity:1; -fx-font-smoothing-type:gray; $effect"
-        }
 }
 
 private fun toolbarIconSpec(sourceIcon: String, labelText: String): ToolbarIconSpec = when (labelText) {
@@ -288,9 +267,9 @@ internal fun MainController.setupEventLog() {
     appendEvent("Load comparison: <->")
 }
 
-internal fun MainController.updateStatus(isLeft: Boolean, text: String) {
-    log.debug(LogTag.UI, "updateStatus(isLeft={}, text={})", isLeft, text)
-    if (isLeft) statusLeft.text = text else statusRight.text = text
+internal fun MainController.updateStatus(side: ComparisonSide, text: String) {
+    log.debug(LogTag.UI, "updateStatus(side={}, text={})", side, text)
+    if (side == ComparisonSide.LEFT) statusLeft.text = text else statusRight.text = text
 }
 
 internal fun MainController.appendEvent(message: String) {

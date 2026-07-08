@@ -17,7 +17,7 @@ import javafx.scene.layout.Priority
 import javafx.util.Callback
 import org.senatov.compare.DirectoryComparator
 import org.senatov.model.CompareLineItem
-import org.senatov.model.CompareLineItem.DiffStatus
+import org.senatov.model.DiffStatus
 
 
 class DiffCellFactory(private val dirMode: Boolean) : Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {

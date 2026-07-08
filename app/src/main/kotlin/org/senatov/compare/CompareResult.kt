@@ -9,11 +9,12 @@ import org.senatov.model.CompareLineItem
 
 
 data class CompareResult(
-    val leftItems: List<CompareLineItem>,
-    val rightItems: List<CompareLineItem>,
+    val items: PairedCompareItems,
     val diffCount: Int,
     val summary: String
 ) {
+    val leftItems: List<CompareLineItem> get() = items.left
+    val rightItems: List<CompareLineItem> get() = items.right
 
     val isIdentical: Boolean get() = diffCount == 0
 

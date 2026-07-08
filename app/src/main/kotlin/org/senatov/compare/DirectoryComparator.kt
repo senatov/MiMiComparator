@@ -1,240 +1,37 @@
-/*
- * DirectoryComparator — recursive dir compare.
- * builds paired DirTreeModels for left/right panels.
- * compares by name, size, last-modified date.
- * TC-style: left-only, right-only, same, different.
- * Iakov Senatov, 2026
- */
 package org.senatov.compare
 
 import org.senatov.helpers.log.LogTag
-import org.senatov.model.CompareLineItem.DiffStatus
-import org.senatov.model.tree.DirTreeModel
-import org.senatov.model.tree.DirTreeNode
 import org.slf4j.LoggerFactory
-import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-
 object DirectoryComparator {
-
     private val log = LoggerFactory.getLogger(DirectoryComparator::class.java)
-    private val DATE_FMT: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("d. MMM yyyy 'at' HH:mm:ss", Locale.ENGLISH)
-            .withZone(ZoneId.systemDefault())
+    private val dateFormatter = DateTimeFormatter
+        .ofPattern("d. MMM yyyy 'at' HH:mm:ss", Locale.ENGLISH)
+        .withZone(ZoneId.systemDefault())
 
-
-    fun compareTree(leftDir: Path, rightDir: Path): DirCompareResult {
-        log.debug(LogTag.COMPARE, "compareTree(leftDir={}, rightDir={})", leftDir, rightDir)
-        log.info(LogTag.COMPARE, "tree start L={} R={}", leftDir, rightDir)
-        val leftRoots = mutableListOf<DirTreeNode>()
-        val rightRoots = mutableListOf<DirTreeNode>()
-        val stats = TreeStats()
-        buildPairedTree(leftDir, rightDir, "", 0, leftRoots, rightRoots, stats)
-        log.info(LogTag.COMPARE, "tree done dirs={} files={} diffs={}", stats.dirs, stats.files, stats.diffs)
-        return DirCompareResult(DirTreeModel(leftRoots), DirTreeModel(rightRoots), stats.diffs)
-    }
-
-
-    private fun buildPairedTree(
-        leftDir: Path, rightDir: Path, pathPrefix: String, depth: Int,
-        leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
-        stats: TreeStats
-    ) {
+    fun compareTree(leftDirectory: Path, rightDirectory: Path): DirCompareResult {
         log.debug(
             LogTag.COMPARE,
-            "buildPairedTree(leftDir={}, rightDir={}, pathPrefix={}, depth={}, leftNodes={}, rightNodes={})",
-            leftDir,
-            rightDir,
-            pathPrefix,
-            depth,
-            leftNodes.size,
-            rightNodes.size
+            "compareTree(leftDirectory={}, rightDirectory={})",
+            leftDirectory,
+            rightDirectory,
         )
-        val leftNames = safeListNames(leftDir)
-        val rightNames = safeListNames(rightDir)
-        val allNames = TreeSet(String.CASE_INSENSITIVE_ORDER).apply {
-            addAll(leftNames)
-            addAll(rightNames)
-        }
-        for (name in allNames) {
-            val inLeft = name in leftNames
-            val inRight = name in rightNames
-            val relPath = if (pathPrefix.isEmpty()) name else "$pathPrefix/$name"
-            when {
-                inLeft && inRight -> handleBothSides(
-                    leftDir, rightDir, name, relPath, depth, leftNodes, rightNodes, stats
-                )
-                inLeft -> {
-                    stats.diffs++
-                    val lp = leftDir.resolve(name)
-                    val isDir = Files.isDirectory(lp)
-                    stats.count(isDir)
-                    leftNodes.add(
-                        if (isDir) makeDirNode(name, relPath, depth, DiffStatus.ADDED)
-                        else makeFileNode(name, relPath, lp, depth, DiffStatus.ADDED)
-                    )
-                    rightNodes.add(makePlaceholder(name, relPath, depth, isDir))
-                }
-                else -> {
-                    stats.diffs++
-                    val rp = rightDir.resolve(name)
-                    val isDir = Files.isDirectory(rp)
-                    stats.count(isDir)
-                    leftNodes.add(makePlaceholder(name, relPath, depth, isDir))
-                    rightNodes.add(
-                        if (isDir) makeDirNode(name, relPath, depth, DiffStatus.ADDED)
-                        else makeFileNode(name, relPath, rp, depth, DiffStatus.ADDED)
-                    )
-                }
-            }
-        }
+        log.info(LogTag.COMPARE, "tree start left={} right={}", leftDirectory, rightDirectory)
+        return DirectoryTreeBuilder().build(DirectoryPair(leftDirectory, rightDirectory))
     }
-
-
-    private fun handleBothSides(
-        leftDir: Path, rightDir: Path, name: String, relPath: String, depth: Int,
-        leftNodes: MutableList<DirTreeNode>, rightNodes: MutableList<DirTreeNode>,
-        stats: TreeStats
-    ) {
-        log.debug(
-            LogTag.COMPARE,
-            "handleBothSides(leftDir={}, rightDir={}, name={}, relPath={}, depth={})",
-            leftDir,
-            rightDir,
-            name,
-            relPath,
-            depth
-        )
-        val lp = leftDir.resolve(name)
-        val rp = rightDir.resolve(name)
-        val lIsDir = Files.isDirectory(lp)
-        val rIsDir = Files.isDirectory(rp)
-        when {
-            lIsDir && rIsDir -> {
-                stats.dirs++
-                val ln = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
-                val rn = makeDirNode(name, relPath, depth, DiffStatus.IDENTICAL)
-                buildPairedTree(lp, rp, relPath, depth + 1, ln.children, rn.children, stats)
-                leftNodes.add(ln)
-                rightNodes.add(rn)
-            }
-            !lIsDir && !rIsDir -> {
-                stats.files++
-                val st = compareFileAttrs(lp, rp)
-                if (st != DiffStatus.IDENTICAL) stats.diffs++
-                leftNodes.add(makeFileNode(name, relPath, lp, depth, st))
-                rightNodes.add(makeFileNode(name, relPath, rp, depth, st))
-            }
-            else -> {
-                stats.diffs++
-                stats.count(lIsDir)
-                stats.count(rIsDir)
-                leftNodes.add(if (lIsDir) makeDirNode(name, relPath, depth, DiffStatus.MODIFIED)
-                    else makeFileNode(name, relPath, lp, depth, DiffStatus.MODIFIED))
-                rightNodes.add(if (rIsDir) makeDirNode(name, relPath, depth, DiffStatus.MODIFIED)
-                    else makeFileNode(name, relPath, rp, depth, DiffStatus.MODIFIED))
-            }
-        }
-    }
-
-
-    private fun safeListNames(dir: Path?): Set<String> {
-        log.debug(LogTag.IO, "safeListNames(dir={})", dir)
-        if (dir == null || !Files.isDirectory(dir)) return emptySet()
-        return try {
-            Files.list(dir).use { stream ->
-                stream.map { it.fileName.toString() }.collect(java.util.stream.Collectors.toSet())
-            }
-        } catch (ex: IOException) {
-            log.warn(LogTag.IO, "list failed {}: {}", dir, ex.message)
-            emptySet()
-        }
-    }
-
-
-    private fun compareFileAttrs(left: Path, right: Path): DiffStatus {
-        log.debug(LogTag.COMPARE, "compareFileAttrs(left={}, right={})", left, right)
-        return try {
-            val la = Files.readAttributes(left, BasicFileAttributes::class.java)
-            val ra = Files.readAttributes(right, BasicFileAttributes::class.java)
-            if (la.size() == ra.size() && la.lastModifiedTime() == ra.lastModifiedTime())
-                DiffStatus.IDENTICAL else DiffStatus.MODIFIED
-        } catch (ex: IOException) {
-            log.debug(LogTag.IO, "attr compare failed L={} R={}: {}", left, right, ex.message)
-            DiffStatus.MODIFIED
-        }
-    }
-
-
-    private fun makeDirNode(name: String, relPath: String, depth: Int, status: DiffStatus): DirTreeNode {
-        log.debug(
-            LogTag.COMPARE,
-            "makeDirNode(name={}, relPath={}, depth={}, status={})",
-            name,
-            relPath,
-            depth,
-            status
-        )
-        return DirTreeNode(name, relPath, isDirectory = true, size = 0, lastModifiedMs = 0, status = status, depth = depth)
-    }
-
-
-    private fun makeFileNode(name: String, relPath: String, filePath: Path, depth: Int, status: DiffStatus): DirTreeNode {
-        log.debug(
-            LogTag.COMPARE,
-            "makeFileNode(name={}, relPath={}, filePath={}, depth={}, status={})",
-            name,
-            relPath,
-            filePath,
-            depth,
-            status
-        )
-        return try {
-            val attr = Files.readAttributes(filePath, BasicFileAttributes::class.java)
-            DirTreeNode(name, relPath, false, attr.size(), attr.lastModifiedTime().toMillis(), status, depth)
-        } catch (ex: IOException) {
-            log.debug(LogTag.IO, "attr read failed {}: {}", filePath, ex.message)
-            DirTreeNode(name, relPath, false, 0, 0, status, depth)
-        }
-    }
-
-
-    private data class TreeStats(var dirs: Int = 0, var files: Int = 0, var diffs: Int = 0) {
-        fun count(isDir: Boolean) {
-            log.debug(LogTag.COMPARE, "count(isDir={})", isDir)
-            if (isDir) dirs++ else files++
-        }
-    }
-
-
-    private fun makePlaceholder(name: String, relPath: String, depth: Int, isDir: Boolean): DirTreeNode {
-        log.debug(
-            LogTag.COMPARE,
-            "makePlaceholder(name={}, relPath={}, depth={}, isDir={})",
-            name,
-            relPath,
-            depth,
-            isDir
-        )
-        return DirTreeNode("‹missing›", relPath, isDir, 0, 0, DiffStatus.MISSING, depth)
-    }
-
 
     fun formatSize(bytes: Long): String {
         log.debug(LogTag.COMPARE, "formatSize(bytes={})", bytes)
         return if (bytes <= 0) "0" else "%,d".format(bytes).replace(",", " ")
     }
 
-
     fun formatDate(millis: Long): String {
         log.debug(LogTag.COMPARE, "formatDate(millis={})", millis)
-        return if (millis <= 0) "" else DATE_FMT.format(Instant.ofEpochMilli(millis))
+        return if (millis <= 0) "" else dateFormatter.format(Instant.ofEpochMilli(millis))
     }
 }
