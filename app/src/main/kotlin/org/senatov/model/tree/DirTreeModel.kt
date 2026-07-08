@@ -18,6 +18,7 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     fun toggleExpand(relativePath: String) {
+        log.debug(LogTag.UI, "toggleExpand(relativePath={})", relativePath)
         if (relativePath in expandedPaths) {
             expandedPaths.remove(relativePath)
             log.debug(LogTag.UI, "collapsed {}", relativePath)
@@ -43,6 +44,7 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     fun isExpanded(relativePath: String): Boolean {
+        log.debug(LogTag.UI, "isExpanded(relativePath={})", relativePath)
         return relativePath in expandedPaths
     }
 
@@ -58,6 +60,12 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     private fun flattenNode(node: DirTreeNode, result: MutableList<CompareLineItem>) {
+        log.debug(
+            LogTag.UI,
+            "flattenNode(relativePath={}, resultSize={})",
+            node.relativePath,
+            result.size
+        )
         val expanded = node.isDirectory && node.relativePath in expandedPaths
         val item = CompareLineItem(
             lineNumber = 0,
@@ -79,6 +87,7 @@ class DirTreeModel(val roots: List<DirTreeNode>) {
 
 
     private fun expandAllRecursive(nodes: List<DirTreeNode>) {
+        log.debug(LogTag.UI, "expandAllRecursive(nodes={})", nodes.size)
         for (node in nodes) {
             if (node.isDirectory) {
                 expandedPaths.add(node.relativePath)

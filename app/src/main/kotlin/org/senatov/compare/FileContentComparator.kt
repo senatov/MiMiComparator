@@ -21,6 +21,13 @@ object FileContentComparator {
 
 
     fun compare(leftFile: Path, rightFile: Path, showIdentical: Boolean): CompareResult {
+        log.debug(
+            LogTag.COMPARE,
+            "compare(leftFile={}, rightFile={}, showIdentical={})",
+            leftFile,
+            rightFile,
+            showIdentical
+        )
         log.info(LogTag.COMPARE, "file start L={} R={} identical={}", leftFile, rightFile, showIdentical)
         val leftLines = Files.readAllLines(leftFile, StandardCharsets.UTF_8)
         val rightLines = Files.readAllLines(rightFile, StandardCharsets.UTF_8)
