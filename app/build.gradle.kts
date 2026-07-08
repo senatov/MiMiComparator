@@ -11,7 +11,6 @@ import org.gradle.jvm.tasks.Jar
 plugins {
     application
     kotlin("jvm") version "2.4.0"
-    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 repositories {
@@ -22,12 +21,24 @@ kotlin {
     jvmToolchain(25)
 }
 
-javafx {
-    version = "26"
-    modules = listOf("javafx.controls", "javafx.fxml")
-}
+val javafxVersion = "26"
+val javafxPlatform = providers.systemProperty("os.name").zip(providers.systemProperty("os.arch")) { os, arch ->
+    val normalizedArch = when (arch.lowercase()) {
+        "aarch64", "arm64" -> "aarch64"
+        else -> "x86_64"
+    }
+    when {
+        os.lowercase().contains("mac") -> "mac-$normalizedArch"
+        os.lowercase().contains("win") -> "win-$normalizedArch"
+        else -> "linux-$normalizedArch"
+    }
+}.get()
 
 dependencies {
+    implementation("org.openjfx:javafx-base:$javafxVersion:$javafxPlatform")
+    implementation("org.openjfx:javafx-graphics:$javafxVersion:$javafxPlatform")
+    implementation("org.openjfx:javafx-controls:$javafxVersion:$javafxPlatform")
+    implementation("org.openjfx:javafx-fxml:$javafxVersion:$javafxPlatform")
     implementation(kotlin("reflect"))
     // AtlantaFX — macOS-style Cupertino theme for JavaFX
     implementation("io.github.mkpaz:atlantafx-base:2.1.0")
@@ -53,8 +64,10 @@ tasks.test {
 }
 
 application {
-    mainClass = "org.senatov.App"
-    applicationDefaultJvmArgs = listOf("--enable-native-access=javafx.graphics")
+    // A separate launcher prevents the JDK launcher from treating App as a modular
+    // JavaFX entry point while the JavaFX libraries are supplied on the classpath.
+    mainClass = "org.senatov.LauncherKt"
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
 val jpackageInputDir = layout.buildDirectory.dir("jpackage/input")
