@@ -7,8 +7,11 @@ import javafx.scene.control.ScrollBar
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
 
 internal fun MainController.setupSyncScroll() {
+    LogHelper.enter(log, LogTag.UI, "setupSyncScroll")
     Platform.runLater {
         bindScrollBars(leftListView, rightListView)
         bindScrollBars(rightListView, leftListView)
@@ -16,6 +19,7 @@ internal fun MainController.setupSyncScroll() {
 }
 
 private fun MainController.bindScrollBars(source: ListView<*>, target: ListView<*>) {
+    LogHelper.enter(log, LogTag.UI, "bindScrollBars", "source" to source, "target" to target)
     val srcBar = findScrollBar(source) ?: return
     val tgtBar = findScrollBar(target) ?: return
     srcBar.valueProperty().addListener { _, _, nv ->
@@ -28,6 +32,7 @@ private fun findScrollBar(listView: ListView<*>): ScrollBar? =
         .firstOrNull { it.orientation == Orientation.VERTICAL }
 
 internal fun MainController.setupResizableCenterStrip() {
+    LogHelper.enter(log, LogTag.UI, "setupResizableCenterStrip")
     HBox.setHgrow(leftPanel, Priority.ALWAYS)
     HBox.setHgrow(rightPanel, Priority.ALWAYS)
     leftPanel.minWidth = 160.0
@@ -55,6 +60,7 @@ internal fun MainController.setupResizableCenterStrip() {
 }
 
 private fun MainController.applyRatioFromPointer(sceneX: Double) {
+    LogHelper.enter(log, LogTag.UI, "applyRatioFromPointer", "sceneX" to sceneX)
     val bounds = contentBox.localToScene(contentBox.boundsInLocal) ?: return
     val usableWidth = bounds.width - centerStrip.width
     if (usableWidth <= 0.0) return
@@ -64,6 +70,7 @@ private fun MainController.applyRatioFromPointer(sceneX: Double) {
 }
 
 internal fun MainController.applyPanelRatio(ratio: Double) {
+    LogHelper.enter(log, LogTag.UI, "applyPanelRatio", "ratio" to ratio)
     if (contentBox.width <= 0.0) return
     leftPanelRatio = ratio.coerceIn(0.15, 0.85)
     val usableWidth = (contentBox.width - centerStrip.width).coerceAtLeast(0.0)
@@ -74,6 +81,7 @@ internal fun MainController.applyPanelRatio(ratio: Double) {
 }
 
 private fun MainController.showRatioPopup(event: MouseEvent) {
+    LogHelper.enter(log, LogTag.UI, "showRatioPopup", "event" to event)
     updateRatioPopupText()
     val stage = centerStrip.scene?.window ?: return
     if (!ratioPopup.isShowing) ratioPopup.show(stage)
@@ -82,10 +90,12 @@ private fun MainController.showRatioPopup(event: MouseEvent) {
 }
 
 private fun MainController.updateRatioPopupText() {
+    LogHelper.enter(log, LogTag.UI, "updateRatioPopupText")
     val leftPercent = (leftPanelRatio * 100.0).toInt()
     ratioPopupLabel.text = "$leftPercent% / ${100 - leftPercent}%"
 }
 
 private fun MainController.hideRatioPopup() {
+    LogHelper.enter(log, LogTag.UI, "hideRatioPopup")
     if (ratioPopup.isShowing) ratioPopup.hide()
 }

@@ -122,7 +122,7 @@ class MainController {
 
     @FXML
     private fun initialize() {
-        log.debug(LogTag.UI, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.UI, "initialize")
         comparatorState = stateService.load()
         configureCompareLists()
         installDiffCellFactories()
@@ -139,50 +139,56 @@ class MainController {
     }
 
     fun applyCliArgs(args: CliArgs) {
+        LogHelper.enter(log, LogTag.CLI, "applyCliArgs", "args" to args)
         log.info(LogTag.CLI, "args L={} R={} auto={}", args.leftPath, args.rightPath, args.autoCompare)
         pendingCliArgs = args
     }
 
     @FXML
-    private fun onLoadHome() = showHomeView()
+    private fun onLoadHome() = uiAction("onLoadHome") { showHomeView() }
     @FXML
-    private fun onOpenLeft() = openPath(isLeft = true)
+    private fun onOpenLeft() = uiAction("onOpenLeft") { openPath(isLeft = true) }
     @FXML
-    private fun onOpenRight() = openPath(isLeft = false)
+    private fun onOpenRight() = uiAction("onOpenRight") { openPath(isLeft = false) }
     @FXML
-    private fun onCompare() = compareCurrentInputs()
+    private fun onCompare() = uiAction("onCompare") { compareCurrentInputs() }
     @FXML
-    private fun onRefresh() = refreshPreviews()
+    private fun onRefresh() = uiAction("onRefresh") { refreshPreviews() }
     @FXML
-    private fun onQuit() = Platform.exit()
+    private fun onQuit() = uiAction("onQuit") { Platform.exit() }
     @FXML
-    private fun onToggleIdentical() = compareCurrentInputs()
+    private fun onToggleIdentical() = uiAction("onToggleIdentical") { compareCurrentInputs() }
     @FXML
-    private fun onToggleDirMode() = toggleDirMode()
+    private fun onToggleDirMode() = uiAction("onToggleDirMode") { toggleDirMode() }
     @FXML
-    private fun onExpandAll() = expandAllTrees()
+    private fun onExpandAll() = uiAction("onExpandAll") { expandAllTrees() }
     @FXML
-    private fun onCollapseAll() = collapseAllTrees()
+    private fun onCollapseAll() = uiAction("onCollapseAll") { collapseAllTrees() }
     @FXML
-    private fun onFilterChanged() = applyCurrentFilter()
+    private fun onFilterChanged() = uiAction("onFilterChanged") { applyCurrentFilter() }
     @FXML
-    private fun onSwapPanels() = swapPanels()
+    private fun onSwapPanels() = uiAction("onSwapPanels") { swapPanels() }
     @FXML
-    private fun onCopyToRight() = setStubStatus("→ copy to right (stub)")
+    private fun onCopyToRight() = uiAction("onCopyToRight") { setStubStatus("→ copy to right (stub)") }
     @FXML
-    private fun onCopyToLeft() = setStubStatus("← copy to left (stub)")
+    private fun onCopyToLeft() = uiAction("onCopyToLeft") { setStubStatus("← copy to left (stub)") }
     @FXML
-    private fun onShowDiff() = setStubStatus("showing diffs only")
+    private fun onShowDiff() = uiAction("onShowDiff") { setStubStatus("showing diffs only") }
     @FXML
-    private fun onShowEqual() = setStubStatus("showing identical only")
+    private fun onShowEqual() = uiAction("onShowEqual") { setStubStatus("showing identical only") }
     @FXML
-    private fun onDeleteSelected() = setStubStatus("🗑 delete (stub)")
+    private fun onDeleteSelected() = uiAction("onDeleteSelected") { setStubStatus("🗑 delete (stub)") }
     @FXML
-    private fun onSyncScroll() = persistUiState()
+    private fun onSyncScroll() = uiAction("onSyncScroll") { persistUiState() }
     @FXML
-    private fun onCopyPathLeft() = leftPath?.let { copyToClipboard(it.toString()) } ?: Unit
+    private fun onCopyPathLeft() = uiAction("onCopyPathLeft") { leftPath?.let { copyToClipboard(it.toString()) } }
     @FXML
-    private fun onCopyPathRight() = rightPath?.let { copyToClipboard(it.toString()) } ?: Unit
+    private fun onCopyPathRight() = uiAction("onCopyPathRight") { rightPath?.let { copyToClipboard(it.toString()) } }
     @FXML
-    private fun onAbout() = showAboutDialog()
+    private fun onAbout() = uiAction("onAbout") { showAboutDialog() }
+
+    private inline fun uiAction(method: String, action: () -> Unit) {
+        LogHelper.enter(log, LogTag.UI, method)
+        action()
+    }
 }

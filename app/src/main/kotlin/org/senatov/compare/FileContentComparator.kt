@@ -5,9 +5,10 @@
  */
 package org.senatov.compare
 
+import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.senatov.model.CompareLineItem.DiffStatus
-import org.senatov.helpers.log.LogTag
 import org.slf4j.LoggerFactory
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -21,6 +22,14 @@ object FileContentComparator {
 
 
     fun compare(leftFile: Path, rightFile: Path, showIdentical: Boolean): CompareResult {
+        LogHelper.enter(
+            log,
+            LogTag.COMPARE,
+            "compare",
+            "leftFile" to leftFile,
+            "rightFile" to rightFile,
+            "showIdentical" to showIdentical
+        )
         log.info(LogTag.COMPARE, "file start L={} R={} identical={}", leftFile, rightFile, showIdentical)
         val leftLines = Files.readAllLines(leftFile, StandardCharsets.UTF_8)
         val rightLines = Files.readAllLines(rightFile, StandardCharsets.UTF_8)

@@ -10,7 +10,7 @@ import org.gradle.jvm.tasks.Jar
 
 plugins {
     application
-    kotlin("jvm") version "2.3.21"
+    kotlin("jvm") version "2.4.0"
     id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
@@ -28,23 +28,21 @@ javafx {
 }
 
 dependencies {
+    implementation(kotlin("reflect"))
     // AtlantaFX — macOS-style Cupertino theme for JavaFX
-    implementation("io.github.mkpaz:atlantafx-base:2.0.1")
+    implementation("io.github.mkpaz:atlantafx-base:2.1.0")
     // logging: Log4j2 (API + core + SLF4J bridge)
-    implementation("org.apache.logging.log4j:log4j-api:2.24.3")
-    implementation("org.apache.logging.log4j:log4j-core:2.24.3")
-    implementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3")
-    // apache commons — StringUtils, CollectionUtils, FileUtils etc
-    implementation("org.apache.commons:commons-lang3:3.17.0")
-    implementation("org.apache.commons:commons-collections4:4.5.0-M3")
-    implementation("commons-io:commons-io:2.18.0")
+    implementation(platform("org.apache.logging.log4j:log4j-bom:2.26.1"))
+    implementation("org.apache.logging.log4j:log4j-api")
+    implementation("org.apache.logging.log4j:log4j-core")
+    implementation("org.apache.logging.log4j:log4j-slf4j2-impl")
     // jackson — JSON persistence
-    implementation("com.fasterxml.jackson.core:jackson-core:2.18.3")
-    implementation("com.fasterxml.jackson.core:jackson-annotations:2.18.3")
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.3")
+    implementation(platform("com.fasterxml.jackson:jackson-bom:2.22.1"))
+    implementation("com.fasterxml.jackson.core:jackson-annotations")
+    implementation("com.fasterxml.jackson.core:jackson-databind")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     // test
-    testImplementation(platform("org.junit:junit-bom:5.10.3"))
+    testImplementation(platform("org.junit:junit-bom:5.14.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -77,7 +75,12 @@ tasks.register<Exec>("packageMacApp") {
     val outputDir = appImageOutputDir.get().asFile
     val jarFileName = tasks.named<Jar>("jar").get().archiveFileName.get()
     val iconFile = project.file("src/main/resources/icons/MiMiComparator.icns")
-    val javaHome = javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.asFile
+    // Packaging needs a full JDK with jpackage/jmods. The Java 26 runtime used by Gradle
+    // is independent from the Java 25 bytecode target configured above.
+    val packagingLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(26)
+    }
+    val javaHome = packagingLauncher.get().metadata.installationPath.asFile
     val jpackageExecutable = javaHome.resolve("bin/jpackage")
     val javafxModuleJars = configurations.runtimeClasspath.get().files
         .filter { it.name.startsWith("javafx-") && it.extension == "jar" }
@@ -89,6 +92,7 @@ tasks.register<Exec>("packageMacApp") {
     val modulePath = modulePathEntries.joinToString(":")
     doFirst {
         outputDir.mkdirs()
+        outputDir.resolve("MiMiComparator.app").deleteRecursively()
         if (!iconFile.exists()) throw GradleException("Missing app icon: ${iconFile.absolutePath}")
         if (!jpackageExecutable.exists()) throw GradleException("Missing jpackage: ${jpackageExecutable.absolutePath}")
         val jmodsDir = javaHome.resolve("jmods")

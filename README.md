@@ -6,10 +6,10 @@
 
 ### Dual-pane directory & file comparator for macOS — Kotlin/JVM + JavaFX 26.
 
-[![Kotlin 2.3](https://img.shields.io/badge/Kotlin-2.3.21-7F52FF?logo=kotlin&logoColor=white)](#build-and-run)
+[![Kotlin 2.4](https://img.shields.io/badge/Kotlin-2.4.0-7F52FF?logo=kotlin&logoColor=white)](#build-and-run)
 [![JDK 25](https://img.shields.io/badge/JDK-25-007396?logo=openjdk&logoColor=white)](#build-and-run)
 [![JavaFX 26](https://img.shields.io/badge/JavaFX-26-0A66C2)](#about)
-[![Gradle 9.4](https://img.shields.io/badge/Gradle-9.4-02303A?logo=gradle&logoColor=white)](#build-and-run)
+[![Gradle 9.6](https://img.shields.io/badge/Gradle-9.6.1-02303A?logo=gradle&logoColor=white)](#build-and-run)
 [![macOS](https://img.shields.io/badge/macOS-Apple_Silicon%20%2F%20Intel-black?logo=apple&logoColor=white)](#about)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](#license)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-2ea44f)](#contributing)
@@ -60,22 +60,22 @@ The app is currently focused on macOS and follows a compact native-style desktop
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Application platform | **Kotlin/JVM desktop app** |
-| Language | **Kotlin 2.3.21** |
-| UI toolkit | **JavaFX 26** (FXML + programmatic) |
-| UI style | macOS-oriented compact desktop controls |
-| JSON persistence | Jackson + jackson-module-kotlin |
-| Logging | Log4j2 + SLF4J bridge |
-| Utilities | Apache Commons (Lang3, Collections4, IO) |
-| Build | Gradle 9.4 (Kotlin DSL) |
-| JDK | 25 (Amazon Corretto / OpenJDK) |
-| Packaging | `jpackage` → macOS `.app` bundle |
+| Layer                | Technology                                             |
+|----------------------|--------------------------------------------------------|
+| Application platform | **Kotlin/JVM desktop app**                             |
+| Language             | **Kotlin 2.4.0**                                       |
+| UI toolkit           | **JavaFX 26** (FXML + programmatic)                    |
+| UI style             | macOS-oriented compact desktop controls                |
+| JSON persistence     | Jackson 2.22.1 + jackson-module-kotlin                 |
+| Logging              | Log4j2 2.26.1 + SLF4J bridge                           |
+| Build                | Gradle 9.6.1 (Kotlin DSL, configuration cache)         |
+| JDK                  | 25 bytecode/toolchain; full JDK 26 for macOS packaging |
+| Packaging            | `jpackage` → macOS `.app` bundle                       |
 
 ## Build and Run
 
-Requires **JDK 25+**. Use the Gradle wrapper from the project root.
+Use the checked-in Gradle wrapper from the project root. Compilation targets JDK 25. The Foojay resolver can provision the compilation
+toolchain automatically; macOS packaging additionally requires a full JDK 26 containing `jpackage` and `jmods`.
 
 ```zsh
 # run the app
@@ -90,6 +90,27 @@ Requires **JDK 25+**. Use the Gradle wrapper from the project root.
 # run with CLI args
 ./gradlew run --args="--left /path/to/dir1 --right /path/to/dir2"
 ```
+
+The packaged application is created at:
+
+```text
+app/build/jpackage/output/MiMiComparator.app
+```
+
+Log4j2 and Jackson component versions are aligned through their respective BOMs in `app/build.gradle.kts`. Kotlin reflection is
+explicitly aligned with the Kotlin plugin version.
+
+## IntelliJ IDEA
+
+The project configuration uses:
+
+- Project SDK and bytecode target: JDK 25
+- Gradle JVM: full Homebrew JDK 26
+- Kotlin language and API version: 2.4
+- Build and test execution delegated to Gradle
+
+After opening the project, reload the Gradle project so IntelliJ imports the versions from `app/build.gradle.kts`. Files under `.idea/`
+are local IDE settings and are excluded from Git.
 
 ## CLI
 
@@ -123,14 +144,29 @@ User state is stored under:
 ~/.mimi/comparator/
 ```
 
-The saved state includes the last left/right paths, directory mode, synchronized scrolling, split ratio, and window placement. Logs are written through Log4j2 and rotate according to `app/src/main/resources/log4j2.xml`.
+The saved state includes the last left/right paths, directory mode, synchronized scrolling, split ratio, and window placement.
+
+The standard Log4j2 configuration writes the active log to:
+
+```text
+/tmp/MiMiComparator.log
+```
+
+The log rolls at 10 MB and keeps up to four compressed archives named `/tmp/MiMiComparator.N.log.gz`. Console output uses the same
+timestamp, level, thread, marker, logger, and message pattern. Method-entry logs use markers such as `APP`, `UI`, `CLI`, `STATE`,
+`COMPARE`, and `IO` and include named arguments where useful.
 
 ## Project Structure
 
 ```
 app/src/main/kotlin/org/senatov/
 ├── App.kt                          # entry point, stage, theme, fonts
-├── MainController.kt               # FXML controller, compare logic, UI wiring
+├── MainController.kt               # FXML controller and stable event handlers
+├── MainControllerChrome.kt         # toolbar, path controls, status and dialogs
+├── MainControllerCompare.kt        # file/directory comparison workflow
+├── MainControllerHelp.kt           # standard control help/tooltips
+├── MainControllerNavigation.kt     # home and compare views
+├── MainControllerSplit.kt          # split ratio and synchronized scrolling
 ├── cli/
 │   └── CliArgs.kt                  # CLI argument parser
 ├── compare/
@@ -139,7 +175,7 @@ app/src/main/kotlin/org/senatov/
 │   ├── DirectoryComparator.kt      # recursive dir tree compare
 │   └── FileContentComparator.kt    # line-by-line text diff
 ├── helpers/log/
-│   └── LogHelper.kt                # stack-trace method name helper
+│   └── LogHelper.kt                # common structured method-entry logging
 ├── model/
 │   ├── CompareLineItem.kt          # single row in compare list
 │   └── tree/
@@ -153,8 +189,6 @@ app/src/main/kotlin/org/senatov/
         └── ComparatorStateService.kt # JSON load/save via Jackson
 ```
 
-> Source files live under `org/senatov/` on disk while the Kotlin package is `org.senatov`. The build uses Kotlin/JVM source discovery, so the physical folder name does not need to mirror the package name.
-
 ## UI Notes
 
 - Toolbar buttons are icon-only; hover tooltips provide the command names.
@@ -164,15 +198,14 @@ app/src/main/kotlin/org/senatov/
 
 ## Troubleshooting
 
-### Kotlin daemon permission errors
+### Resetting Gradle state
 
-If Kotlin reports a permission error under `~/Library/Application Support/kotlin/daemon`, the project disables the external compiler daemon through:
+The project enables the Gradle configuration cache and build cache. If build configuration changes produce stale IDE or cache state,
+reload the Gradle project in IntelliJ and run:
 
-```properties
-kotlin.compiler.execution.strategy=in-process
+```zsh
+./gradlew clean test
 ```
-
-This keeps compilation inside the Gradle process and avoids daemon marker files in the user Library folder.
 
 ### JavaFX native cache errors
 
@@ -184,7 +217,8 @@ JAVA_TOOL_OPTIONS="-Djavafx.cachedir=/tmp/openjfxcache" ./gradlew run
 
 ### Packaging requirements
 
-`packageMacApp` requires a full JDK with `jpackage` and `jmods`. A JRE-only installation is not enough.
+`packageMacApp` requires a full JDK 26 with `jpackage` and `jmods`. A JRE-only installation is not enough. The task removes an existing
+`MiMiComparator.app` from its build output before packaging, so repeated runs are supported.
 
 ## Contributing
 

@@ -9,11 +9,13 @@ import javafx.scene.control.TextField
 import javafx.scene.control.TreeItem
 import javafx.scene.control.TreeView
 import javafx.scene.layout.*
+import org.senatov.helpers.log.LogHelper
+import org.senatov.helpers.log.LogTag
 import org.senatov.ui.config.ComparatorState
 import java.nio.file.Path
 
 internal fun MainController.showHomeView() {
-    log.info(org.senatov.helpers.log.LogTag.UI, "show home")
+    LogHelper.enter(log, LogTag.UI, "showHomeView")
     rootPane.top = null
     homeView = buildHomeView()
     rootPane.center = homeView
@@ -22,6 +24,7 @@ internal fun MainController.showHomeView() {
 }
 
 internal fun MainController.showCompareView() {
+    LogHelper.enter(log, LogTag.UI, "showCompareView")
     if (rootPane.center !== contentBox) {
         log.info(org.senatov.helpers.log.LogTag.UI, "show compare")
         rootPane.top = topChrome
@@ -33,6 +36,7 @@ internal fun MainController.showCompareView() {
 }
 
 private fun MainController.buildHomeView(): BorderPane {
+    LogHelper.enter(log, LogTag.UI, "buildHomeView")
     val root = BorderPane().apply {
         style = "-fx-background-color:#f7f7f7;"
     }
@@ -42,6 +46,7 @@ private fun MainController.buildHomeView(): BorderPane {
 }
 
 private fun MainController.buildSessionsPane(): VBox {
+    LogHelper.enter(log, LogTag.UI, "buildSessionsPane")
     val savedName = savedSessionName()
     val treeRoot = TreeItem("Sessions").apply {
         isExpanded = true
@@ -84,6 +89,7 @@ private fun MainController.buildSessionsPane(): VBox {
 }
 
 private fun MainController.buildHomeContent(): VBox {
+    LogHelper.enter(log, LogTag.UI, "buildHomeContent")
     val state = comparatorState ?: ComparatorState.defaults()
     val left = state.leftInputPath.ifBlank { System.getProperty("user.home", "") }
     val right = state.rightInputPath
@@ -150,11 +156,13 @@ private fun homeAction(icon: String, label: String, action: () -> Unit): VBox {
 }
 
 internal fun MainController.startEmptyCompare(dir: Boolean) {
+    LogHelper.enter(log, LogTag.UI, "startEmptyCompare", "dir" to dir)
     showCompareView()
     setDirMode(dir)
 }
 
 internal fun MainController.openSavedSession() {
+    LogHelper.enter(log, LogTag.UI, "openSavedSession")
     showCompareView()
     val state = comparatorState ?: return
     appendEvent("Load comparison: ${state.leftInputPath} <-> ${state.rightInputPath}")
@@ -170,6 +178,7 @@ internal fun MainController.openSavedSession() {
 }
 
 internal fun MainController.savedSessionName(): String {
+    LogHelper.enter(log, LogTag.UI, "savedSessionName")
     val raw = comparatorState?.leftInputPath.orEmpty()
     return raw.takeIf { it.isNotBlank() }?.let { Path.of(it).fileName?.toString() } ?: "Documents"
 }

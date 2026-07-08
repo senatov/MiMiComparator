@@ -27,7 +27,7 @@ class ComparatorStateService {
 
 
     fun load(): ComparatorState {
-        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.STATE, "load")
         return try {
             ensureStateDirectoryExists()
             val stateFile = stateFilePath
@@ -47,7 +47,7 @@ class ComparatorStateService {
 
 
     fun save(state: ComparatorState?) {
-        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.STATE, "save", "state" to state)
         val safeState = state ?: ComparatorState.defaults()
         try {
             ensureStateDirectoryExists()
@@ -67,10 +67,12 @@ class ComparatorStateService {
         get() = stateDirectoryPath.resolve(STATE_FILE_NAME)
 
     private fun ensureStateDirectoryExists() {
+        LogHelper.enter(log, LogTag.STATE, "ensureStateDirectoryExists")
         Files.createDirectories(stateDirectoryPath)
     }
 
     private fun writeStateAtomically(state: ComparatorState) {
+        LogHelper.enter(log, LogTag.STATE, "writeStateAtomically", "state" to state)
         val targetFile = stateFilePath
         val tempFile = targetFile.resolveSibling("$STATE_FILE_NAME.tmp")
         objectMapper.writeValue(tempFile.toFile(), state)

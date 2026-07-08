@@ -6,6 +6,13 @@ import org.slf4j.MarkerFactory
 
 object LogHelper {
 
+    /** Logs a stable method-entry message and its named arguments. */
+    fun enter(log: Logger, marker: Marker, method: String, vararg arguments: Pair<String, Any?>) {
+        if (!log.isInfoEnabled(marker)) return
+        val renderedArguments = arguments.joinToString(", ") { (name, value) -> "$name=$value" }
+        log.info(marker, "{}({})", method, renderedArguments)
+    }
+
     fun method(): String {
         val stack = Thread.currentThread().stackTrace
         for (element in stack) {

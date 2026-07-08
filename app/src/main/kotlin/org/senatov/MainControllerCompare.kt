@@ -7,9 +7,11 @@ import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
+import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.CompareLineItem
 import org.senatov.ui.config.ComparatorState
+import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -17,6 +19,7 @@ import java.util.regex.Pattern
 import java.util.stream.Collectors
 
 internal fun MainController.executeCliAutoCompare() {
+    LogHelper.enter(log, LogTag.CLI, "executeCliAutoCompare")
     val cli = pendingCliArgs ?: return
     log.info(LogTag.CLI, "apply auto={} dirExplicit={}", cli.autoCompare, cli.hasExplicitDirMode())
     if (cli.leftPath == null && cli.rightPath == null && !cli.hasExplicitDirMode()) {
@@ -39,11 +42,13 @@ internal fun MainController.executeCliAutoCompare() {
 }
 
 internal fun MainController.setupClickToExpand() {
+    LogHelper.enter(log, LogTag.UI, "setupClickToExpand")
     leftListView.setOnMouseClicked { event -> handleTreeClick(event, leftListView) }
     rightListView.setOnMouseClicked { event -> handleTreeClick(event, rightListView) }
 }
 
 private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView<CompareLineItem>) {
+    LogHelper.enter(log, LogTag.UI, "handleTreeClick", "event" to event, "listView" to listView)
     if (!dirMode || event.clickCount < 2) return
     val item = listView.selectionModel.selectedItem ?: return
     if (!item.isDirectory) return
@@ -54,6 +59,7 @@ private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView
 }
 
 internal fun MainController.refreshTreeViews() {
+    LogHelper.enter(log, LogTag.UI, "refreshTreeViews")
     val leftModel = leftTreeModel ?: return
     val rightModel = rightTreeModel ?: return
     val (leftItems, rightItems) = filterPairedRows(leftModel.toFlatList(), rightModel.toFlatList())
@@ -63,6 +69,7 @@ internal fun MainController.refreshTreeViews() {
 }
 
 internal fun MainController.updateColumnHeaderVisibility() {
+    LogHelper.enter(log, LogTag.UI, "updateColumnHeaderVisibility")
     leftColumnHeader.isVisible = dirMode
     leftColumnHeader.isManaged = dirMode
     rightColumnHeader.isVisible = dirMode
@@ -70,6 +77,7 @@ internal fun MainController.updateColumnHeaderVisibility() {
 }
 
 internal fun MainController.applyCurrentFilter() {
+    LogHelper.enter(log, LogTag.UI, "applyCurrentFilter")
     log.debug(LogTag.UI, "filter '{}'", filterField.text)
     if (dirMode && leftTreeModel != null) refreshTreeViews() else if (!dirMode) compareCurrentInputs()
 }
@@ -116,6 +124,7 @@ private fun matchesEitherSide(left: CompareLineItem, right: CompareLineItem, pat
     left.isDirectory || right.isDirectory || pattern.matcher(left.text).find() || pattern.matcher(right.text).find()
 
 internal fun MainController.openPath(isLeft: Boolean) {
+    LogHelper.enter(log, LogTag.UI, "openPath", "isLeft" to isLeft)
     showCompareView()
     chooseFileOrDir(if (isLeft) "Open Left" else "Open Right")?.let { path ->
         log.info(LogTag.UI, "open {} {}", if (isLeft) "left" else "right", path)
@@ -126,6 +135,7 @@ internal fun MainController.openPath(isLeft: Boolean) {
 }
 
 internal fun MainController.compareCurrentInputs() {
+    LogHelper.enter(log, LogTag.COMPARE, "compareCurrentInputs")
     showCompareView()
     val lp = leftPath
     val rp = rightPath
@@ -151,6 +161,7 @@ internal fun MainController.compareCurrentInputs() {
 }
 
 private fun MainController.compareDirectories(left: Path, right: Path) {
+    LogHelper.enter(log, LogTag.COMPARE, "compareDirectories", "left" to left, "right" to right)
     val result = DirectoryComparator.compareTree(left, right)
     lastDirResult = result
     leftTreeModel = result.leftModel
@@ -161,6 +172,7 @@ private fun MainController.compareDirectories(left: Path, right: Path) {
 }
 
 private fun MainController.compareFiles(left: Path, right: Path) {
+    LogHelper.enter(log, LogTag.COMPARE, "compareFiles", "left" to left, "right" to right)
     val result = FileContentComparator.compare(left, right, showIdenticalCheck.isSelected)
     leftListView.items = FXCollections.observableArrayList(result.leftItems)
     rightListView.items = FXCollections.observableArrayList(result.rightItems)
@@ -169,7 +181,7 @@ private fun MainController.compareFiles(left: Path, right: Path) {
 }
 
 internal fun MainController.refreshPreviews() {
-    log.info(LogTag.UI, "refresh")
+    LogHelper.enter(log, LogTag.UI, "refreshPreviews")
     appendEvent("Fast refresh")
     if (leftPath != null && rightPath != null) {
         compareCurrentInputs()
@@ -180,11 +192,13 @@ internal fun MainController.refreshPreviews() {
 }
 
 internal fun MainController.toggleDirMode() {
+    LogHelper.enter(log, LogTag.UI, "toggleDirMode")
     setDirMode(!dirMode)
     persistUiState()
 }
 
 internal fun MainController.setDirMode(enabled: Boolean) {
+    LogHelper.enter(log, LogTag.UI, "setDirMode", "enabled" to enabled)
     if (dirMode != enabled) log.info(LogTag.UI, "mode {}", if (enabled) "dir" else "file")
     dirMode = enabled
     dirModeToggle.isSelected = enabled
@@ -196,6 +210,7 @@ internal fun MainController.setDirMode(enabled: Boolean) {
 }
 
 internal fun MainController.expandAllTrees() {
+    LogHelper.enter(log, LogTag.UI, "expandAllTrees")
     log.info(LogTag.UI, "expand all")
     leftTreeModel?.expandAll()
     rightTreeModel?.expandAll()
@@ -203,6 +218,7 @@ internal fun MainController.expandAllTrees() {
 }
 
 internal fun MainController.collapseAllTrees() {
+    LogHelper.enter(log, LogTag.UI, "collapseAllTrees")
     log.info(LogTag.UI, "collapse all")
     leftTreeModel?.collapseAll()
     rightTreeModel?.collapseAll()
@@ -210,6 +226,7 @@ internal fun MainController.collapseAllTrees() {
 }
 
 internal fun MainController.restoreUiFromState() {
+    LogHelper.enter(log, LogTag.STATE, "restoreUiFromState")
     val state = comparatorState ?: return
     log.debug(LogTag.STATE, "restore UI dir={} sync={} ratio={}", state.isDirMode, state.isSyncScroll, state.splitRatio)
     restoringState = true
@@ -224,6 +241,7 @@ internal fun MainController.restoreUiFromState() {
 }
 
 internal fun MainController.restoreSavedPath(rawPath: String, isLeft: Boolean) {
+    LogHelper.enter(log, LogTag.STATE, "restoreSavedPath", "rawPath" to rawPath, "isLeft" to isLeft)
     if (rawPath.isBlank()) return
     log.debug(LogTag.STATE, "restore {} path {}", if (isLeft) "left" else "right", rawPath)
     try {
@@ -237,6 +255,7 @@ internal fun MainController.restoreSavedPath(rawPath: String, isLeft: Boolean) {
 }
 
 internal fun MainController.applyPath(path: Path, isLeft: Boolean) {
+    LogHelper.enter(log, LogTag.UI, "applyPath", "path" to path, "isLeft" to isLeft)
     if (isLeft) {
         leftPath = path
         leftPathField.text = path.toString()
@@ -249,6 +268,7 @@ internal fun MainController.applyPath(path: Path, isLeft: Boolean) {
 }
 
 internal fun MainController.persistInputPaths() {
+    LogHelper.enter(log, LogTag.STATE, "persistInputPaths")
     if (restoringState) return
     val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
     state.leftInputPath = leftPath?.toString() ?: ""
@@ -260,6 +280,7 @@ internal fun MainController.persistInputPaths() {
 }
 
 internal fun MainController.persistUiState() {
+    LogHelper.enter(log, LogTag.STATE, "persistUiState")
     if (restoringState) return
     val state = comparatorState ?: ComparatorState.defaults().also { comparatorState = it }
     state.isDirMode = dirMode
@@ -269,6 +290,7 @@ internal fun MainController.persistUiState() {
 }
 
 internal fun MainController.swapPanels() {
+    LogHelper.enter(log, LogTag.UI, "swapPanels")
     showCompareView()
     log.info(LogTag.UI, "swap panels")
     val tmpPath = leftPath
@@ -293,6 +315,7 @@ internal fun MainController.swapPanels() {
 }
 
 internal fun MainController.updateCenterStripState() {
+    LogHelper.enter(log, LogTag.UI, "updateCenterStripState")
     val hasBoth = leftPath != null && rightPath != null
     copyRightBtn.isDisable = !hasBoth
     copyLeftBtn.isDisable = !hasBoth
@@ -302,6 +325,7 @@ internal fun MainController.updateCenterStripState() {
 }
 
 internal fun MainController.loadDirectoryPreview(path: Path, listView: ListView<CompareLineItem>, isLeft: Boolean) {
+    LogHelper.enter(log, LogTag.IO, "loadDirectoryPreview", "path" to path, "listView" to listView, "isLeft" to isLeft)
     try {
         if (Files.isDirectory(path)) {
             setDirMode(true)
@@ -328,6 +352,7 @@ internal fun MainController.loadDirectoryPreview(path: Path, listView: ListView<
 }
 
 private fun MainController.chooseFileOrDir(title: String): Path? {
+    LogHelper.enter(log, LogTag.UI, "chooseFileOrDir", "title" to title)
     val chosen = if (dirMode) {
         DirectoryChooser().apply { this.title = title }.showDialog(getStage())?.toPath()
     } else {
@@ -338,6 +363,7 @@ private fun MainController.chooseFileOrDir(title: String): Path? {
 }
 
 private fun listDirEntries(dir: Path): List<CompareLineItem> {
+    LoggerFactory.getLogger("MainControllerCompare").let { LogHelper.enter(it, LogTag.IO, "listDirEntries", "dir" to dir) }
     Files.list(dir).use { stream ->
         return stream.sorted().map { path ->
             val attr = Files.readAttributes(path, java.nio.file.attribute.BasicFileAttributes::class.java)

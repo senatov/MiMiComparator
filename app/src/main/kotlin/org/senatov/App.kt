@@ -19,7 +19,6 @@ import javafx.util.Duration
 import org.senatov.cli.CliArgs
 import org.senatov.helpers.log.LogHelper
 import org.senatov.helpers.log.LogTag
-import org.senatov.MainController
 import org.senatov.ui.config.ComparatorState
 import org.senatov.ui.config.ComparatorStateService
 import org.slf4j.LoggerFactory
@@ -42,6 +41,8 @@ class App : Application() {
             "/icons/icon_512x512.png", "/icons/icon_128x128.png"
         )
         private const val APP_ICON_ICNS_RESOURCE = "/icons/MiMiComparator.icns"
+
+
         private val SF_PRO_DISPLAY_FONT_RESOURCES = arrayOf(
             "/fonts/SF-Pro-Display-Light.otf",
             "/fonts/SF-Pro-Display-LightItalic.otf",
@@ -49,6 +50,7 @@ class App : Application() {
             "/fonts/SF-Pro-Display-Thin.otf",
             "/fonts/SF-Pro-Display-ThinItalic.otf"
         )
+
         private const val FONT_PRELOAD_SIZE = 14.0
 
         @Volatile
@@ -59,16 +61,19 @@ class App : Application() {
         @JvmStatic
         fun main(args: Array<String>) {
             val log = LoggerFactory.getLogger(App::class.java)
-            log.info(LogTag.APP, "starting args={}", args.size)
+            LogHelper.enter(log, LogTag.APP, "main", "args" to args.contentToString())
             cliArgs = CliArgs.parse(args.toList())
             launch(App::class.java, *args)
         }
 
-        fun sfProDisplayFamily(): String = sfProDisplayFamily
+        fun sfProDisplayFamily(): String {
+            LogHelper.enter(LoggerFactory.getLogger(App::class.java), LogTag.APP, "sfProDisplayFamily")
+            return sfProDisplayFamily
+        }
     }
 
     override fun start(stage: Stage) {
-        log.debug(LogTag.APP, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.APP, "start", "stage" to stage)
         Application.setUserAgentStylesheet(CupertinoLight().userAgentStylesheet)
         preloadEmbeddedFonts()
         appState = stateService.load()
@@ -83,20 +88,17 @@ class App : Application() {
         installStageAutosave(stage)
         stage.show()
         saveState(stage)
-        log.info(
-            LogTag.APP,
-            "stage shown x={} y={} w={} h={}",
-            stage.x, stage.y, stage.width, stage.height
-        )
+        log.debug(LogTag.APP, "stage shown x={} y={} w={} h={}", stage.x, stage.y, stage.width, stage.height)
     }
 
     private fun applyAppIcons(stage: Stage) {
-        log.debug(LogTag.APP, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.APP, "applyAppIcons", "stage" to stage)
         loadStageIcons(stage)
         applyTaskbarIcon()
     }
 
     private fun loadStageIcons(stage: Stage) {
+        LogHelper.enter(log, LogTag.APP, "loadStageIcons", "stage" to stage)
         for (res in APP_ICON_PNG_RESOURCES) {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
@@ -111,6 +113,7 @@ class App : Application() {
     }
 
     private fun applyTaskbarIcon() {
+        LogHelper.enter(log, LogTag.APP, "applyTaskbarIcon")
         if (!Taskbar.isTaskbarSupported()) {
             log.debug(LogTag.APP, "taskbar unsupported"); return
         }
@@ -132,7 +135,7 @@ class App : Application() {
     }
 
     private fun preloadEmbeddedFonts() {
-        log.debug(LogTag.APP, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.APP, "preloadEmbeddedFonts")
         for (res in SF_PRO_DISPLAY_FONT_RESOURCES) {
             try {
                 App::class.java.getResourceAsStream(res)?.use { input ->
@@ -152,7 +155,7 @@ class App : Application() {
     }
 
     private fun applyStageState(stage: Stage, state: ComparatorState) {
-        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.STATE, "applyStageState", "stage" to stage, "state" to state)
         val win = state.window
         stage.width = win.width; stage.height = win.height
         stage.x = win.x; stage.y = win.y
@@ -160,7 +163,7 @@ class App : Application() {
     }
 
     private fun installStageAutosave(stage: Stage) {
-        log.debug(LogTag.STATE, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.STATE, "installStageAutosave", "stage" to stage)
         stage.xProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.yProperty().addListener { _, _, _ -> requestStageAutosave() }
         stage.widthProperty().addListener { _, _, _ -> requestStageAutosave() }
@@ -170,14 +173,17 @@ class App : Application() {
     }
 
     private fun configureStageAutosaveDebounce(stage: Stage) {
+        LogHelper.enter(log, LogTag.STATE, "configureStageAutosaveDebounce", "stage" to stage)
         stageAutosaveDebounce.setOnFinished { saveState(stage) }
     }
 
     private fun requestStageAutosave() {
+        LogHelper.enter(log, LogTag.STATE, "requestStageAutosave")
         stageAutosaveDebounce.playFromStart()
     }
 
     private fun saveState(stage: Stage) {
+        LogHelper.enter(log, LogTag.STATE, "saveState", "stage" to stage)
         val state = appState ?: stateService.load().also { appState = it }
         state.window.apply {
             x = stage.x; y = stage.y
@@ -188,7 +194,7 @@ class App : Application() {
     }
 
     private fun loadRootView(): Parent {
-        log.debug(LogTag.APP, "[{}]", LogHelper.method())
+        LogHelper.enter(log, LogTag.APP, "loadRootView")
         val loader = FXMLLoader(App::class.java.getResource(FXML_FILE_NAME))
         if (loader.location == null) throw IOException("FXML resource not found: $FXML_FILE_NAME")
         val root: Parent = loader.load()
