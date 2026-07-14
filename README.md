@@ -55,7 +55,7 @@ The app is currently focused on macOS and follows a compact native-style desktop
 
 ...
 <p style="text-align: center;">
-  <img src="Doc/Preview1.png" alt="MiMiComparator screenshot" style="width: 900px;">
+  <img src="Doc/Preview1.png" alt="MiMiComparator screenshot">
 </p>
 
 ## Tech Stack
