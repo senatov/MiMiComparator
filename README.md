@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./Doc/AppIcon-1024.png" alt="MiMiComparator application icon" width="128">
+  <img src="Doc/AppIcon-1024.png" alt="MiMiComparator application icon" width="128">
 </p>
 
 <div align="center">
