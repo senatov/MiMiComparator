@@ -67,6 +67,7 @@ class MainController {
 
     @FXML
     internal lateinit var contentBox: HBox
+    internal val comparisonSplitPane = SplitPane()
     @FXML
     internal lateinit var centerStrip: VBox
 
@@ -141,6 +142,7 @@ class MainController {
     internal var syncingSelection = false
     internal var showOnlyIdentical = false
     internal val filterDebounce = PauseTransition(Duration.millis(180.0))
+    internal val previewSplitSaveDebounce = PauseTransition(Duration.millis(250.0))
 
     @FXML
     private fun initialize() {
@@ -155,6 +157,7 @@ class MainController {
         setupEventLog()
         setupClickToExpand()
         addProgrammaticUi()
+        setupResizablePreviewPane()
         restoreUiFromState()
         setupSyncScroll()
         setupResizableCenterStrip()

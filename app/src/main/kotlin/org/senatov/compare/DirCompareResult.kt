@@ -8,16 +8,12 @@ package org.senatov.compare
 import org.senatov.model.tree.DirTreeModel
 
 
-data class DirCompareResult(
-    val leftModel: DirTreeModel,
-    val rightModel: DirTreeModel,
-    val diffCount: Int
+data class DirCompareResult(val leftModel: DirTreeModel, val rightModel: DirTreeModel, val diffCount: Int
 ) {
 
     val isIdentical: Boolean get() = diffCount == 0
 
 
-    fun statusText(): String =
-        if (isIdentical) "✅ dirs identical"
-        else "≠ $diffCount differences"
+    fun statusText(): String = if (isIdentical) "✅ dirs identical"
+    else "≠ $diffCount differences"
 }

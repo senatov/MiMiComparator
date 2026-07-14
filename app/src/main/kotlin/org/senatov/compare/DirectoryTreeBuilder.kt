@@ -3,11 +3,7 @@ package org.senatov.compare
 import org.senatov.helpers.log.LogTag
 import org.senatov.model.DiffStatus
 import org.senatov.model.FileMetadata
-import org.senatov.model.tree.DirTreeModel
-import org.senatov.model.tree.DirTreeNode
-import org.senatov.model.tree.TreeEntryDetails
-import org.senatov.model.tree.TreeLocation
-import org.senatov.model.tree.TreeNodeIdentity
+import org.senatov.model.tree.*
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.nio.file.Files
@@ -24,16 +20,16 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
         log.debug(LogTag.COMPARE, "build(directories={})", directories)
         val roots = buildPairedTree(directories, TreePosition.ROOT)
         log.info(
-            LogTag.COMPARE,
-            "tree done dirs={} files={} diffs={}",
-            stats.directories,
-            stats.files,
-            stats.differences,
+                LogTag.COMPARE,
+                "tree done dirs={} files={} diffs={}",
+                stats.directories,
+                stats.files,
+                stats.differences,
         )
         return DirCompareResult(
-            leftModel = DirTreeModel(roots.left),
-            rightModel = DirTreeModel(roots.right),
-            diffCount = stats.differences,
+                leftModel = DirTreeModel(roots.left),
+                rightModel = DirTreeModel(roots.right),
+                diffCount = stats.differences,
         )
     }
 
@@ -49,8 +45,7 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
         for (name in allNames) {
             val childPosition = position.child(name)
             when {
-                name in leftNames && name in rightNames -> nodes.add(
-                    handleBothSides(directories, name, childPosition)
+                name in leftNames && name in rightNames -> nodes.add(handleBothSides(directories, name, childPosition)
                 )
 
                 name in leftNames -> nodes.add(buildLeftOnly(directories.left, name, childPosition))
@@ -61,16 +56,16 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
     }
 
     private fun handleBothSides(
-        directories: DirectoryPair,
-        name: String,
-        position: TreePosition,
+            directories: DirectoryPair,
+            name: String,
+            position: TreePosition,
     ): PairedTreeNodes {
         log.debug(
-            LogTag.COMPARE,
-            "handleBothSides(directories={}, name={}, position={})",
-            directories,
-            name,
-            position,
+                LogTag.COMPARE,
+                "handleBothSides(directories={}, name={}, position={})",
+                directories,
+                name,
+                position,
         )
         val leftPath = directories.left.resolve(name)
         val rightPath = directories.right.resolve(name)
@@ -79,25 +74,25 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
         val rightIsDirectory = Files.isDirectory(rightPath)
         return when {
             leftIsDirectory && rightIsDirectory -> buildMatchingDirectories(
-                paths,
-                TreeNodeSpec(name, position, DiffStatus.IDENTICAL),
+                    paths,
+                    TreeNodeSpec(name, position, DiffStatus.IDENTICAL),
             )
 
             !leftIsDirectory && !rightIsDirectory -> buildMatchingFiles(
-                paths,
-                TreeNodeSpec(name, position, DiffStatus.IDENTICAL),
+                    paths,
+                    TreeNodeSpec(name, position, DiffStatus.IDENTICAL),
             )
 
             else -> buildTypeMismatch(
-                paths,
-                TreeNodeSpec(name, position, DiffStatus.MODIFIED),
+                    paths,
+                    TreeNodeSpec(name, position, DiffStatus.MODIFIED),
             )
         }
     }
 
     private fun buildMatchingDirectories(
-        paths: DirectoryPair,
-        spec: TreeNodeSpec,
+            paths: DirectoryPair,
+            spec: TreeNodeSpec,
     ): PairedTreeNodes {
         log.debug(LogTag.COMPARE, "buildMatchingDirectories(paths={}, spec={})", paths, spec)
         stats.directories++
@@ -110,8 +105,8 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
     }
 
     private fun buildMatchingFiles(
-        paths: DirectoryPair,
-        spec: TreeNodeSpec,
+            paths: DirectoryPair,
+            spec: TreeNodeSpec,
     ): PairedTreeNodes {
         log.debug(LogTag.COMPARE, "buildMatchingFiles(paths={}, spec={})", paths, spec)
         stats.files++
@@ -119,14 +114,14 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
         if (status != DiffStatus.IDENTICAL) stats.differences++
         val comparedSpec = spec.copy(status = status)
         return PairedTreeNodes.of(
-            makeFileNode(comparedSpec, paths.left),
-            makeFileNode(comparedSpec, paths.right),
+                makeFileNode(comparedSpec, paths.left),
+                makeFileNode(comparedSpec, paths.right),
         )
     }
 
     private fun buildTypeMismatch(
-        paths: DirectoryPair,
-        spec: TreeNodeSpec,
+            paths: DirectoryPair,
+            spec: TreeNodeSpec,
     ): PairedTreeNodes {
         log.debug(LogTag.COMPARE, "buildTypeMismatch(paths={}, spec={})", paths, spec)
         val leftIsDirectory = Files.isDirectory(paths.left)
@@ -204,8 +199,8 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
     private fun makeDirectoryNode(spec: TreeNodeSpec): DirTreeNode {
         log.debug(LogTag.COMPARE, "makeDirectoryNode(spec={})", spec)
         return DirTreeNode(
-            identity = TreeNodeIdentity(name = spec.name, status = spec.status),
-            details = treeEntryDetails(spec.position, isDirectory = true, metadata = FileMetadata.EMPTY),
+                identity = TreeNodeIdentity(name = spec.name, status = spec.status),
+                details = treeEntryDetails(spec.position, isDirectory = true, metadata = FileMetadata.EMPTY),
         )
     }
 
@@ -214,19 +209,19 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
         return try {
             val attributes = Files.readAttributes(filePath, BasicFileAttributes::class.java)
             DirTreeNode(
-                identity = TreeNodeIdentity(name = spec.name, status = spec.status),
-                details = treeEntryDetails(
-                    position = spec.position,
-                    isDirectory = false,
-                    metadata = FileMetadata(attributes.size(), attributes.lastModifiedTime().toMillis()),
-                ),
+                    identity = TreeNodeIdentity(name = spec.name, status = spec.status),
+                    details = treeEntryDetails(
+                            position = spec.position,
+                            isDirectory = false,
+                            metadata = FileMetadata(attributes.size(), attributes.lastModifiedTime().toMillis()),
+                    ),
             )
         }
         catch (ex: IOException) {
             log.debug(LogTag.IO, "attribute read failed {}: {}", filePath, ex.message)
             DirTreeNode(
-                identity = TreeNodeIdentity(name = spec.name, status = spec.status),
-                details = treeEntryDetails(spec.position, isDirectory = false, metadata = FileMetadata.EMPTY),
+                    identity = TreeNodeIdentity(name = spec.name, status = spec.status),
+                    details = treeEntryDetails(spec.position, isDirectory = false, metadata = FileMetadata.EMPTY),
             )
         }
     }
@@ -234,27 +229,27 @@ internal class DirectoryTreeBuilder(private val compareMode: CompareMode) {
     private fun makePlaceholder(spec: TreeNodeSpec, isDirectory: Boolean): DirTreeNode {
         log.debug(LogTag.COMPARE, "makePlaceholder(spec={}, isDirectory={})", spec, isDirectory)
         return DirTreeNode(
-            identity = TreeNodeIdentity(name = "‹missing›", status = DiffStatus.MISSING),
-            details = treeEntryDetails(spec.position, isDirectory, FileMetadata.EMPTY),
+                identity = TreeNodeIdentity(name = "‹missing›", status = DiffStatus.MISSING),
+                details = treeEntryDetails(spec.position, isDirectory, FileMetadata.EMPTY),
         )
     }
 
     private fun treeEntryDetails(
-        position: TreePosition,
-        isDirectory: Boolean,
-        metadata: FileMetadata,
+            position: TreePosition,
+            isDirectory: Boolean,
+            metadata: FileMetadata,
     ): TreeEntryDetails {
         log.debug(
-            LogTag.COMPARE,
-            "treeEntryDetails(position={}, isDirectory={}, metadata={})",
-            position,
-            isDirectory,
-            metadata,
+                LogTag.COMPARE,
+                "treeEntryDetails(position={}, isDirectory={}, metadata={})",
+                position,
+                isDirectory,
+                metadata,
         )
         return TreeEntryDetails(
-            location = TreeLocation(position.pathPrefix, position.depth - 1),
-            isDirectory = isDirectory,
-            metadata = metadata,
+                location = TreeLocation(position.pathPrefix, position.depth - 1),
+                isDirectory = isDirectory,
+                metadata = metadata,
         )
     }
 }

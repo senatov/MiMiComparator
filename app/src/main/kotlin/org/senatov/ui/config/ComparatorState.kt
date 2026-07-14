@@ -18,6 +18,7 @@ data class ComparatorState(
     var isDirMode: Boolean = true,
     var isSyncScroll: Boolean = true,
     var splitRatio: Double = 0.5,
+    var previewSplitRatio: Double = 0.70,
     var compareMode: String = "Binary Content",
     var isShowDirs: Boolean = true,
     var isShowEqual: Boolean = true,

@@ -1,10 +1,12 @@
-<div style="text-align: center;">
+<p align="center">
+  <img src="./Doc/AppIcon-1024.png" alt="MiMiComparator application icon" width="128">
+</p>
 
-<img src="Doc/AppIcon-1024.png" alt="MiMiComparator" style="width: 120px;">
+<div align="center">
 
 # MiMiComparator
 
-### Dual-pane directory & file comparator for macOS — Kotlin/JVM + JavaFX 26.
+### A dual-pane directory and file comparator for macOS
 
 [![Kotlin 2.4](https://img.shields.io/badge/Kotlin-2.4.0-7F52FF?logo=kotlin&logoColor=white)](#build-and-run)
 [![JDK 25](https://img.shields.io/badge/JDK-25-007396?logo=openjdk&logoColor=white)](#build-and-run)
@@ -32,31 +34,36 @@
 
 ## About
 
-**MiMiComparator** is a Kotlin/JVM desktop application for comparing folders and text files side by side. It uses JavaFX 26 with FXML for the main layout and Kotlin code for the dynamic compare, home, toolbar, and tree behavior.
+**MiMiComparator** is a Kotlin/JVM desktop application for comparing folders and text files side by side. It uses JavaFX 26, FXML, and
+the AtlantaFX Cupertino theme to provide a compact macOS-oriented interface.
 
-The app is currently focused on macOS and follows a compact native-style desktop workflow: two panels, a path bar, an icon-only toolbar, directory tree rows, synchronized scrolling, and a small status bar.
+Choose two paths, select a comparison mode, and inspect matching, changed, added, or missing entries in synchronized panels. Selecting
+a file opens its line-by-line preview in the lower pane.
 
 ## Features
 
 - Recursive directory comparison by relative path, size, and modified date
+- Binary-content, size, and modification-date comparison modes
 - Expandable tree model for directory results with synchronized left/right expansion
 - Line-by-line text comparison for file mode
-- Toggleable directory/file mode
+- Side-by-side preview for selected files
+- Mirrored metadata columns and a central operation indicator
 - Glob-style filter field, for example `**`, `*.kt`, `*.txt`, or comma-separated patterns
 - Synchronized vertical scrolling between left and right panels
 - Icon-only toolbar with tooltips for compact macOS-style operation
-- Home/session screen with access to auto-saved paths
-- Persistent window geometry, split ratio, mode, sync-scroll state, and input paths
+- Persistent window geometry, panel divider positions, mode, sync-scroll state, and input paths
 - CLI startup with optional automatic comparison
 - Log4j2-based logging with rolling file output
 
 ## Screenshot
 
-
-...
-<p style="text-align: center;">
-  <img src="Doc/Preview1.png" alt="MiMiComparator screenshot">
+<p align="center">
+  <a href="./Doc/Preview1.png">
+    <img src="./Doc/Preview1.png" alt="MiMiComparator directory comparison window" width="100%">
+  </a>
 </p>
+
+_Directory comparison with synchronized left and right panels. Click the image to open it at full resolution._
 
 ## Tech Stack
 
@@ -77,18 +84,20 @@ The app is currently focused on macOS and follows a compact native-style desktop
 Use the checked-in Gradle wrapper from the project root. Compilation targets JDK 25. The Foojay resolver can provision the compilation
 toolchain automatically; macOS packaging additionally requires a full JDK 26 containing `jpackage` and `jmods`.
 
+### Quick start
+
 ```zsh
-# run the app
+# Run the application
 ./gradlew run
 
-# build JAR + distributions
+# Run the tests
+./gradlew test
+
+# Build the JAR and distributions
 ./gradlew build
 
-# package macOS .app bundle
+# Package the macOS application bundle
 ./gradlew packageMacApp
-
-# run with CLI args
-./gradlew run --args="--left /path/to/dir1 --right /path/to/dir2"
 ```
 
 The packaged application is created at:
@@ -144,7 +153,8 @@ User state is stored under:
 ~/.mimi/comparator/
 ```
 
-The saved state includes the last left/right paths, directory mode, synchronized scrolling, split ratio, and window placement.
+The saved state includes the last left/right paths, directory mode, synchronized scrolling, horizontal and preview divider positions,
+and window placement.
 
 The standard Log4j2 configuration writes the active log to:
 

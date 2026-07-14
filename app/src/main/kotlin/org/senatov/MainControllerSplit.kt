@@ -4,6 +4,7 @@ import javafx.application.Platform
 import javafx.geometry.Orientation
 import javafx.scene.control.ListView
 import javafx.scene.control.ScrollBar
+import javafx.scene.control.SplitPane
 import javafx.scene.input.MouseEvent
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
@@ -103,4 +104,25 @@ private fun MainController.updateRatioPopupText() {
 private fun MainController.hideRatioPopup() {
     log.debug(LogTag.UI, "hideRatioPopup()")
     if (ratioPopup.isShowing) ratioPopup.hide()
+}
+
+internal fun MainController.setupResizablePreviewPane() {
+    log.debug(LogTag.UI, "setupResizablePreviewPane()")
+    rootPane.center = null
+    rootPane.bottom = null
+    comparisonSplitPane.apply {
+        orientation = Orientation.VERTICAL
+        style = "-fx-background-color:transparent; -fx-padding:0;"
+        items.setAll(contentBox, bottomChrome)
+        setDividerPositions(0.70)
+    }
+    SplitPane.setResizableWithParent(contentBox, true)
+    SplitPane.setResizableWithParent(bottomChrome, true)
+    rootPane.center = comparisonSplitPane
+
+    previewSplitSaveDebounce.setOnFinished { persistUiState() }
+    comparisonSplitPane.dividers.first().positionProperty().addListener { _, _, value ->
+        if (!restoringState) previewSplitSaveDebounce.playFromStart()
+        log.debug(LogTag.STATE, "preview split position={}", value)
+    }
 }

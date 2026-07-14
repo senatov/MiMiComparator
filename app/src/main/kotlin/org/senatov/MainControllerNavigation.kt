@@ -23,11 +23,11 @@ internal fun MainController.showHomeView() {
 
 internal fun MainController.showCompareView() {
     log.debug(LogTag.UI, "showCompareView()")
-    if (rootPane.center !== contentBox) {
+    if (rootPane.center !== comparisonSplitPane) {
         log.info(org.senatov.helpers.log.LogTag.UI, "show compare")
         rootPane.top = topChrome
-        rootPane.center = contentBox
-        rootPane.bottom = bottomChrome
+        rootPane.center = comparisonSplitPane
+        rootPane.bottom = null
         updateWindowTitle(TITLE_COMPARE)
         Platform.runLater { applyPanelRatio(leftPanelRatio) }
     }

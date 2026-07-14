@@ -15,6 +15,7 @@ class ComparatorStateSerializationTest {
             leftPanel = PanelState(path = "/left", selectedIndex = 3),
             rightPanel = PanelState(path = "/right", selectedIndex = 5),
             compareMode = "Size",
+            previewSplitRatio = 0.64,
         )
 
         val restored = objectMapper.readValue(
