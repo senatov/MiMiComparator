@@ -140,7 +140,6 @@ private fun MainController.showSelectedFilePreview(index: Int) {
         "-fx-background-color:#fff8e8; -fx-border-color:#efc968; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
     }
     previewNoticeIcon.text = if (differences == 0) "●" else "▲"
-    bottomChrome.prefHeight = (rootPane.height * 0.30).coerceIn(210.0, 300.0)
 }
 
 private fun MainController.readPreviewLines(path: Path?): List<String>? {
@@ -153,7 +152,6 @@ private fun MainController.clearPreview(message: String) {
     previewRightView.items.clear()
     previewDiffCountLabel.text = "0 differences"
     statusCenter.text = message
-    bottomChrome.prefHeight = 220.0
 }
 
 private fun MainController.handleTreeClick(event: MouseEvent, listView: ListView<CompareLineItem>) {
@@ -338,12 +336,20 @@ internal fun MainController.collapseAllTrees() {
 internal fun MainController.restoreUiFromState() {
     log.debug(LogTag.STATE, "restoreUiFromState()")
     val state = comparatorState ?: return
-    log.debug(LogTag.STATE, "restore UI dir={} sync={} ratio={}", state.isDirMode, state.isSyncScroll, state.splitRatio)
+    log.debug(
+        LogTag.STATE,
+        "restore UI dir={} sync={} horizontalRatio={} previewRatio={}",
+        state.isDirMode,
+        state.isSyncScroll,
+        state.splitRatio,
+        state.previewSplitRatio,
+    )
     restoringState = true
     try {
         syncScrollToggle.isSelected = state.isSyncScroll
         setDirMode(state.isDirMode)
         leftPanelRatio = state.splitRatio.coerceIn(0.15, 0.85)
+        comparisonSplitPane.setDividerPositions(state.previewSplitRatio.coerceIn(0.20, 0.90))
     }
     finally {
         restoringState = false
@@ -387,6 +393,7 @@ internal fun MainController.persistInputPaths() {
     state.isDirMode = dirMode
     state.isSyncScroll = syncScrollToggle.isSelected
     state.splitRatio = leftPanelRatio
+    state.previewSplitRatio = comparisonSplitPane.dividers.firstOrNull()?.position ?: state.previewSplitRatio
     state.compareMode = compareModeChoice.value ?: COMPARE_MODES.first()
     stateService.save(state)
 }
@@ -398,6 +405,7 @@ internal fun MainController.persistUiState() {
     state.isDirMode = dirMode
     state.isSyncScroll = syncScrollToggle.isSelected
     state.splitRatio = leftPanelRatio
+    state.previewSplitRatio = comparisonSplitPane.dividers.firstOrNull()?.position ?: state.previewSplitRatio
     state.compareMode = compareModeChoice.value ?: COMPARE_MODES.first()
     stateService.save(state)
 }
