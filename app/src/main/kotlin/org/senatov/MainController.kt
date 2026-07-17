@@ -203,9 +203,9 @@ class MainController {
     @FXML
     private fun onSwapPanels() = uiAction("onSwapPanels") { swapPanels() }
     @FXML
-    private fun onCopyToRight() = uiAction("onCopyToRight") { setStubStatus("→ copy to right (stub)") }
+    private fun onCopyToRight() = uiAction("onCopyToRight") { copySelectedItem(ComparisonSide.LEFT) }
     @FXML
-    private fun onCopyToLeft() = uiAction("onCopyToLeft") { setStubStatus("← copy to left (stub)") }
+    private fun onCopyToLeft() = uiAction("onCopyToLeft") { copySelectedItem(ComparisonSide.RIGHT) }
     @FXML
     private fun onShowDiff() = uiAction("onShowDiff") {
         showOnlyIdentical = false

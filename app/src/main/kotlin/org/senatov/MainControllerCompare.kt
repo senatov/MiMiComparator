@@ -1,6 +1,8 @@
 package org.senatov
 
 import javafx.collections.FXCollections
+import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.control.ListView
 import javafx.scene.input.MouseEvent
 import javafx.stage.DirectoryChooser
@@ -9,17 +11,14 @@ import org.senatov.compare.CompareMode
 import org.senatov.compare.DirectoryComparator
 import org.senatov.compare.FileContentComparator
 import org.senatov.helpers.log.LogTag
-import org.senatov.model.CompareLineItem
-import org.senatov.model.DiffStatus
-import org.senatov.model.FileMetadata
-import org.senatov.model.LineContent
-import org.senatov.model.TreeDisplayState
+import org.senatov.model.*
 import org.senatov.model.tree.TreeEntryDetails
 import org.senatov.model.tree.TreeLocation
 import org.senatov.ui.config.ComparatorState
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 import kotlin.math.max
@@ -69,6 +68,60 @@ internal fun MainController.setupSelectionPreview() {
     }
     rightListView.selectionModel.selectedIndexProperty().addListener { _, _, value ->
         synchronizeSelection(value.toInt(), rightListView)
+    }
+    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> updateToolbarActions() }
+    updateToolbarActions()
+}
+
+internal fun MainController.updateToolbarActions() {
+    val index = leftListView.selectionModel.selectedIndex
+    val left = leftListView.items.getOrNull(index)
+    val right = rightListView.items.getOrNull(index)
+    copyRightBtn.isDisable = index < 0 || left == null || left.status == DiffStatus.MISSING
+    copyLeftBtn.isDisable = index < 0 || right == null || right.status == DiffStatus.MISSING
+    diffBtn.isDisable = leftPath == null || rightPath == null
+    equalBtn.isDisable = leftPath == null || rightPath == null
+}
+
+internal fun MainController.copySelectedItem(sourceSide: ComparisonSide) {
+    val index = leftListView.selectionModel.selectedIndex
+    if (index < 0) return
+    val item = (if (sourceSide == ComparisonSide.LEFT) leftListView else rightListView).items.getOrNull(index) ?: return
+    if (item.status == DiffStatus.MISSING) return
+    val sourceRoot = if (sourceSide == ComparisonSide.LEFT) leftPath else rightPath
+    val targetRoot = if (sourceSide == ComparisonSide.LEFT) rightPath else leftPath
+    if (sourceRoot == null || targetRoot == null) return
+    val source = if (dirMode) sourceRoot.resolve(item.relativePath) else sourceRoot
+    val target = if (dirMode) targetRoot.resolve(item.relativePath) else targetRoot
+    if (!Files.exists(source)) {
+        showAlert("Source no longer exists: $source")
+        return
+    }
+    val direction = if (sourceSide == ComparisonSide.LEFT) "right" else "left"
+    val confirmed = Alert(Alert.AlertType.CONFIRMATION).apply {
+        title = "Copy item"
+        headerText = "Copy ${source.fileName} to the $direction side?"
+        contentText = if (Files.exists(target)) "The existing item will be replaced." else target.toString()
+    }.showAndWait().filter { it == ButtonType.OK }.isPresent
+    if (!confirmed) return
+    runCatching { copyRecursivelyReplacing(source, target) }.onSuccess {
+                statusCenter.text = "Copied ${source.fileName} to the $direction"
+                refreshPreviews()
+            }.onFailure { showAlert("Copy failed: ${it.message}") }
+}
+
+private fun copyRecursivelyReplacing(source: Path, target: Path) {
+    if (!Files.isDirectory(source)) {
+        target.parent?.let(Files::createDirectories)
+        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+        return
+    }
+    Files.walk(source).use { paths ->
+        paths.forEach { current ->
+            val destination = target.resolve(source.relativize(current))
+            if (Files.isDirectory(current)) Files.createDirectories(destination)
+            else Files.copy(current, destination, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+        }
     }
 }
 
@@ -173,6 +226,7 @@ internal fun MainController.refreshTreeViews() {
     leftListView.items = FXCollections.observableArrayList(leftItems)
     rightListView.items = FXCollections.observableArrayList(rightItems)
     updateOperationRows(leftItems, rightItems)
+    updateToolbarActions()
     log.debug(LogTag.UI, "tree view L={} R={} filter='{}'", leftItems.size, rightItems.size, filterField.text)
 }
 
@@ -284,6 +338,7 @@ private fun MainController.compareFiles(left: Path, right: Path) {
     leftListView.items = FXCollections.observableArrayList(visibleLeft)
     rightListView.items = FXCollections.observableArrayList(visibleRight)
     updateOperationRows(visibleLeft, visibleRight)
+    updateToolbarActions()
     diffCountLabel.text = "diffs: ${result.diffCount}"
     statusCenter.text = result.statusText()
 }

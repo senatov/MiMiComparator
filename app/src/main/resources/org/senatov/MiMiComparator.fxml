@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckMenuItem?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.SeparatorMenuItem?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToolBar?>
-<?import javafx.scene.control.Tooltip?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/26"
             fx:id="rootPane" fx:controller="org.senatov.MainController"
             prefWidth="1180" prefHeight="840"
@@ -131,7 +114,8 @@
         <HBox fx:id="contentBox">
             <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS">
                 <HBox fx:id="leftColumnHeader" minHeight="25" prefHeight="25" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;">
-                    <Label text="Name" maxWidth="1E308" HBox.hgrow="ALWAYS" style="-fx-padding:5 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
+                    <Label text="Name" minWidth="0" maxWidth="1E308" HBox.hgrow="ALWAYS"
+                           style="-fx-padding:5 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Size" minWidth="92" prefWidth="92" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Date" minWidth="128" prefWidth="128" style="-fx-padding:4 8;"/>
                 </HBox>
@@ -145,7 +129,7 @@
                 <HBox fx:id="rightColumnHeader" minHeight="25" prefHeight="25" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;">
                     <Label text="Date" minWidth="128" prefWidth="128" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Size" minWidth="92" prefWidth="92" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
-                    <Label text="Name" maxWidth="1E308" HBox.hgrow="ALWAYS" style="-fx-padding:5 8;"/>
+                    <Label text="Name" minWidth="0" maxWidth="1E308" HBox.hgrow="ALWAYS" style="-fx-padding:5 8;"/>
                 </HBox>
                 <ListView fx:id="rightListView" VBox.vgrow="ALWAYS"/>
             </VBox>

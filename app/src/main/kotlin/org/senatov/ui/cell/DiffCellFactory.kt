@@ -12,6 +12,7 @@ import javafx.geometry.Pos
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
+import javafx.scene.control.OverrunStyle
 import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
 import javafx.util.Callback
@@ -87,9 +88,13 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
             iconLabel.minWidth = 17.0
             iconLabel.alignment = Pos.CENTER
             nameLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
+            nameLabel.minWidth = 0.0
             nameLabel.maxWidth = Double.MAX_VALUE
+            nameLabel.textOverrun = OverrunStyle.ELLIPSIS
             HBox.setHgrow(nameLabel, Priority.ALWAYS)
             nameBox.alignment = Pos.CENTER_LEFT
+            nameBox.minWidth = 0.0
+            nameBox.maxWidth = Double.MAX_VALUE
             nameBox.children.addAll(markerLabel, disclosureLabel, iconLabel, nameLabel)
             HBox.setHgrow(nameBox, Priority.ALWAYS)
             sizeLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
@@ -101,6 +106,8 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
             dateLabel.prefWidth = 128.0
             dateLabel.alignment = Pos.CENTER_RIGHT
             row.alignment = Pos.CENTER_LEFT
+            row.minWidth = 0.0
+            row.maxWidth = Double.MAX_VALUE
             if (mirrored) row.children.addAll(dateLabel, sizeLabel, nameBox)
             else row.children.addAll(nameBox, sizeLabel, dateLabel)
             row.padding = Insets(0.0, 5.0, 0.0, 5.0)
@@ -108,6 +115,7 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
             row.prefHeight = ROW_HEIGHT
             minHeight = ROW_HEIGHT
             prefHeight = ROW_HEIGHT
+            row.prefWidthProperty().bind(widthProperty().subtract(2.0))
         }
 
         override fun updateItem(item: CompareLineItem?, empty: Boolean) {
