@@ -141,21 +141,18 @@
         <VBox fx:id="bottomChrome" prefHeight="220" minHeight="160" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:1 0 0 0;">
             <Label text="Use Space button or mouse click to change operation for the selected elements. Enter to perform."
                    maxWidth="1E308" alignment="CENTER" style="-fx-font-size:11; -fx-text-fill:#999; -fx-padding:2 0;"/>
-            <ToolBar prefHeight="42" minHeight="42">
+            <ToolBar fx:id="previewToolBar" prefHeight="42" minHeight="42">
                 <Button text="↑" onAction="#onExpandAll"/>
                 <Button text="↓" onAction="#onCollapseAll"/>
                 <Button text="✎" disable="true"/>
                 <Separator orientation="VERTICAL"/>
                 <Button text="←" disable="true" onAction="#onCopyToLeft"/>
                 <Button text="→" disable="true" onAction="#onCopyToRight"/>
-                <ComboBox prefWidth="165" value="Side-by-side viewer"/>
-                <ComboBox prefWidth="125" value="Do not ignore"/>
-                <ComboBox prefWidth="135" value="Highlight words"/>
-                <Button text="×" onAction="#onRefresh"/>
-                <Button text="⚙" onAction="#onRefresh"/>
-                <Button text="?" onAction="#onAbout"/>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label fx:id="previewDiffCountLabel" text="0 differences"/>
+                <ToggleButton fx:id="sideBySideViewToggle" text="◫" selected="true" onAction="#onSideBySideView"/>
+                <ToggleButton fx:id="unifiedViewToggle" text="□" disable="true" onAction="#onUnifiedView"/>
+                <Button fx:id="previewSettingsBtn" text="⚙" onAction="#onPreviewSettings"/>
             </ToolBar>
             <HBox fx:id="previewNoticeBox" minHeight="40" prefHeight="40" alignment="CENTER_LEFT" spacing="10"
                   style="-fx-background-color:#f3f7ff; -fx-border-color:#b8d1ff; -fx-border-width:1 0 1 0; -fx-padding:0 14;">

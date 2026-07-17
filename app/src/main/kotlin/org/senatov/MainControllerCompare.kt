@@ -15,6 +15,7 @@ import org.senatov.model.*
 import org.senatov.model.tree.TreeEntryDetails
 import org.senatov.model.tree.TreeLocation
 import org.senatov.ui.config.ComparatorState
+import org.senatov.ui.preview.IgnoreDifferences
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -141,7 +142,7 @@ private fun MainController.synchronizeSelection(index: Int, source: ListView<Com
     }
 }
 
-private fun MainController.showSelectedFilePreview(index: Int) {
+internal fun MainController.showSelectedFilePreview(index: Int) {
     val leftItem = leftListView.items.getOrNull(index)
     val rightItem = rightListView.items.getOrNull(index)
     if (leftItem?.isDirectory == true || rightItem?.isDirectory == true) {
@@ -152,8 +153,8 @@ private fun MainController.showSelectedFilePreview(index: Int) {
         ?: rightItem?.relativePath?.ifBlank { null }
     val leftFile = if (dirMode && relativePath != null) leftPath?.resolve(relativePath) else leftPath
     val rightFile = if (dirMode && relativePath != null) rightPath?.resolve(relativePath) else rightPath
-    val leftLines = readPreviewLines(leftFile)
-    val rightLines = readPreviewLines(rightFile)
+    val leftLines = preparePreviewLines(readPreviewLines(leftFile))
+    val rightLines = preparePreviewLines(readPreviewLines(rightFile))
     if (leftLines == null && rightLines == null) {
         clearPreview("Cannot show file")
         return
@@ -166,7 +167,7 @@ private fun MainController.showSelectedFilePreview(index: Int) {
     for (lineIndex in 0 until count) {
         val leftLine = leftLines?.getOrNull(lineIndex)
         val rightLine = rightLines?.getOrNull(lineIndex)
-        val different = leftLine != rightLine
+        val different = !previewSettings.linesMatch(leftLine, rightLine)
         if (different) differences++
         val leftStatus = when {
             leftLine == null -> 'X'
@@ -193,6 +194,11 @@ private fun MainController.showSelectedFilePreview(index: Int) {
         "-fx-background-color:#fff8e8; -fx-border-color:#efc968; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
     }
     previewNoticeIcon.text = if (differences == 0) "●" else "▲"
+}
+
+private fun MainController.preparePreviewLines(lines: List<String>?): List<String>? {
+    if (previewSettings.ignoreDifferences != IgnoreDifferences.WHITESPACES_AND_EMPTY_LINES) return lines
+    return lines?.filter { it.isNotBlank() }
 }
 
 private fun MainController.readPreviewLines(path: Path?): List<String>? {

@@ -19,6 +19,7 @@ import org.senatov.model.CompareLineItem
 import org.senatov.model.tree.DirTreeModel
 import org.senatov.ui.config.ComparatorState
 import org.senatov.ui.config.ComparatorStateService
+import org.senatov.ui.preview.PreviewSettings
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
@@ -111,6 +112,18 @@ class MainController {
     internal lateinit var previewDiffCountLabel: Label
 
     @FXML
+    internal lateinit var previewToolBar: ToolBar
+
+    @FXML
+    internal lateinit var previewSettingsBtn: Button
+
+    @FXML
+    internal lateinit var sideBySideViewToggle: ToggleButton
+
+    @FXML
+    internal lateinit var unifiedViewToggle: ToggleButton
+
+    @FXML
     internal lateinit var previewNoticeBox: HBox
 
     @FXML
@@ -143,6 +156,7 @@ class MainController {
     internal var showOnlyIdentical = false
     internal val filterDebounce = PauseTransition(Duration.millis(180.0))
     internal val previewSplitSaveDebounce = PauseTransition(Duration.millis(250.0))
+    internal val previewSettings = PreviewSettings()
 
     @FXML
     private fun initialize() {
@@ -150,6 +164,7 @@ class MainController {
         comparatorState = stateService.load()
         configureCompareLists()
         configurePreviewPane()
+        configurePreviewSettingsMenu()
         setupSelectionPreview()
         installDiffCellFactories()
         configurePathFields()
@@ -222,6 +237,15 @@ class MainController {
     private fun onDeleteSelected() = uiAction("onDeleteSelected") { setStubStatus("🗑 delete (stub)") }
     @FXML
     private fun onSyncScroll() = uiAction("onSyncScroll") { persistUiState() }
+
+    @FXML
+    private fun onPreviewSettings() = uiAction("onPreviewSettings") { showPreviewSettingsMenu() }
+
+    @FXML
+    private fun onSideBySideView() = uiAction("onSideBySideView") { sideBySideViewToggle.isSelected = true }
+
+    @FXML
+    private fun onUnifiedView() = uiAction("onUnifiedView") { sideBySideViewToggle.isSelected = true }
     @FXML
     private fun onCopyPathLeft() = uiAction("onCopyPathLeft") { leftPath?.let { copyToClipboard(it.toString()) } }
     @FXML

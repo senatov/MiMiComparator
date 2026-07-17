@@ -59,3 +59,32 @@
 #copyLeftBtn {
     -fx-text-fill: #4b9561;
 }
+
+.preview-toolbar {
+    -fx-background-color: #f7f7f7;
+    -fx-border-color: #d2d2d2;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 3 8;
+}
+
+.preview-toolbar .button,
+.preview-toolbar .toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+    -fx-padding: 3 8;
+}
+
+.preview-toolbar .button:hover,
+.preview-toolbar .toggle-button:hover,
+.preview-toolbar .toggle-button:selected {
+    -fx-background-color: #e2e2e2;
+}
+
+#previewDiffCountLabel {
+    -fx-padding: 0 10 0 0;
+}
+
+.preview-settings-menu .preview-menu-section .label {
+    -fx-font-weight: bold;
+    -fx-opacity: 0.65;
+}

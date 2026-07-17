@@ -11,6 +11,7 @@ import org.senatov.compare.CompareMode
 import org.senatov.helpers.log.LogTag
 import org.senatov.ui.cell.DiffCellFactory
 import org.senatov.ui.config.ComparatorState
+import org.senatov.ui.preview.DifferenceHighlighting
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -64,6 +65,7 @@ internal fun MainController.configureCompareLists() {
 }
 
 internal fun MainController.configurePreviewPane() {
+    val settings = previewSettings
     listOf(previewLeftView, previewRightView).forEach { view ->
         view.fixedCellSize = 22.0
         view.style = "-fx-background-color:white; -fx-border-width:0; -fx-font-family:'System'; -fx-font-size:13;"
@@ -79,7 +81,11 @@ internal fun MainController.configurePreviewPane() {
                     val status = item.first()
                     text = item.drop(1)
                     style = when (status) {
-                        'M' -> "-fx-background-color:#c8ddf7; -fx-text-fill:#273458; -fx-padding:2 8;"
+                        'M' -> if (settings.highlighting == DifferenceHighlighting.NONE) {
+                            "-fx-background-color:white; -fx-text-fill:#273458; -fx-padding:2 8;"
+                        } else {
+                            "-fx-background-color:#c8ddf7; -fx-text-fill:#273458; -fx-padding:2 8;"
+                        }
                         'A' -> "-fx-background-color:#d9edda; -fx-text-fill:#273458; -fx-padding:2 8;"
                         'X' -> "-fx-background-color:#eeeeee; -fx-text-fill:#999999; -fx-padding:2 8;"
                         else -> "-fx-background-color:white; -fx-text-fill:#273458; -fx-padding:2 8;"
