@@ -1,0 +1,61 @@
+.main-comparison-toolbar {
+    -fx-background-color: #f4f4f4;
+    -fx-border-color: #cfcfcf;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 4 8;
+}
+
+.main-comparison-toolbar .button,
+.main-comparison-toolbar .toggle-button {
+    -fx-padding: 0;
+    -fx-font-size: 19px;
+    -fx-text-fill: #607188;
+    -fx-background-color: transparent;
+    -fx-background-radius: 4px;
+}
+
+.main-comparison-toolbar .button:hover,
+.main-comparison-toolbar .toggle-button:hover {
+    -fx-background-color: #e5e5e5;
+}
+
+.main-comparison-toolbar .button:pressed,
+.main-comparison-toolbar .toggle-button:pressed,
+.main-comparison-toolbar .toggle-button:selected {
+    -fx-background-color: #c7c7c7;
+}
+
+.main-comparison-toolbar .comparison-action {
+    -fx-background-color: #d8d8d8;
+}
+
+.main-comparison-toolbar .comparison-action:hover {
+    -fx-background-color: #cccccc;
+}
+
+.main-comparison-toolbar .comparison-action:pressed {
+    -fx-background-color: #bdbdbd;
+}
+
+.main-comparison-toolbar .comparison-action:disabled {
+    -fx-background-color: #ededed;
+    -fx-opacity: 0.55;
+}
+
+#copyRightBtn {
+    -fx-text-fill: #2f80ed;
+}
+
+#diffBtn {
+    -fx-text-fill: #e15361;
+    -fx-font-weight: bold;
+}
+
+#equalBtn {
+    -fx-text-fill: #555b61;
+    -fx-font-weight: bold;
+}
+
+#copyLeftBtn {
+    -fx-text-fill: #4b9561;
+}

@@ -202,14 +202,15 @@ private fun MainController.clearPathSide(side: ComparisonSide) {
 private fun MainController.configureToolbarButtons() {
     log.debug(LogTag.UI, "configureToolbarButtons()")
     mainToolBar.prefHeight = 44.0
-    mainToolBar.style = "-fx-background-color:#f4f4f4; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-padding:4 8;"
+    mainToolBar.styleClass.add("main-comparison-toolbar")
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
         button.minWidth = 29.0
         button.prefWidth = 29.0
         button.minHeight = 29.0
         button.prefHeight = 29.0
-        button.style =
-            "-fx-padding:0; -fx-font-size:19; -fx-text-fill:#607188; -fx-background-color:transparent; -fx-background-radius:4;"
+    }
+    listOf(copyRightBtn, diffBtn, equalBtn, copyLeftBtn).forEach {
+        it.styleClass.add("comparison-action")
     }
     filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; -fx-background-radius:5;"
 }
