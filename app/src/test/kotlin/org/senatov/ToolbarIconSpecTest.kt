@@ -14,7 +14,7 @@ class ToolbarIconSpecTest {
         assertEquals("→", copy.glyph)
         assertTrue(copy.size >= 25)
         assertEquals(3, setOf(copy.color, differences.color, refresh.color).size)
-        assertTrue("-fx-font-weight:700" in copy.style)
+        assertTrue("-fx-font-weight:500" in copy.style)
     }
 
     @Test
@@ -22,8 +22,8 @@ class ToolbarIconSpecTest {
         val selected = toolbarIconSpec("▷", "Synchronize selected")
         val all = toolbarIconSpec("◷", "Synchronize All")
 
-        assertEquals("▐▷", selected.glyph)
-        assertEquals("◷▷", all.glyph)
-        assertEquals(selected.color, all.color)
+        assertEquals("▮▶", selected.glyph)
+        assertEquals("◴▶", all.glyph)
+        assertTrue(selected.color != all.color)
     }
 }

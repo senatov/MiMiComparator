@@ -63,7 +63,7 @@
                         <Tooltip text="Show new files on right side"/>
                     </tooltip>
                 </Button>
-                <Button fx:id="compareSelectedBtn" text="⑂" disable="true" onAction="#onCompareSelectedFiles">
+                <Button fx:id="compareSelectedBtn" text="⤴" disable="true" onAction="#onCompareSelectedFiles">
                     <tooltip>
                         <Tooltip text="Compare New Files with Each Other"/>
                     </tooltip>
@@ -81,12 +81,6 @@
                         <Tooltip text="Synchronize All"/>
                     </tooltip>
                 </Button>
-                <Separator orientation="VERTICAL"/>
-                <Button text="?" onAction="#onAbout">
-                    <tooltip>
-                        <Tooltip text="Help"/>
-                    </tooltip>
-                </Button>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label text="Filter:"/>
                 <TextField fx:id="filterField" promptText="⌕" prefWidth="330" onAction="#onFilterChanged"/>
@@ -102,7 +96,7 @@
             </ToolBar>
 
             <HBox alignment="CENTER_LEFT" spacing="5" minHeight="36" prefHeight="36"
-                  style="-fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-padding:4 8 4 8;">
+                  style="-fx-border-color:#b9b9b9; -fx-border-width:1 0 1 0; -fx-padding:4 8 4 8;">
                 <Label text="📁" style="-fx-font-family:'Apple Color Emoji'; -fx-font-size:19px;"/>
                 <TextField fx:id="leftPathField" promptText="Left folder or file" HBox.hgrow="ALWAYS"/>
                 <Button fx:id="leftPathMenuButton" text="📂" onAction="#onOpenLeft"/>
@@ -128,10 +122,11 @@
                 </HBox>
                 <ListView fx:id="leftListView" VBox.vgrow="ALWAYS"/>
             </VBox>
-            <VBox fx:id="centerStrip" minWidth="28" prefWidth="28" maxWidth="28" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 1 0 1;">
-                <Label text="*" minWidth="27" minHeight="28" prefHeight="28" alignment="CENTER"
-                       style="-fx-font-size:15px; -fx-padding:5 0; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;"/>
-                <ListView fx:id="operationListView" minWidth="27" prefWidth="27" maxWidth="27" VBox.vgrow="ALWAYS"/>
+            <VBox fx:id="centerStrip" minWidth="42" prefWidth="42" maxWidth="42"
+                  style="-fx-background-color:#f7f7f7; -fx-border-color:#b9b9b9; -fx-border-width:0 1 0 1;">
+                <Label text="*" minWidth="41" minHeight="28" prefHeight="28" alignment="CENTER"
+                       style="-fx-font-size:15px; -fx-padding:5 0; -fx-border-color:#b9b9b9; -fx-border-width:0 0 1 0;"/>
+                <ListView fx:id="operationListView" minWidth="41" prefWidth="41" maxWidth="41" VBox.vgrow="ALWAYS"/>
             </VBox>
             <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS">
                 <HBox fx:id="rightColumnHeader" minHeight="28" prefHeight="28"
@@ -146,16 +141,43 @@
     </center>
 
     <bottom>
-        <VBox fx:id="bottomChrome" prefHeight="220" minHeight="160" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:1 0 0 0;">
+        <VBox fx:id="bottomChrome" prefHeight="220" minHeight="160"
+              style="-fx-background-color:#fafafa; -fx-border-color:#b9b9b9; -fx-border-width:1 0 0 0;">
             <Label text="Use Space button or mouse click to change operation for the selected elements. Enter to perform."
                    maxWidth="1E308" alignment="CENTER" style="-fx-font-size:11; -fx-text-fill:#999; -fx-padding:2 0;"/>
             <ToolBar fx:id="previewToolBar" prefHeight="42" minHeight="42">
-                <Button text="↑" onAction="#onExpandAll"/>
-                <Button text="↓" onAction="#onCollapseAll"/>
-                <Button text="✎" disable="true"/>
+                <Button text="↑" onAction="#onPreviousDifference">
+                    <tooltip>
+                        <Tooltip text="Previous Difference"/>
+                    </tooltip>
+                </Button>
+                <Button text="↓" onAction="#onNextDifference">
+                    <tooltip>
+                        <Tooltip text="Next Difference"/>
+                    </tooltip>
+                </Button>
                 <Separator orientation="VERTICAL"/>
-                <Button text="←" disable="true" onAction="#onCopyToLeft"/>
-                <Button text="→" disable="true" onAction="#onCopyToRight"/>
+                <Button text="←" onAction="#onComparePreviousFile">
+                    <tooltip>
+                        <Tooltip text="Compare Previous File"/>
+                    </tooltip>
+                </Button>
+                <Button text="→" onAction="#onCompareNextFile">
+                    <tooltip>
+                        <Tooltip text="Compare Next File"/>
+                    </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
+                <Button text="→" onAction="#onCopyToRight">
+                    <tooltip>
+                        <Tooltip text="Copy Content to Right"/>
+                    </tooltip>
+                </Button>
+                <Button text="←" onAction="#onCopyToLeft">
+                    <tooltip>
+                        <Tooltip text="Copy Content to Left"/>
+                    </tooltip>
+                </Button>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label fx:id="previewDiffCountLabel" text="0 differences"/>
                 <ToggleButton fx:id="sideBySideViewToggle" text="◫" selected="true" onAction="#onSideBySideView"/>
@@ -169,7 +191,8 @@
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label text="Hide" style="-fx-text-fill:#1769cc;"/>
             </HBox>
-            <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS" style="-fx-background-color:white; -fx-padding:0;">
+            <SplitPane dividerPositions="0.5" VBox.vgrow="ALWAYS" styleClass="preview-content-split"
+                       style="-fx-background-color:white; -fx-padding:0;">
                 <ListView fx:id="previewLeftView"/>
                 <ListView fx:id="previewRightView"/>
             </SplitPane>

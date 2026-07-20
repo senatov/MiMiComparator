@@ -38,7 +38,7 @@ internal fun MainController.addProgrammaticUi() {
 
 internal fun MainController.configureCompareLists() {
     log.debug(LogTag.UI, "configureCompareLists()")
-    val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
+    val listStyle = "-fx-background-color:#ffffff; -fx-border-color:#c2c2c2; -fx-border-width:0 1 1 1; " + "-fx-font-smoothing-type:gray; -fx-opacity:1;"
     leftListView.fixedCellSize = 24.0
     rightListView.fixedCellSize = 24.0
     leftListView.style = listStyle
@@ -274,9 +274,9 @@ internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconS
         "new files on right" in help -> ToolbarIconSpec("←", "#318657", 27)
         "show difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 26)
         "equal files" in help -> ToolbarIconSpec("=", "#475569", 26)
-        "compare new files" in help -> ToolbarIconSpec("⑂", "#6b7280", 25)
-        "synchronize selected" in help -> ToolbarIconSpec("▐▷", "#25964b", 24)
-        "synchronize all" in help -> ToolbarIconSpec("◷▷", "#25964b", 24)
+        "compare new files" in help -> ToolbarIconSpec("⤴", "#7b8490", 24)
+        "synchronize selected" in help -> ToolbarIconSpec("▮▶", "#7f8790", 21)
+        "synchronize all" in help -> ToolbarIconSpec("◴▶", "#25964b", 21)
         "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 27)
         "copy" in help && "left" in help -> ToolbarIconSpec("←", "#228b4e", 27)
         "difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 26)
@@ -287,6 +287,12 @@ internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconS
         "help" in help -> ToolbarIconSpec("?", "#365f91", 25)
         "expand" in help -> ToolbarIconSpec("⊞", "#237a57", 26)
         "collapse" in help -> ToolbarIconSpec("⊟", "#9a6a20", 26)
+        "previous difference" in help -> ToolbarIconSpec("↑", "#64748b", 25)
+        "next difference" in help -> ToolbarIconSpec("↓", "#64748b", 25)
+        "compare previous file" in help -> ToolbarIconSpec("←", "#708090", 26)
+        "compare next file" in help -> ToolbarIconSpec("→", "#708090", 26)
+        "copy content to right" in help -> ToolbarIconSpec("→", "#2380df", 27)
+        "copy content to left" in help -> ToolbarIconSpec("←", "#279253", 27)
         "side-by-side" in help -> ToolbarIconSpec("◫", "#316dc1", 26)
         "unified" in help -> ToolbarIconSpec("□", "#6b7280", 26)
         "setting" in help -> ToolbarIconSpec("⚙", "#6b5bb5", 25)

@@ -240,6 +240,18 @@ class MainController {
     @FXML
     private fun onCompareSelectedFiles() = uiAction("onCompareSelectedFiles") { compareSelectedFiles() }
     @FXML
+    private fun onPreviousDifference() = uiAction("onPreviousDifference") { navigatePreviewDifference(-1) }
+
+    @FXML
+    private fun onNextDifference() = uiAction("onNextDifference") { navigatePreviewDifference(1) }
+
+    @FXML
+    private fun onComparePreviousFile() = uiAction("onComparePreviousFile") { navigateComparedFile(-1) }
+
+    @FXML
+    private fun onCompareNextFile() = uiAction("onCompareNextFile") { navigateComparedFile(1) }
+
+    @FXML
     private fun onDeleteSelected() = uiAction("onDeleteSelected") { setStubStatus("🗑 delete (stub)") }
     @FXML
     private fun onSyncScroll() = uiAction("onSyncScroll") { persistUiState() }

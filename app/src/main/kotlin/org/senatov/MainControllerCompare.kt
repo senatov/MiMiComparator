@@ -129,10 +129,59 @@ internal fun MainController.compareSelectedFiles() {
     )
 }
 
+internal fun MainController.navigatePreviewDifference(direction: Int) {
+    val count = minOf(previewLeftView.items.size, previewRightView.items.size)
+    if (count == 0) return
+    val current = maxOf(previewLeftView.selectionModel.selectedIndex, previewRightView.selectionModel.selectedIndex)
+    val indices = if (direction < 0) {
+        ((if (current < 0) count else current) - 1 downTo 0)
+    } else {
+        ((current + 1).coerceAtLeast(0) until count)
+    }
+    val target = indices.firstOrNull { index ->
+        previewLeftView.items[index].firstOrNull() != 'I' || previewRightView.items[index].firstOrNull() != 'I'
+    } ?: return
+    previewLeftView.selectionModel.select(target)
+    previewRightView.selectionModel.select(target)
+    previewLeftView.scrollTo(target)
+    previewRightView.scrollTo(target)
+}
+
+internal fun MainController.navigateComparedFile(direction: Int) {
+    val count = minOf(leftListView.items.size, rightListView.items.size)
+    if (count == 0) return
+    val current = maxOf(leftListView.selectionModel.selectedIndex, rightListView.selectionModel.selectedIndex)
+    val indices = if (direction < 0) {
+        ((if (current < 0) count else current) - 1 downTo 0)
+    } else {
+        ((current + 1).coerceAtLeast(0) until count)
+    }
+    val target = indices.firstOrNull { index ->
+        val left = leftListView.items[index]
+        val right = rightListView.items[index]
+        !left.isDirectory && !right.isDirectory && (left.status != DiffStatus.MISSING || right.status != DiffStatus.MISSING)
+    } ?: return
+    syncingSelection = true
+    try {
+        leftListView.selectionModel.select(target)
+        rightListView.selectionModel.select(target)
+        operationListView.selectionModel.select(target)
+        leftListView.scrollTo(target)
+        rightListView.scrollTo(target)
+        operationListView.scrollTo(target)
+    }
+    finally {
+        syncingSelection = false
+    }
+    updateToolbarActions()
+    showSelectedFilePairPreview(target, target)
+}
+
 internal fun MainController.copySelectedItem(sourceSide: ComparisonSide) {
-    val index = leftListView.selectionModel.selectedIndex
+    val sourceList = if (sourceSide == ComparisonSide.LEFT) leftListView else rightListView
+    val index = sourceList.selectionModel.selectedIndex
     if (index < 0) return
-    val item = (if (sourceSide == ComparisonSide.LEFT) leftListView else rightListView).items.getOrNull(index) ?: return
+    val item = sourceList.items.getOrNull(index) ?: return
     if (item.status == DiffStatus.MISSING) return
     val sourceRoot = if (sourceSide == ComparisonSide.LEFT) leftPath else rightPath
     val targetRoot = if (sourceSide == ComparisonSide.LEFT) rightPath else leftPath

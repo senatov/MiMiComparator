@@ -10,7 +10,7 @@ internal data class ToolbarIconSpec(
         get() {
             val family = if (emoji) "'Apple Color Emoji','System'" else "'System'"
             val effect = if (emoji) "" else "-fx-effect:dropshadow(gaussian,rgba(255,255,255,0.85),0,0,0,1);"
-            return "-fx-font-family:$family; -fx-font-size:${size}px; -fx-font-weight:700; " +
+            return "-fx-font-family:$family; -fx-font-size:${size}px; -fx-font-weight:500; " +
                     "-fx-text-fill:$color; -fx-opacity:1; -fx-font-smoothing-type:gray; $effect"
         }
 }

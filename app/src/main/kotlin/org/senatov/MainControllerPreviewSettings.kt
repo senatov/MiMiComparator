@@ -8,11 +8,6 @@ import org.senatov.ui.preview.IgnoreDifferences
 internal fun MainController.configurePreviewSettingsMenu() {
     previewToolBar.styleClass.add("preview-toolbar")
     val helpTexts = mapOf<ButtonBase, String>(
-            previewToolBar.items.filterIsInstance<Button>().first { it.text == "↑" } to "Expand all folders",
-            previewToolBar.items.filterIsInstance<Button>().first { it.text == "↓" } to "Collapse all folders",
-            previewToolBar.items.filterIsInstance<Button>().first { it.text == "✎" } to "Edit preview settings",
-            previewToolBar.items.filterIsInstance<Button>().first { it.text == "←" } to "Copy preview item to the left",
-            previewToolBar.items.filterIsInstance<Button>().first { it.text == "→" } to "Copy preview item to the right",
             sideBySideViewToggle to "Side-by-side viewer",
             unifiedViewToggle to "Unified viewer is not available yet",
             previewSettingsBtn to "Diff viewer settings",
