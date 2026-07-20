@@ -2,13 +2,13 @@
     -fx-background-color: #f4f4f4;
     -fx-border-color: #cfcfcf;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 4 8;
+    -fx-padding: 5 9;
 }
 
 .main-comparison-toolbar .button,
 .main-comparison-toolbar .toggle-button {
     -fx-padding: 0;
-    -fx-font-size: 19px;
+    -fx-font-size: 29px;
     -fx-text-fill: #607188;
     -fx-background-color: transparent;
     -fx-background-radius: 4px;
@@ -64,14 +64,18 @@
     -fx-background-color: #f7f7f7;
     -fx-border-color: #d2d2d2;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 3 8;
+    -fx-padding: 4 8;
 }
 
 .preview-toolbar .button,
 .preview-toolbar .toggle-button {
     -fx-background-color: transparent;
     -fx-background-radius: 4px;
-    -fx-padding: 3 8;
+    -fx-padding: 0;
+    -fx-min-width: 36px;
+    -fx-pref-width: 36px;
+    -fx-min-height: 34px;
+    -fx-pref-height: 34px;
 }
 
 .preview-toolbar .button:hover,

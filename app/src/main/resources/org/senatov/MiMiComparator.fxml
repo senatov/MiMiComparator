@@ -98,14 +98,14 @@
 
             <HBox alignment="CENTER_LEFT" spacing="5" minHeight="36" prefHeight="36"
                   style="-fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-padding:4 8 4 8;">
-                <Label text="▱" style="-fx-font-size:17; -fx-text-fill:#687386;"/>
+                <Label text="📁" style="-fx-font-family:'Apple Color Emoji'; -fx-font-size:19px;"/>
                 <TextField fx:id="leftPathField" promptText="Left folder or file" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="leftPathMenuButton" text="▱" onAction="#onOpenLeft"/>
+                <Button fx:id="leftPathMenuButton" text="📂" onAction="#onOpenLeft"/>
                 <Button fx:id="leftPathBrowseButton" visible="false" managed="false" onAction="#onOpenLeft"/>
                 <Separator orientation="VERTICAL"/>
-                <Label text="▱" style="-fx-font-size:17; -fx-text-fill:#687386;"/>
+                <Label text="📁" style="-fx-font-family:'Apple Color Emoji'; -fx-font-size:19px;"/>
                 <TextField fx:id="rightPathField" promptText="Right folder or file" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="rightPathMenuButton" text="▱" onAction="#onOpenRight"/>
+                <Button fx:id="rightPathMenuButton" text="📂" onAction="#onOpenRight"/>
                 <Button fx:id="rightPathBrowseButton" visible="false" managed="false" onAction="#onOpenRight"/>
             </HBox>
         </VBox>

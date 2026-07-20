@@ -137,7 +137,7 @@ private fun installPathButton(button: Button, helpText: String) {
     button.prefHeight = 24.0
     button.focusTraversableProperty().set(false)
     button.installStandardHelp(helpText)
-    button.style = "-fx-font-family:'System'; -fx-font-size:15; -fx-text-fill:#75839a; " +
+    button.style = "-fx-font-family:'Apple Color Emoji','System'; -fx-font-size:20px; -fx-text-fill:#54708f; " +
             "-fx-background-color:transparent; -fx-border-width:0; -fx-padding:0;"
     button.setOnMouseEntered {
         animatePathButton(button, 1.06)
@@ -207,13 +207,15 @@ private fun MainController.clearPathSide(side: ComparisonSide) {
 
 private fun MainController.configureToolbarButtons() {
     log.debug(LogTag.UI, "configureToolbarButtons()")
-    mainToolBar.prefHeight = 44.0
+    mainToolBar.minHeight = 50.0
+    mainToolBar.prefHeight = 50.0
     mainToolBar.styleClass.add("main-comparison-toolbar")
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
-        button.minWidth = 29.0
-        button.prefWidth = 29.0
-        button.minHeight = 29.0
-        button.prefHeight = 29.0
+        button.minWidth = 38.0
+        button.prefWidth = 38.0
+        button.minHeight = 38.0
+        button.prefHeight = 38.0
+        installToolbarGraphic(button)
     }
     listOf(copyRightBtn, diffBtn, equalBtn, copyLeftBtn).forEach {
         it.styleClass.add("comparison-action")
@@ -236,14 +238,13 @@ internal fun MainController.applyCompareMode() {
     if (leftPath != null && rightPath != null) compareCurrentInputs()
 }
 
-private fun MainController.installToolbarGraphic(button: ButtonBase) {
+internal fun MainController.installToolbarGraphic(button: ButtonBase) {
     log.debug(LogTag.UI, "installToolbarGraphic(button={})", button)
     val rawText = button.text ?: return
-    val parts = rawText.split("\n", limit = 2)
-    val sourceIcon = parts.firstOrNull().orEmpty()
-    val labelText = parts.getOrNull(1).orEmpty()
-    val spec = toolbarIconSpec(sourceIcon, labelText)
+    val sourceIcon = rawText.substringBefore('\n')
+    val labelText = rawText.substringAfter('\n', "")
     val helpText = toolbarHelpText(sourceIcon, labelText, button.tooltip?.text)
+    val spec = toolbarIconSpec(sourceIcon, helpText)
     val icon = Label(spec.glyph).apply {
         alignment = Pos.CENTER
         maxWidth = Double.MAX_VALUE
@@ -255,25 +256,34 @@ private fun MainController.installToolbarGraphic(button: ButtonBase) {
     button.contentDisplay = ContentDisplay.GRAPHIC_ONLY
 }
 
-private fun toolbarIconSpec(sourceIcon: String, labelText: String): ToolbarIconSpec = when (labelText) {
-    "Home" -> ToolbarIconSpec("⌂", "#4a6f9f", 34)
-    "Sessions" -> ToolbarIconSpec("🗂", size = 30, emoji = true)
-    "All" -> ToolbarIconSpec("✱", "#2d6cdf", 34)
-    "Diffs" -> ToolbarIconSpec("≠", "#d45a5a", 34)
-    "Same" -> ToolbarIconSpec("=", "#4aa564", 34)
-    "Struct." -> ToolbarIconSpec("▣", "#6f63c6", 33)
-    "Minor" -> ToolbarIconSpec("≈", "#2f8b9a", 34)
-    "Rules" -> ToolbarIconSpec("♟", "#6b7280", 32)
-    "Expand" -> ToolbarIconSpec("⊞", "#2f7d60", 32)
-    "Collapse" -> ToolbarIconSpec("⊟", "#8a6f36", 32)
-    "Select" -> ToolbarIconSpec("✓", "#2f7d60", 34)
-    "Files" -> ToolbarIconSpec("≠", "#d45a5a", 34)
-    "Refresh" -> ToolbarIconSpec("↻", "#2f7aa8", 34)
-    "Swap" -> ToolbarIconSpec("⇄", "#6d62be", 34)
-    "Stop" -> ToolbarIconSpec("×", "#9aa0a6", 34)
-    "Filters" -> ToolbarIconSpec("⌕", "#5f7c8a", 32)
-    "Peek" -> ToolbarIconSpec("🔎", size = 29, emoji = true)
-    else -> ToolbarIconSpec(sourceIcon, "#2f343a", 32)
+internal fun MainController.configurePreviewToolbarGraphics(helpTexts: Map<ButtonBase, String>) {
+    previewToolBar.minHeight = 46.0
+    previewToolBar.prefHeight = 46.0
+    previewToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
+        helpTexts[button]?.let { button.installStandardHelp(it) }
+        installToolbarGraphic(button)
+    }
+}
+
+internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconSpec {
+    val help = helpText.lowercase()
+    return when {
+        "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 32)
+        "copy" in help && "left" in help -> ToolbarIconSpec("←", "#228b4e", 32)
+        "difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)
+        "identical" in help -> ToolbarIconSpec("=", "#475569", 31)
+        "compare" in help && "setting" !in help -> ToolbarIconSpec("▶", "#2878c8", 27)
+        "refresh" in help -> ToolbarIconSpec("↻", "#2878a8", 31)
+        "edit" in help -> ToolbarIconSpec("✎", "#a66a22", 28)
+        "help" in help -> ToolbarIconSpec("?", "#365f91", 28)
+        "expand" in help -> ToolbarIconSpec("⊞", "#237a57", 29)
+        "collapse" in help -> ToolbarIconSpec("⊟", "#9a6a20", 29)
+        "side-by-side" in help -> ToolbarIconSpec("◫", "#316dc1", 29)
+        "unified" in help -> ToolbarIconSpec("□", "#6b7280", 29)
+        "setting" in help -> ToolbarIconSpec("⚙", "#6b5bb5", 27)
+        sourceIcon == "◷" -> ToolbarIconSpec("◷", "#66758b", 29)
+        else -> ToolbarIconSpec(sourceIcon, "#334155", 29)
+    }
 }
 
 private fun toolbarHelpText(sourceIcon: String, labelText: String, existingText: String?): String {
