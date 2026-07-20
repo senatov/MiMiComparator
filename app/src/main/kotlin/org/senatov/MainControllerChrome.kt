@@ -2,9 +2,15 @@ package org.senatov
 
 import javafx.animation.ScaleTransition
 import javafx.geometry.Pos
+import javafx.scene.Node
 import javafx.scene.control.*
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
+import javafx.scene.layout.HBox
+import javafx.scene.paint.Color
+import javafx.scene.shape.Circle
+import javafx.scene.shape.Polygon
+import javafx.scene.shape.Rectangle
 import javafx.stage.Stage
 import javafx.util.Duration
 import org.senatov.compare.CompareMode
@@ -221,7 +227,7 @@ private fun MainController.configureToolbarButtons() {
     listOf(copyRightBtn, diffBtn, equalBtn, copyLeftBtn).forEach {
         it.styleClass.add("comparison-action")
     }
-    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; " + "-fx-background-radius:5; -fx-font-size:16px; -fx-prompt-text-fill:#53657d;"
+    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; " + "-fx-background-radius:5; -fx-font-size:16px; -fx-padding:4 8 4 32;"
 }
 
 internal fun MainController.configureCompareModes() {
@@ -246,15 +252,38 @@ internal fun MainController.installToolbarGraphic(button: ButtonBase) {
     val labelText = rawText.substringAfter('\n', "")
     val helpText = toolbarHelpText(sourceIcon, labelText, button.tooltip?.text)
     val spec = toolbarIconSpec(sourceIcon, helpText)
-    val icon = Label(spec.glyph).apply {
-        alignment = Pos.CENTER
-        maxWidth = Double.MAX_VALUE
-        style = spec.style
+    val icon = when {
+        helpText.equals("Synchronize selected", ignoreCase = true) -> synchronizationGraphic(all = false)
+        helpText.equals("Synchronize All", ignoreCase = true) -> synchronizationGraphic(all = true)
+        else -> Label(spec.glyph).apply {
+            alignment = Pos.CENTER
+            maxWidth = Double.MAX_VALUE
+            style = spec.style
+        }
     }
     button.text = null
     button.installStandardHelp(helpText)
     button.graphic = icon
     button.contentDisplay = ContentDisplay.GRAPHIC_ONLY
+}
+
+private fun synchronizationGraphic(all: Boolean): Node {
+    val color = Color.web(if (all) "#25964b" else "#7f8790")
+    val leading: Node = if (all) {
+        Circle(7.0).apply {
+            fill = Color.TRANSPARENT
+            stroke = color
+            strokeWidth = 2.0
+        }
+    } else {
+        Rectangle(4.0, 16.0, color)
+    }
+    val play = Polygon(0.0, 0.0, 0.0, 14.0, 11.0, 7.0).apply { fill = color }
+    return HBox(3.0, leading, play).apply {
+        alignment = Pos.CENTER
+        minWidth = 24.0
+        minHeight = 22.0
+    }
 }
 
 internal fun MainController.configurePreviewToolbarGraphics(helpTexts: Map<ButtonBase, String>) {

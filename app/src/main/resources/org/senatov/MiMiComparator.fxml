@@ -83,7 +83,11 @@
                 </Button>
                 <Pane HBox.hgrow="ALWAYS"/>
                 <Label text="Filter:"/>
-                <TextField fx:id="filterField" promptText="⌕" prefWidth="330" onAction="#onFilterChanged"/>
+                <StackPane prefWidth="330">
+                    <TextField fx:id="filterField" promptText="" maxWidth="1E308" onAction="#onFilterChanged"/>
+                    <Label text="⌕" mouseTransparent="true" StackPane.alignment="CENTER_LEFT"
+                           style="-fx-font-family:'System'; -fx-font-size:23px; -fx-font-weight:600; -fx-text-fill:#53657d; -fx-padding:0 0 1 9;"/>
+                </StackPane>
                 <Button text="?" onAction="#onAbout">
                     <tooltip>
                         <Tooltip text="Filter help"/>
