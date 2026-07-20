@@ -39,11 +39,11 @@ internal fun MainController.addProgrammaticUi() {
 internal fun MainController.configureCompareLists() {
     log.debug(LogTag.UI, "configureCompareLists()")
     val listStyle = "-fx-background-color:#ffffff; -fx-border-width:0; -fx-font-smoothing-type:gray; -fx-opacity:1;"
-    leftListView.fixedCellSize = 23.0
-    rightListView.fixedCellSize = 23.0
+    leftListView.fixedCellSize = 24.0
+    rightListView.fixedCellSize = 24.0
     leftListView.style = listStyle
     rightListView.style = listStyle
-    operationListView.fixedCellSize = 23.0
+    operationListView.fixedCellSize = 24.0
     operationListView.isFocusTraversable = false
     operationListView.selectionModel.selectionMode = SelectionMode.SINGLE
     operationListView.style = "-fx-background-color:#fafafa; -fx-border-width:0; -fx-padding:0;"
@@ -116,6 +116,7 @@ private fun MainController.installPathField(field: TextField, side: ComparisonSi
     field.minHeight = 24.0
     field.prefHeight = 24.0
     field.maxHeight = 24.0
+    field.style = "-fx-font-family:'System'; -fx-font-size:15px;"
     field.setOnAction { commitPathField(field, side) }
     field.focusedProperty().addListener { _, wasFocused, isFocused ->
         if (wasFocused && !isFocused) commitPathField(field, side)
@@ -207,20 +208,20 @@ private fun MainController.clearPathSide(side: ComparisonSide) {
 
 private fun MainController.configureToolbarButtons() {
     log.debug(LogTag.UI, "configureToolbarButtons()")
-    mainToolBar.minHeight = 50.0
-    mainToolBar.prefHeight = 50.0
+    mainToolBar.minHeight = 44.0
+    mainToolBar.prefHeight = 44.0
     mainToolBar.styleClass.add("main-comparison-toolbar")
     mainToolBar.items.filterIsInstance<ButtonBase>().forEach { button ->
-        button.minWidth = 38.0
-        button.prefWidth = 38.0
-        button.minHeight = 38.0
-        button.prefHeight = 38.0
+        button.minWidth = 32.0
+        button.prefWidth = 32.0
+        button.minHeight = 32.0
+        button.prefHeight = 32.0
         installToolbarGraphic(button)
     }
     listOf(copyRightBtn, diffBtn, equalBtn, copyLeftBtn).forEach {
         it.styleClass.add("comparison-action")
     }
-    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; " + "-fx-background-radius:5; -fx-font-size:18px; -fx-prompt-text-fill:#53657d;"
+    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; " + "-fx-background-radius:5; -fx-font-size:16px; -fx-prompt-text-fill:#53657d;"
 }
 
 internal fun MainController.configureCompareModes() {
@@ -268,29 +269,29 @@ internal fun MainController.configurePreviewToolbarGraphics(helpTexts: Map<Butto
 internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconSpec {
     val help = helpText.lowercase()
     return when {
-        "jump to source" in help -> ToolbarIconSpec("✎", "#6f7f91", 29)
-        "new files on left" in help -> ToolbarIconSpec("→", "#2878c8", 32)
-        "new files on right" in help -> ToolbarIconSpec("←", "#318657", 32)
-        "show difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)
-        "equal files" in help -> ToolbarIconSpec("=", "#475569", 31)
-        "compare new files" in help -> ToolbarIconSpec("⑂", "#6b7280", 29)
+        "jump to source" in help -> ToolbarIconSpec("✎", "#6f7f91", 25)
+        "new files on left" in help -> ToolbarIconSpec("→", "#2878c8", 27)
+        "new files on right" in help -> ToolbarIconSpec("←", "#318657", 27)
+        "show difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 26)
+        "equal files" in help -> ToolbarIconSpec("=", "#475569", 26)
+        "compare new files" in help -> ToolbarIconSpec("⑂", "#6b7280", 25)
         "synchronize selected" in help -> ToolbarIconSpec("▐▷", "#25964b", 24)
         "synchronize all" in help -> ToolbarIconSpec("◷▷", "#25964b", 24)
-        "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 32)
-        "copy" in help && "left" in help -> ToolbarIconSpec("←", "#228b4e", 32)
-        "difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)
-        "identical" in help -> ToolbarIconSpec("=", "#475569", 31)
-        "compare" in help && "setting" !in help -> ToolbarIconSpec("▶", "#2878c8", 27)
-        "refresh" in help -> ToolbarIconSpec("↻", "#2878a8", 31)
-        "edit" in help -> ToolbarIconSpec("✎", "#a66a22", 28)
-        "help" in help -> ToolbarIconSpec("?", "#365f91", 28)
-        "expand" in help -> ToolbarIconSpec("⊞", "#237a57", 29)
-        "collapse" in help -> ToolbarIconSpec("⊟", "#9a6a20", 29)
-        "side-by-side" in help -> ToolbarIconSpec("◫", "#316dc1", 29)
-        "unified" in help -> ToolbarIconSpec("□", "#6b7280", 29)
-        "setting" in help -> ToolbarIconSpec("⚙", "#6b5bb5", 27)
-        sourceIcon == "◷" -> ToolbarIconSpec("◷", "#66758b", 29)
-        else -> ToolbarIconSpec(sourceIcon, "#334155", 29)
+        "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 27)
+        "copy" in help && "left" in help -> ToolbarIconSpec("←", "#228b4e", 27)
+        "difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 26)
+        "identical" in help -> ToolbarIconSpec("=", "#475569", 26)
+        "compare" in help && "setting" !in help -> ToolbarIconSpec("▶", "#2878c8", 25)
+        "refresh" in help -> ToolbarIconSpec("↻", "#2878a8", 27)
+        "edit" in help -> ToolbarIconSpec("✎", "#a66a22", 25)
+        "help" in help -> ToolbarIconSpec("?", "#365f91", 25)
+        "expand" in help -> ToolbarIconSpec("⊞", "#237a57", 26)
+        "collapse" in help -> ToolbarIconSpec("⊟", "#9a6a20", 26)
+        "side-by-side" in help -> ToolbarIconSpec("◫", "#316dc1", 26)
+        "unified" in help -> ToolbarIconSpec("□", "#6b7280", 26)
+        "setting" in help -> ToolbarIconSpec("⚙", "#6b5bb5", 25)
+        sourceIcon == "◷" -> ToolbarIconSpec("◷", "#66758b", 26)
+        else -> ToolbarIconSpec(sourceIcon, "#334155", 26)
     }
 }
 

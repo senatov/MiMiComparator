@@ -2,16 +2,22 @@
     -fx-background-color: #f4f4f4;
     -fx-border-color: #cfcfcf;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 5 9;
+    -fx-padding: 4 8;
 }
 
 .main-comparison-toolbar .button,
 .main-comparison-toolbar .toggle-button {
     -fx-padding: 0;
-    -fx-font-size: 29px;
+    -fx-font-size: 24px;
     -fx-text-fill: #607188;
     -fx-background-color: transparent;
     -fx-background-radius: 4px;
+}
+
+.main-comparison-toolbar .label,
+.main-comparison-toolbar .combo-box {
+    -fx-font-family: "System";
+    -fx-font-size: 14px;
 }
 
 .main-comparison-toolbar .button:hover,

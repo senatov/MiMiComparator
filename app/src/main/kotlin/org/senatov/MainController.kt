@@ -153,6 +153,7 @@ class MainController {
     internal var comparatorState: ComparatorState? = null
     internal var restoringState = false
     internal var leftPanelRatio = 0.5
+    internal var syncingSelection = false
     internal val ratioPopupLabel = Label()
     internal val ratioPopup = Popup()
     internal var showOnlyIdentical = false

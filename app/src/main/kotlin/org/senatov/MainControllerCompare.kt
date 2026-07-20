@@ -66,12 +66,37 @@ internal fun MainController.setupClickToExpand() {
 internal fun MainController.setupSelectionPreview() {
     leftListView.selectionModel.selectionMode = javafx.scene.control.SelectionMode.SINGLE
     rightListView.selectionModel.selectionMode = javafx.scene.control.SelectionMode.SINGLE
-    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> selectedFilesChanged() }
-    rightListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> selectedFilesChanged() }
+    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, _ ->
+        panelSelectionChanged(leftListView, rightListView)
+    }
+    rightListView.selectionModel.selectedIndexProperty().addListener { _, _, _ ->
+        panelSelectionChanged(rightListView, leftListView)
+    }
     updateToolbarActions()
 }
 
-private fun MainController.selectedFilesChanged() {
+private fun MainController.panelSelectionChanged(
+        source: ListView<CompareLineItem>,
+        target: ListView<CompareLineItem>,
+) {
+    if (syncingSelection) return
+    val sourceItem = source.selectionModel.selectedItem
+    if (dirMode && sourceItem != null && !sourceItem.isDirectory && sourceItem.status != DiffStatus.MISSING && sourceItem.relativePath.isNotBlank()) {
+        val matchingIndex = target.items.indexOfFirst { candidate ->
+            !candidate.isDirectory && candidate.status != DiffStatus.MISSING && candidate.relativePath == sourceItem.relativePath
+        }
+        if (matchingIndex >= 0 && target.selectionModel.selectedIndex != matchingIndex) {
+            syncingSelection = true
+            try {
+                target.selectionModel.select(matchingIndex)
+                target.scrollTo(matchingIndex)
+                operationListView.selectionModel.select(matchingIndex)
+            }
+            finally {
+                syncingSelection = false
+            }
+        }
+    }
     updateToolbarActions()
     val leftIndex = leftListView.selectionModel.selectedIndex
     val rightIndex = rightListView.selectionModel.selectedIndex

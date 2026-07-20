@@ -25,9 +25,9 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
     Callback<ListView<CompareLineItem>, ListCell<CompareLineItem>> {
 
     companion object {
-        private const val ROW_HEIGHT = 22.0
-        private const val NAME_FONT_SIZE = 14.0
-        private const val META_FONT_SIZE = 13
+        private const val ROW_HEIGHT = 24.0
+        private const val NAME_FONT_SIZE = 15.0
+        private const val META_FONT_SIZE = 14
 
         private fun monoStyle() =
             "-fx-font-size:${NAME_FONT_SIZE};-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-opacity:1;"
@@ -39,7 +39,7 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
 
         // dir mode zebra
         private const val DIR_EVEN = "#FFFFFF"
-        private const val DIR_ODD = "#F6F6F7"
+        private const val DIR_ODD = "#FAFAFA"
         private const val DIR_ADDED = "#FFFFFF"
         private const val DIR_MISSING = "#FFFFFF"
         private const val DIR_MODIFIED = "#FFF8D8"
@@ -67,6 +67,7 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
 
     // ═══ Dir mode cell: columns Name | Size | Modified ═══
     private class DirCell(private val mirrored: Boolean) : ListCell<CompareLineItem>() {
+        private var rowBackground = DIR_EVEN
         private val row = HBox(4.0)
         private val nameBox = HBox(2.0)
         private val markerLabel = Label()
@@ -77,6 +78,7 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
         private val dateLabel = Label()
 
         init {
+            selectedProperty().addListener { _, _, _ -> applyRowBackground() }
             markerLabel.style = monoStyle() + "-fx-text-fill:$TXT;"
             markerLabel.minWidth = 15.0
             markerLabel.alignment = Pos.CENTER_LEFT
@@ -135,7 +137,8 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
                 nameLabel.text = ""
                 sizeLabel.text = ""
                 dateLabel.text = ""
-                style = "-fx-background-color:${pickDirBg(item.status, index)};-fx-padding:0;-fx-opacity:1;"
+                rowBackground = pickDirBg(item.status, index)
+                applyRowBackground()
                 graphic = row
                 return
             }
@@ -150,7 +153,7 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
             markerLabel.style = monoStyle() + "-fx-text-fill:$fg;"
             disclosureLabel.text = if (item.isDirectory) (if (item.isExpanded) "▾" else "▸") else ""
             disclosureLabel.style = monoStyle() + "-fx-text-fill:$fg;"
-            iconLabel.text = if (item.isDirectory) "▣" else "▪"
+            iconLabel.text = if (item.isDirectory) "▱" else fileGlyph(item.text)
             iconLabel.style =
                 "-fx-font-size:15;-fx-font-weight:400;-fx-font-smoothing-type:gray;-fx-text-fill:$fg;-fx-opacity:1;"
             nameLabel.text = item.text
@@ -160,8 +163,19 @@ class DiffCellFactory(private val dirMode: Boolean, private val mirrored: Boolea
             sizeLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
             dateLabel.text = DirectoryComparator.formatDate(item.lastModifiedMs)
             dateLabel.style = monoSmallStyle() + "-fx-text-fill:$TXT_SIZE;"
-            style = "-fx-background-color:${pickDirBg(item.status, index)};-fx-padding:0;-fx-opacity:1;"
+            rowBackground = pickDirBg(item.status, index)
+            applyRowBackground()
             graphic = row
+        }
+
+        private fun applyRowBackground() {
+            val background = if (isSelected) "#B9D8FA" else rowBackground
+            style = "-fx-background-color:$background;-fx-padding:0;-fx-opacity:1;"
+        }
+
+        private fun fileGlyph(name: String): String = when (name.substringAfterLast('.', "").lowercase()) {
+            "txt", "asc", "ics", "doc", "docx" -> "≡"
+            else -> "?"
         }
 
         private fun pickDirBg(st: DiffStatus, index: Int): String = when (st) {

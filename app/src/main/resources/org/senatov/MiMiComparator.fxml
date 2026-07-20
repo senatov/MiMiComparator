@@ -119,7 +119,8 @@
     <center>
         <HBox fx:id="contentBox">
             <VBox fx:id="leftPanel" HBox.hgrow="ALWAYS">
-                <HBox fx:id="leftColumnHeader" minHeight="25" prefHeight="25" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;">
+                <HBox fx:id="leftColumnHeader" minHeight="28" prefHeight="28"
+                      style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-font-family:'System'; -fx-font-size:15px;">
                     <Label text="Name" minWidth="0" maxWidth="1E308" HBox.hgrow="ALWAYS"
                            style="-fx-padding:5 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Size" minWidth="92" prefWidth="92" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
@@ -128,11 +129,13 @@
                 <ListView fx:id="leftListView" VBox.vgrow="ALWAYS"/>
             </VBox>
             <VBox fx:id="centerStrip" minWidth="28" prefWidth="28" maxWidth="28" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 1 0 1;">
-                <Label text="*" minWidth="27" alignment="CENTER" style="-fx-padding:5 0; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;"/>
+                <Label text="*" minWidth="27" minHeight="28" prefHeight="28" alignment="CENTER"
+                       style="-fx-font-size:15px; -fx-padding:5 0; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;"/>
                 <ListView fx:id="operationListView" minWidth="27" prefWidth="27" maxWidth="27" VBox.vgrow="ALWAYS"/>
             </VBox>
             <VBox fx:id="rightPanel" HBox.hgrow="ALWAYS">
-                <HBox fx:id="rightColumnHeader" minHeight="25" prefHeight="25" style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0;">
+                <HBox fx:id="rightColumnHeader" minHeight="28" prefHeight="28"
+                      style="-fx-background-color:#fafafa; -fx-border-color:#cfcfcf; -fx-border-width:0 0 1 0; -fx-font-family:'System'; -fx-font-size:15px;">
                     <Label text="Date" minWidth="128" prefWidth="128" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Size" minWidth="92" prefWidth="92" style="-fx-padding:4 8; -fx-border-color:#d8d8d8; -fx-border-width:0 1 0 0;"/>
                     <Label text="Name" minWidth="0" maxWidth="1E308" HBox.hgrow="ALWAYS" style="-fx-padding:5 8;"/>

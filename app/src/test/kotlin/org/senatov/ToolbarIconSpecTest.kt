@@ -12,7 +12,7 @@ class ToolbarIconSpecTest {
         val refresh = toolbarIconSpec("↻", "Refresh comparison")
 
         assertEquals("→", copy.glyph)
-        assertTrue(copy.size >= 27)
+        assertTrue(copy.size >= 25)
         assertEquals(3, setOf(copy.color, differences.color, refresh.color).size)
         assertTrue("-fx-font-weight:700" in copy.style)
     }
