@@ -266,14 +266,19 @@ internal fun MainController.showSelectedFilePairPreview(leftIndex: Int, rightInd
     }
     previewLeftView.items = FXCollections.observableArrayList(leftOutput)
     previewRightView.items = FXCollections.observableArrayList(rightOutput)
-    previewDiffCountLabel.text = if (differences == 1) "1 difference" else "$differences differences"
+    previewDiffCountLabel.text = when (differences) {
+        0 -> "Files contents are identical"
+        1 -> "1 difference"
+        else -> "$differences differences"
+    }
     statusCenter.text = if (differences == 0) "Contents are identical" else "Text representation differs from file content on disk"
     previewNoticeBox.style = if (differences == 0) {
-        "-fx-background-color:#f3f7ff; -fx-border-color:#b8d1ff; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
+        "-fx-background-color:#fffaf0; -fx-border-color:#efb53f; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
     } else {
         "-fx-background-color:#fff8e8; -fx-border-color:#efc968; -fx-border-width:1 0 1 0; -fx-padding:0 14;"
     }
-    previewNoticeIcon.text = if (differences == 0) "●" else "▲"
+    previewNoticeIcon.text = if (differences == 0) "⚠" else "▲"
+    previewNoticeIcon.style = if (differences == 0) "-fx-text-fill:#e69a16;" else "-fx-text-fill:#d38b18;"
 }
 
 private fun MainController.preparePreviewLines(lines: List<String>?): List<String>? {

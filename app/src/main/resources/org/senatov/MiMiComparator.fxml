@@ -157,6 +157,12 @@
                     </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
+                <Button text="✎" disable="true">
+                    <tooltip>
+                        <Tooltip text="Edit Comparison"/>
+                    </tooltip>
+                </Button>
+                <Separator orientation="VERTICAL"/>
                 <Button text="←" onAction="#onComparePreviousFile">
                     <tooltip>
                         <Tooltip text="Compare Previous File"/>

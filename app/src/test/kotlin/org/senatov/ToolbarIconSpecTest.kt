@@ -6,6 +6,16 @@ import kotlin.test.assertTrue
 
 class ToolbarIconSpecTest {
     @Test
+    fun `preview navigation tooltips keep their directional icons`() {
+        assertEquals("↑", toolbarIconSpec("↑", "Previous Difference").glyph)
+        assertEquals("↓", toolbarIconSpec("↓", "Next Difference").glyph)
+        assertEquals("←", toolbarIconSpec("←", "Compare Previous File").glyph)
+        assertEquals("→", toolbarIconSpec("→", "Compare Next File").glyph)
+        assertEquals("→", toolbarIconSpec("→", "Copy Content to Right").glyph)
+        assertEquals("←", toolbarIconSpec("←", "Copy Content to Left").glyph)
+    }
+
+    @Test
     fun `toolbar actions receive large distinct colored glyphs`() {
         val copy = toolbarIconSpec("→", "Show new files on left side")
         val differences = toolbarIconSpec("≠", "Show differences")

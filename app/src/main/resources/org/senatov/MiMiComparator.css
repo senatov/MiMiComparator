@@ -104,10 +104,10 @@
     -fx-background-color: transparent;
     -fx-background-radius: 4px;
     -fx-padding: 0;
-    -fx-min-width: 36px;
-    -fx-pref-width: 36px;
-    -fx-min-height: 34px;
-    -fx-pref-height: 34px;
+    -fx-min-width: 28px;
+    -fx-pref-width: 28px;
+    -fx-min-height: 30px;
+    -fx-pref-height: 30px;
 }
 
 .preview-toolbar .button:hover,
