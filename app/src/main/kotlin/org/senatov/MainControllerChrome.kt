@@ -273,6 +273,7 @@ internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconS
         "new files on right" in help -> ToolbarIconSpec("←", "#318657", 32)
         "show difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)
         "equal files" in help -> ToolbarIconSpec("=", "#475569", 31)
+        "compare new files" in help -> ToolbarIconSpec("⑂", "#6b7280", 29)
         "synchronize selected" in help -> ToolbarIconSpec("▐▷", "#25964b", 24)
         "synchronize all" in help -> ToolbarIconSpec("◷▷", "#25964b", 24)
         "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 32)

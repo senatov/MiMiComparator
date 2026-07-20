@@ -63,6 +63,11 @@
                         <Tooltip text="Show new files on right side"/>
                     </tooltip>
                 </Button>
+                <Button fx:id="compareSelectedBtn" text="⑂" disable="true" onAction="#onCompareSelectedFiles">
+                    <tooltip>
+                        <Tooltip text="Compare New Files with Each Other"/>
+                    </tooltip>
+                </Button>
                 <Separator orientation="VERTICAL"/>
                 <Label text="Compare by:"/>
                 <ComboBox fx:id="compareModeChoice" prefWidth="145" onAction="#onCompareModeChanged"/>

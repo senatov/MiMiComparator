@@ -104,7 +104,9 @@ private fun MainController.highlightingItems(): List<RadioMenuItem> {
 }
 
 private fun MainController.refreshSelectedPreview() {
-    leftListView.selectionModel.selectedIndex.takeIf { it >= 0 }?.let(::showSelectedFilePreview)
+    val leftIndex = leftListView.selectionModel.selectedIndex
+    val rightIndex = rightListView.selectionModel.selectedIndex
+    if (leftIndex >= 0 && rightIndex >= 0) showSelectedFilePairPreview(leftIndex, rightIndex)
 }
 
 private fun MainController.setPreviewRowHeight(height: Double) {

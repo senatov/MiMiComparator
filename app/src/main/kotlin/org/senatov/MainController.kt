@@ -83,6 +83,9 @@ class MainController {
     @FXML
     internal lateinit var equalBtn: Button
     @FXML
+    internal lateinit var compareSelectedBtn: Button
+
+    @FXML
     internal lateinit var deleteBtn: Button
     @FXML
     internal lateinit var swapBtn: Button
@@ -152,7 +155,6 @@ class MainController {
     internal var leftPanelRatio = 0.5
     internal val ratioPopupLabel = Label()
     internal val ratioPopup = Popup()
-    internal var syncingSelection = false
     internal var showOnlyIdentical = false
     internal val filterDebounce = PauseTransition(Duration.millis(180.0))
     internal val previewSplitSaveDebounce = PauseTransition(Duration.millis(250.0))
@@ -233,6 +235,9 @@ class MainController {
         showIdenticalCheck.isSelected = true
         compareCurrentInputs()
     }
+
+    @FXML
+    private fun onCompareSelectedFiles() = uiAction("onCompareSelectedFiles") { compareSelectedFiles() }
     @FXML
     private fun onDeleteSelected() = uiAction("onDeleteSelected") { setStubStatus("🗑 delete (stub)") }
     @FXML

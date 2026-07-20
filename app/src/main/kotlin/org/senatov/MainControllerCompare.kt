@@ -64,14 +64,18 @@ internal fun MainController.setupClickToExpand() {
 }
 
 internal fun MainController.setupSelectionPreview() {
-    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, value ->
-        synchronizeSelection(value.toInt(), leftListView)
-    }
-    rightListView.selectionModel.selectedIndexProperty().addListener { _, _, value ->
-        synchronizeSelection(value.toInt(), rightListView)
-    }
-    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> updateToolbarActions() }
+    leftListView.selectionModel.selectionMode = javafx.scene.control.SelectionMode.SINGLE
+    rightListView.selectionModel.selectionMode = javafx.scene.control.SelectionMode.SINGLE
+    leftListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> selectedFilesChanged() }
+    rightListView.selectionModel.selectedIndexProperty().addListener { _, _, _ -> selectedFilesChanged() }
     updateToolbarActions()
+}
+
+private fun MainController.selectedFilesChanged() {
+    updateToolbarActions()
+    val leftIndex = leftListView.selectionModel.selectedIndex
+    val rightIndex = rightListView.selectionModel.selectedIndex
+    if (leftIndex >= 0 && rightIndex >= 0) showSelectedFilePairPreview(leftIndex, rightIndex)
 }
 
 internal fun MainController.updateToolbarActions() {
@@ -82,6 +86,22 @@ internal fun MainController.updateToolbarActions() {
     copyLeftBtn.isDisable = index < 0 || right == null || right.status == DiffStatus.MISSING
     diffBtn.isDisable = leftPath == null || rightPath == null
     equalBtn.isDisable = leftPath == null || rightPath == null
+    compareSelectedBtn.isDisable = selectedRegularFile(leftListView, leftPath) == null || selectedRegularFile(rightListView, rightPath) == null
+}
+
+private fun selectedRegularFile(list: ListView<CompareLineItem>, root: Path?): Path? {
+    val item = list.selectionModel.selectedItem ?: return null
+    if (item.isDirectory || item.status == DiffStatus.MISSING) return null
+    val path = if (item.relativePath.isNotBlank()) root?.resolve(item.relativePath) else root
+    return path?.takeIf(Files::isRegularFile)
+}
+
+internal fun MainController.compareSelectedFiles() {
+    if (compareSelectedBtn.isDisable) return
+    showSelectedFilePairPreview(
+            leftListView.selectionModel.selectedIndex,
+            rightListView.selectionModel.selectedIndex,
+    )
 }
 
 internal fun MainController.copySelectedItem(sourceSide: ComparisonSide) {
@@ -126,33 +146,19 @@ private fun copyRecursivelyReplacing(source: Path, target: Path) {
     }
 }
 
-private fun MainController.synchronizeSelection(index: Int, source: ListView<CompareLineItem>) {
-    if (syncingSelection || index < 0) return
-    syncingSelection = true
-    try {
-        val target = if (source === leftListView) rightListView else leftListView
-        target.selectionModel.select(index)
-        target.scrollTo(index)
-        operationListView.selectionModel.select(index)
-        operationListView.scrollTo(index)
-        showSelectedFilePreview(index)
-    }
-    finally {
-        syncingSelection = false
-    }
-}
-
-internal fun MainController.showSelectedFilePreview(index: Int) {
-    val leftItem = leftListView.items.getOrNull(index)
-    val rightItem = rightListView.items.getOrNull(index)
+internal fun MainController.showSelectedFilePairPreview(leftIndex: Int, rightIndex: Int) {
+    val leftItem = leftListView.items.getOrNull(leftIndex)
+    val rightItem = rightListView.items.getOrNull(rightIndex)
     if (leftItem?.isDirectory == true || rightItem?.isDirectory == true) {
         clearPreview("Folder selected")
         return
     }
-    val relativePath = leftItem?.relativePath?.ifBlank { null }
-        ?: rightItem?.relativePath?.ifBlank { null }
-    val leftFile = if (dirMode && relativePath != null) leftPath?.resolve(relativePath) else leftPath
-    val rightFile = if (dirMode && relativePath != null) rightPath?.resolve(relativePath) else rightPath
+    val leftFile = leftItem?.let { item ->
+        if (dirMode && item.relativePath.isNotBlank()) leftPath?.resolve(item.relativePath) else leftPath
+    }
+    val rightFile = rightItem?.let { item ->
+        if (dirMode && item.relativePath.isNotBlank()) rightPath?.resolve(item.relativePath) else rightPath
+    }
     val leftLines = preparePreviewLines(readPreviewLines(leftFile))
     val rightLines = preparePreviewLines(readPreviewLines(rightFile))
     if (leftLines == null && rightLines == null) {
