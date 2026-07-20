@@ -220,7 +220,7 @@ private fun MainController.configureToolbarButtons() {
     listOf(copyRightBtn, diffBtn, equalBtn, copyLeftBtn).forEach {
         it.styleClass.add("comparison-action")
     }
-    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; -fx-background-radius:5;"
+    filterField.style = "-fx-background-color:white; -fx-border-color:#c4c4c4; -fx-border-radius:5; " + "-fx-background-radius:5; -fx-font-size:18px; -fx-prompt-text-fill:#53657d;"
 }
 
 internal fun MainController.configureCompareModes() {
@@ -268,6 +268,13 @@ internal fun MainController.configurePreviewToolbarGraphics(helpTexts: Map<Butto
 internal fun toolbarIconSpec(sourceIcon: String, helpText: String): ToolbarIconSpec {
     val help = helpText.lowercase()
     return when {
+        "jump to source" in help -> ToolbarIconSpec("✎", "#6f7f91", 29)
+        "new files on left" in help -> ToolbarIconSpec("→", "#2878c8", 32)
+        "new files on right" in help -> ToolbarIconSpec("←", "#318657", 32)
+        "show difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)
+        "equal files" in help -> ToolbarIconSpec("=", "#475569", 31)
+        "synchronize selected" in help -> ToolbarIconSpec("▐▷", "#25964b", 24)
+        "synchronize all" in help -> ToolbarIconSpec("◷▷", "#25964b", 24)
         "copy" in help && "right" in help -> ToolbarIconSpec("→", "#1677d2", 32)
         "copy" in help && "left" in help -> ToolbarIconSpec("←", "#228b4e", 32)
         "difference" in help -> ToolbarIconSpec("≠", "#d83b4f", 31)

@@ -34,7 +34,7 @@
             <ToolBar fx:id="mainToolBar" prefHeight="44" minHeight="44">
                 <Button text="✎" disable="true">
                     <tooltip>
-                        <Tooltip text="Edit comparison settings"/>
+                        <Tooltip text="Jump To Source"/>
                     </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
@@ -45,22 +45,22 @@
                 </Button>
                 <Button fx:id="copyRightBtn" text="→" onAction="#onCopyToRight">
                     <tooltip>
-                        <Tooltip text="Copy selected item to the right"/>
+                        <Tooltip text="Show new files on left side"/>
                     </tooltip>
                 </Button>
                 <Button fx:id="diffBtn" text="≠" onAction="#onShowDiff">
                     <tooltip>
-                        <Tooltip text="Show differences"/>
+                        <Tooltip text="Show difference"/>
                     </tooltip>
                 </Button>
                 <Button fx:id="equalBtn" text="=" onAction="#onShowEqual">
                     <tooltip>
-                        <Tooltip text="Show only identical items"/>
+                        <Tooltip text="Show equal files"/>
                     </tooltip>
                 </Button>
                 <Button fx:id="copyLeftBtn" text="←" onAction="#onCopyToLeft">
                     <tooltip>
-                        <Tooltip text="Copy selected item to the left"/>
+                        <Tooltip text="Show new files on right side"/>
                     </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
@@ -68,12 +68,12 @@
                 <ComboBox fx:id="compareModeChoice" prefWidth="145" onAction="#onCompareModeChanged"/>
                 <Button text="▷" onAction="#onCompare">
                     <tooltip>
-                        <Tooltip text="Compare"/>
+                        <Tooltip text="Synchronize selected"/>
                     </tooltip>
                 </Button>
                 <Button text="◷" onAction="#onRefresh">
                     <tooltip>
-                        <Tooltip text="Refresh comparison"/>
+                        <Tooltip text="Synchronize All"/>
                     </tooltip>
                 </Button>
                 <Separator orientation="VERTICAL"/>
